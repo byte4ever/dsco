@@ -2,26 +2,41 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
 
-    - name: Build
-      run: go build -v ./...
+      #    - name: Build
+      #      run: go build -v ./...
 
-    - name: Test
-      run: go test -race -covermode=atomic -coverprofile=coverage.out -v ./...
+      - name: Upload coverage to CodeClimate
+        run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      - name: Set cc-test-reporter as executable
+        run: chmod +x ./cc-test-reporter
+
+      - name: Run CodeClimate before script
+        run:  ./cc-test-reporter before-build
+
+      - name: Test
+        run: go test -race -covermode=atomic -coverprofile=c.out -v ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./c.out
+
+      - name: Upload coverage to CodeClimate
+        run:  ./cc-test-reporter  after-build  --id=a6fb8f40a524519328403a1c829feb823cfe38ea037f5f0363ea025c64b4e372 --prefix=github.com/byte4ever/dsco
+
