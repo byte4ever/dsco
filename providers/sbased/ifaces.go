@@ -1,11 +1,11 @@
 package sbased
 
 import (
-	"github.com/byte4ever/goconf"
+	"github.com/byte4ever/dsco"
 )
 
 type StrEntriesProvider interface {
-	GetOrigin() goconf.Origin
+	GetOrigin() dsco.Origin
 	GetEntries() StrEntries
 }
 

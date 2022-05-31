@@ -11,14 +11,14 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/goconf"
-	"github.com/byte4ever/goconf/utils"
+	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/utils"
 )
 
 const (
-	ID           = goconf.Origin("struct")
-	IDYamlFile   = goconf.Origin("yaml file")
-	IDYamlBuffer = goconf.Origin("yaml buffer")
+	ID           = dsco.Origin("struct")
+	IDYamlFile   = dsco.Origin("yaml file")
+	IDYamlBuffer = dsco.Origin("yaml buffer")
 )
 
 type Entry struct {
@@ -28,7 +28,7 @@ type Entry struct {
 
 type Binder struct {
 	values map[string]*Entry
-	id     goconf.Origin
+	id     dsco.Origin
 }
 
 var (
@@ -46,7 +46,7 @@ func (ks *Binder) Bind(
 	dstType reflect.Type,
 	dstValue *reflect.Value,
 ) (
-	origin goconf.Origin,
+	origin dsco.Origin,
 	keyOut string,
 	succeed bool,
 	err error,
@@ -80,7 +80,7 @@ func (ks *Binder) Bind(
 }
 
 // Provide creates nre env key searcher.
-func provide(i interface{}, id goconf.Origin) (*Binder, error) {
+func provide(i interface{}, id dsco.Origin) (*Binder, error) {
 	keys := make(map[string]*Entry)
 	res := &Binder{values: keys}
 	t := reflect.TypeOf(i)

@@ -1,1 +1,1 @@
-package goconf
+package dsco

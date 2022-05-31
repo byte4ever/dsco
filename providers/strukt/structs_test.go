@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/goconf"
+	"github.com/byte4ever/dsco"
 )
 
 type mapKeyI map[string]interface{}
@@ -22,9 +22,9 @@ func Test(t *testing.T) {
 
 			_, err := Provide(
 				&LeafType{
-					v1:      goconf.V(123.423),
-					v2:      goconf.V(123),
-					v3:      goconf.V("Haha"),
+					v1:      dsco.V(123.423),
+					v2:      dsco.V(123),
+					v3:      dsco.V("Haha"),
 					invalid: 1,
 				},
 			)
@@ -50,10 +50,10 @@ func Test(t *testing.T) {
 				KEY4 *string
 			}
 
-			val1 := goconf.V(1.124)
-			val2 := goconf.V(123.423)
-			val3 := goconf.V(123)
-			val4 := goconf.V("Haha")
+			val1 := dsco.V(1.124)
+			val2 := dsco.V(123.423)
+			val3 := dsco.V(123)
+			val4 := dsco.V("Haha")
 
 			v := &LeafType{
 				Embedded: &Embedded{
@@ -131,19 +131,19 @@ type SampleConf struct {
 
 func TestStruct(t *testing.T) {
 	c := SampleConf{
-		WorkDir: goconf.V("toto1"),
+		WorkDir: dsco.V("toto1"),
 		Git: &GitOptions{
-			ScanCron: goconf.V("toto2"),
+			ScanCron: dsco.V("toto2"),
 			Tag: &GitTagOptions{
-				Fmt: goconf.V("toto3"),
+				Fmt: dsco.V("toto3"),
 			},
-			URL: goconf.V("beautiful.com"),
+			URL: dsco.V("beautiful.com"),
 		},
 		S3: &S3Options{
-			MyFloat:  goconf.V(123.123123),
-			MyUint64: goconf.V(uint64(12312315)),
+			MyFloat:  dsco.V(123.123123),
+			MyUint64: dsco.V(uint64(12312315)),
 		},
-		SomeDuration: goconf.V(time.Second * 123),
+		SomeDuration: dsco.V(time.Second * 123),
 	}
 
 	s, err := Provide(&c)

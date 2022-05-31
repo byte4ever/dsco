@@ -1,4 +1,4 @@
-module github.com/byte4ever/goconf
+module github.com/byte4ever/dsco
 
 go 1.18
 

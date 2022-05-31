@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/goconf"
+	"github.com/byte4ever/dsco"
 )
 
 func TestProvide(t *testing.T) {
@@ -201,7 +201,7 @@ func getBinder() *Binder {
 
 func TestBinder_Bind(t *testing.T) {
 	mockedOriginName := "mocked"
-	mockedOrigin := goconf.Origin(mockedOriginName)
+	mockedOrigin := dsco.Origin(mockedOriginName)
 
 	t.Run(
 		"success and set", func(t *testing.T) {
@@ -445,7 +445,7 @@ func convertToErrors(origin string, el []errT) (errs []error) {
 
 func TestBinder_GetErrors(t *testing.T) {
 	mockedOriginName := "mocked"
-	mockedOrigin := goconf.Origin(mockedOriginName)
+	mockedOrigin := dsco.Origin(mockedOriginName)
 
 	type fields struct {
 		internalOpts internalOpts

@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	gc "github.com/byte4ever/goconf"
-	"github.com/byte4ever/goconf/providers/sbased"
-	"github.com/byte4ever/goconf/providers/sbased/cmdline"
-	"github.com/byte4ever/goconf/providers/sbased/env"
-	"github.com/byte4ever/goconf/providers/strukt"
-	"github.com/byte4ever/goconf/utils/hash"
+	gc "github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/providers/sbased"
+	"github.com/byte4ever/dsco/providers/sbased/cmdline"
+	"github.com/byte4ever/dsco/providers/sbased/env"
+	"github.com/byte4ever/dsco/providers/strukt"
+	"github.com/byte4ever/dsco/utils/hash"
 )
 
 type Zonk struct {

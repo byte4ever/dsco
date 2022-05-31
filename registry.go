@@ -1,4 +1,4 @@
-package goconf
+package dsco
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/byte4ever/goconf/utils"
+	"github.com/byte4ever/dsco/utils"
 )
 
 // Layers is dummy...

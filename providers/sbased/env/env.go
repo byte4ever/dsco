@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/byte4ever/goconf"
-	"github.com/byte4ever/goconf/providers/sbased"
+	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/providers/sbased"
 )
 
 var ErrInvalidPrefix = errors.New("invalid prefix")
@@ -54,8 +54,8 @@ func (ks *Provider) GetEntries() sbased.StrEntries {
 	return ks.entries
 }
 
-const ID = goconf.Origin("env")
+const ID = dsco.Origin("env")
 
-func (ks *Provider) GetOrigin() goconf.Origin {
+func (ks *Provider) GetOrigin() dsco.Origin {
 	return ID
 }

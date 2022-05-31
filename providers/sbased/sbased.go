@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/goconf"
+	"github.com/byte4ever/dsco"
 )
 
 type Binder struct {
@@ -27,7 +27,7 @@ func (s *Binder) Bind(
 	dstType reflect.Type,
 	dstValue *reflect.Value,
 ) (
-	origin goconf.Origin,
+	origin dsco.Origin,
 	keyOut string,
 	succeed bool,
 	err error,

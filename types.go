@@ -1,3 +1,3 @@
-package goconf
+package dsco
 
 type Origin string

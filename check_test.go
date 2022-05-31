@@ -1,4 +1,4 @@
-package goconf
+package dsco
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/goconf/utils/hash"
+	"github.com/byte4ever/dsco/utils/hash"
 )
 
 func Test_checkStruct(t *testing.T) {
@@ -150,7 +150,7 @@ func Test_checkStruct(t *testing.T) {
 			require.ErrorIs(t, err, ErrRecursiveStruct)
 			require.ErrorContains(t, err, "sub_key_root")
 			require.ErrorContains(t, err, "sub_key_root-sub_key1-sub_key2-sub_key3")
-			require.ErrorContains(t, err, "*goconf.T1Sub1")
+			require.ErrorContains(t, err, "*dsco.T1Sub1")
 		},
 	)
 
@@ -169,7 +169,7 @@ func Test_checkStruct(t *testing.T) {
 			require.ErrorIs(t, err, ErrRecursiveStruct)
 			require.ErrorContains(t, err, "main struct")
 			require.ErrorContains(t, err, "sub_key_root-sub_key1-sub_key2-cycle_root")
-			require.ErrorContains(t, err, "*goconf.T3Root")
+			require.ErrorContains(t, err, "*dsco.T3Root")
 		},
 	)
 

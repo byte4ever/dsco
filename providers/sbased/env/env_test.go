@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/goconf"
-	"github.com/byte4ever/goconf/providers/sbased"
+	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/providers/sbased"
 )
 
 func setEnv(t *testing.T, env map[string]string) {
@@ -255,5 +255,5 @@ func TestProvider_GetEntries(t *testing.T) {
 }
 
 func TestProvider_GetOrigin(t *testing.T) {
-	require.Equal(t, goconf.Origin("env"), (&Provider{}).GetOrigin())
+	require.Equal(t, dsco.Origin("env"), (&Provider{}).GetOrigin())
 }

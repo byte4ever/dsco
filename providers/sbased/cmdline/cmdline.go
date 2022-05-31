@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/byte4ever/goconf"
-	"github.com/byte4ever/goconf/providers/sbased"
+	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/providers/sbased"
 )
 
-const ID = goconf.Origin("cmdline")
+const ID = dsco.Origin("cmdline")
 
 var re = regexp.MustCompile(`^--([a-z\d_-]+)=(.+)$`)
 
@@ -21,7 +21,7 @@ func (ks *Provider) GetEntries() sbased.StrEntries {
 	return ks.values
 }
 
-func (ks *Provider) GetOrigin() goconf.Origin {
+func (ks *Provider) GetOrigin() dsco.Origin {
 	return ID
 }
 

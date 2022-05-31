@@ -3,7 +3,7 @@
 package sbased
 
 import (
-	goconf "github.com/byte4ever/goconf"
+	dsco "github.com/byte4ever/dsco"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -29,14 +29,14 @@ func (_m *MockStrEntriesProvider) GetEntries() StrEntries {
 }
 
 // GetOrigin provides a mock function with given fields:
-func (_m *MockStrEntriesProvider) GetOrigin() goconf.Origin {
+func (_m *MockStrEntriesProvider) GetOrigin() dsco.Origin {
 	ret := _m.Called()
 
-	var r0 goconf.Origin
-	if rf, ok := ret.Get(0).(func() goconf.Origin); ok {
+	var r0 dsco.Origin
+	if rf, ok := ret.Get(0).(func() dsco.Origin); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(goconf.Origin)
+		r0 = ret.Get(0).(dsco.Origin)
 	}
 
 	return r0
