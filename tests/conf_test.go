@@ -142,7 +142,7 @@ func Test(t *testing.T) {
 	errs := cf.Fill(&cc)
 
 	for idx, err2 := range errs {
-		fmt.Println("--------------", idx, err2) //nolint:forbidigo
+		fmt.Println("--------------", idx, err2) //nolint:forbidigo //ok
 	}
 
 	ll, err := yaml.Marshal(cc)

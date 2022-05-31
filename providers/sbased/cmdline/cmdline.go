@@ -37,7 +37,7 @@ func Provide(optionsLine []string) (*Provider, error) {
 	for idx, arg := range optionsLine {
 		m := re.FindStringSubmatch(arg)
 
-		if 3 != len(m) { //nolint:gomnd
+		if 3 != len(m) { //nolint:gomnd // ok
 			return nil, fmt.Errorf("arg #%d - (%s): %w", idx, arg, ErrFormatParam)
 		}
 
