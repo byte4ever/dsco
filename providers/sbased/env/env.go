@@ -18,8 +18,10 @@ type Provider struct {
 	prefix  string
 }
 
-var re = regexp.MustCompile(`^([A-Z][A-Z\d]*)-([A-Z][A-Z\d]*(?:[-_][A-Z][A-Z\d]*)*)=(.*)$`)
-var rePrefix = regexp.MustCompile(`^[A-Z][A-Z\d]*$`)
+var (
+	re       = regexp.MustCompile(`^([A-Z][A-Z\d]*)-([A-Z][A-Z\d]*(?:[-_][A-Z][A-Z\d]*)*)=(.*)$`)
+	rePrefix = regexp.MustCompile(`^[A-Z][A-Z\d]*$`)
+)
 
 func Provide(prefix string) (*Provider, error) {
 	// ensure prefix is uppercase

@@ -9,9 +9,11 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-var ErrUnsupportedType = errors.New("unsupported type")
-var ErrRecursiveStruct = errors.New("recursive struct")
-var ErrRequireEmptyStruct = errors.New("require empty struct")
+var (
+	ErrUnsupportedType    = errors.New("unsupported type")
+	ErrRecursiveStruct    = errors.New("recursive struct")
+	ErrRequireEmptyStruct = errors.New("require empty struct")
+)
 
 func checkStruct(i interface{}) error {
 	t := reflect.TypeOf(i)
@@ -60,7 +62,6 @@ func checkStructRec(types map[string]string, inputKey string, t reflect.Type, v 
 		e := ft.Type.Elem()
 
 		if e.Kind() == reflect.Struct {
-
 			en := ft.Type.String()
 
 			if pKey, found := types[en]; found {
@@ -88,7 +89,6 @@ func checkStructRec(types map[string]string, inputKey string, t reflect.Type, v 
 		if !f.IsNil() {
 			return fmt.Errorf("key %s is defined: %w", key, ErrRequireEmptyStruct)
 		}
-
 	}
 
 	return nil

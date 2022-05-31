@@ -1,7 +1,6 @@
 package dsco
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 )
 
 func Test_checkStruct(t *testing.T) {
-
 	t.Run(
 		"simple with embedded", func(t *testing.T) {
 			type Embedded struct {
@@ -90,7 +88,6 @@ func Test_checkStruct(t *testing.T) {
 			}
 
 			err := checkStruct(v)
-			fmt.Println(err)
 			require.ErrorIs(t, err, ErrRequireEmptyStruct)
 		},
 	)
@@ -202,7 +199,6 @@ func Test_checkStruct(t *testing.T) {
 			require.ErrorContains(t, err, "map[string]string")
 		},
 	)
-
 }
 
 // ///////////////////////////////////
@@ -294,6 +290,7 @@ type T5Root struct {
 }
 
 // ////////////////////////////////////////////
+
 type T6Root struct {
 	KEY2 *float64
 	KEY3 *int
