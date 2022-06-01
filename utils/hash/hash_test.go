@@ -44,5 +44,4 @@ func TestHash_MarshalYAML(t *testing.T) {
 			require.ErrorContains(t, err, "INVALID_HASH")
 		},
 	)
-
 }

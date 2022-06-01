@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -17,7 +16,6 @@ import (
 
 const (
 	ID           = dsco.Origin("struct")
-	IDYamlFile   = dsco.Origin("yaml file")
 	IDYamlBuffer = dsco.Origin("yaml buffer")
 )
 
@@ -100,66 +98,36 @@ func Provide(i interface{}) (*Binder, error) {
 	return provide(i, ID)
 }
 
-// ErrConfNotFound is returned when no file is found.
-var ErrConfNotFound = errors.New("no configuration file found")
+type ReadCloseProvider interface {
+	ReadClose(perform func(r io.Reader) error) error
+}
 
-func ProvideFromReader(reader io.Reader, i interface{}) (*Binder, error) {
+func ProvideFromReaderCloserProvider(i interface{}, rcProvider ReadCloseProvider) (*Binder, error) {
 	k := reflect.New(reflect.TypeOf(i).Elem()).Interface()
-	dec := yaml.NewDecoder(
-		reader,
+
+	err := rcProvider.ReadClose(
+		func(reader io.Reader) error {
+			dec := yaml.NewDecoder(
+				reader,
+			)
+
+			if err := dec.Decode(k); err != nil {
+				return fmt.Errorf("while parsing yaml buffer: %w", err)
+			}
+
+			return nil
+		},
 	)
 
-	if err := dec.Decode(k); err != nil {
-		return nil, fmt.Errorf("while parsing yaml buffer: %w", err)
+	if err != nil {
+		return nil, err
 	}
 
 	return provide(k, IDYamlBuffer)
 }
 
-func ProvideFromFile(
-	searchPaths []string,
-	fileName string,
-	i interface{},
-) (
-	*Binder,
-	error,
-) {
-	input, err := tryToOpen(searchPaths, fileName)
-	if err == nil {
-		defer func(input *os.File) {
-			errClose := input.Close()
-			if errClose != nil {
-				panic(errClose)
-			}
-		}(input)
-
-		p, err := ProvideFromReader(input, i)
-		if err != nil {
-			return p, err
-		}
-
-		p.id = IDYamlFile
-
-		return p, nil
-	}
-
-	// else define an empty key searcher
-	k := reflect.New(reflect.TypeOf(i).Elem()).Interface()
-
-	return provide(k, IDYamlFile)
-}
-
-func tryToOpen(paths []string, name string) (*os.File, error) {
-	for _, path := range paths {
-		fp := filepath.Join(path, name)
-		input, err := os.Open(fp)
-
-		if err == nil {
-			return input, nil
-		}
-	}
-
-	return nil, ErrConfNotFound
+type FileProvider interface {
+	ProvideFile() (*os.File, error)
 }
 
 func (ks *Binder) scanStructure(
@@ -194,19 +162,14 @@ func (ks *Binder) scanStructure(
 			return fmt.Errorf("A %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 		}
 
-		if v.Field(i).IsNil() {
-			continue
-		}
-
 		switch fieldType.Type.String() {
 		case
-			// todo :- lmartin 5/31/22 -: v- should simplify the switch.
-			"*hash.Hash",
-			"*time.Duration",
 			"*time.Time":
-			ks.values[key] = &Entry{
-				Type:  v.Field(i).Type(),
-				Value: v.Field(i),
+			if !v.Field(i).IsNil() {
+				ks.values[key] = &Entry{
+					Type:  v.Field(i).Type(),
+					Value: v.Field(i),
+				}
 			}
 
 			continue
@@ -227,7 +190,7 @@ func (ks *Binder) scanStructure(
 			reflect.Slice,
 			reflect.Uintptr,
 			reflect.UnsafePointer:
-			return fmt.Errorf("B %s/%v: %w", key, e.Name(), ErrUnsupportedType)
+			return fmt.Errorf("B %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 
 		case reflect.Struct:
 			if err := ks.scanStructure(key, e, v.Field(i).Elem()); err != nil {
@@ -249,9 +212,11 @@ func (ks *Binder) scanStructure(
 			reflect.Float64,
 			reflect.Bool,
 			reflect.String:
-			ks.values[key] = &Entry{
-				Type:  v.Field(i).Type(),
-				Value: v.Field(i),
+			if !v.Field(i).IsNil() {
+				ks.values[key] = &Entry{
+					Type:  v.Field(i).Type(),
+					Value: v.Field(i),
+				}
 			}
 		}
 	}

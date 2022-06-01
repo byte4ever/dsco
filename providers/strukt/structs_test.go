@@ -1,38 +1,160 @@
 package strukt
 
 import (
+	"crypto"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/utils/hash"
 )
 
 type mapKeyI map[string]interface{}
 
 func Test(t *testing.T) {
 	t.Run(
-		"detect unsupported types", func(t *testing.T) {
-			type LeafType struct {
-				v1      *float64
-				v2      *int
-				v3      *string
-				invalid int
+		"support empty struct in root struct", func(t *testing.T) {
+			type Root struct {
+				Key1 *float64
+				Key2 *int
+				Key3 *string
+			}
+
+			val1 := dsco.V(123.423)
+			val3 := dsco.V("Haha")
+			b, err := Provide(
+				&Root{
+					Key1: val1,
+					Key3: val3,
+				},
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key1": val1,
+					"key3": val3,
+				},
+			)
+		},
+	)
+
+	t.Run(
+		"detect unsupported types in root struct", func(t *testing.T) {
+			type Root struct {
+				Key1    *float64
+				Key2    *int
+				Key3    *string
+				Invalid int
 			}
 
 			_, err := Provide(
-				&LeafType{
-					v1:      dsco.V(123.423),
-					v2:      dsco.V(123),
-					v3:      dsco.V("Haha"),
-					invalid: 1,
-				},
+				&Root{},
 			)
 
 			require.ErrorIs(t, err, ErrUnsupportedType)
 			require.ErrorContains(t, err, "invalid")
 			require.ErrorContains(t, err, "int")
 
+		},
+	)
+
+	t.Run(
+		"support empty struct in sub struct", func(t *testing.T) {
+			type Sub struct {
+				Key1 *float64
+				Key2 *int
+				Key3 *string
+			}
+
+			type Root struct {
+				Sub  *Sub
+				Key1 *float64
+				Key2 *int
+				Key3 *string
+			}
+
+			val1 := dsco.V(123.423)
+			val3 := dsco.V("Haha")
+			b, err := Provide(
+				&Root{
+					Sub: &Sub{
+						Key1: val1,
+						Key3: val3,
+					},
+					Key1: val1,
+					Key3: val3,
+				},
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key1":     val1,
+					"key3":     val3,
+					"sub-key1": val1,
+					"sub-key3": val3,
+				},
+			)
+		},
+	)
+
+	t.Run(
+		"detect unsupported types in sub struct", func(t *testing.T) {
+			type Sub struct {
+				Key1    *float64
+				Key2    *int
+				Key3    *string
+				Invalid int
+			}
+
+			type Root struct {
+				Sub  *Sub
+				Key1 *float64
+				Key2 *int
+				Key3 *string
+			}
+
+			_, err := Provide(
+				&Root{
+					Sub: &Sub{},
+				},
+			)
+			require.ErrorIs(t, err, ErrUnsupportedType)
+			require.ErrorContains(t, err, "sub-invalid")
+			require.ErrorContains(t, err, "int")
+		},
+	)
+
+	t.Run(
+		"detect unsupported pointer types in sub struct", func(t *testing.T) {
+			type Sub struct {
+				Key1    *float64
+				Key2    *int
+				Key3    *string
+				Invalid *map[string]string
+			}
+
+			type Root struct {
+				Sub  *Sub
+				Key1 *float64
+				Key2 *int
+				Key3 *string
+			}
+
+			_, err := Provide(
+				&Root{
+					Sub: &Sub{},
+				},
+			)
+
+			require.ErrorIs(t, err, ErrUnsupportedType)
+			require.ErrorContains(t, err, "sub-invalid")
+			require.ErrorContains(t, err, "*map[string]string")
 		},
 	)
 
@@ -80,6 +202,126 @@ func Test(t *testing.T) {
 			)
 		},
 	)
+
+	t.Run(
+		"support yaml tag in root struct", func(t *testing.T) {
+
+			type LeafType struct {
+				KEY2 *float64
+				KEY3 *int
+				KEY4 *string `yaml:"yaml_key"`
+			}
+
+			val2 := dsco.V(123.423)
+			val3 := dsco.V(123)
+			val4 := dsco.V("Haha")
+
+			v := &LeafType{
+				KEY2: val2,
+				KEY3: val3,
+				KEY4: val4,
+			}
+
+			b, err := Provide(
+				v,
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key2":     val2,
+					"key3":     val3,
+					"yaml_key": val4,
+				},
+			)
+		},
+	)
+
+	t.Run(
+		"support yaml tag in sub struct", func(t *testing.T) {
+
+			type SubType struct {
+				KEY2 *float64
+				KEY3 *int
+				KEY4 *string `yaml:"yaml_key"`
+			}
+
+			type RootType struct {
+				Sub  *SubType
+				KEY2 *float64
+				KEY3 *int
+				KEY4 *string
+			}
+
+			val2 := dsco.V(123.423)
+			val3 := dsco.V(123)
+			val4 := dsco.V("Haha")
+
+			v := &RootType{
+				Sub: &SubType{
+					KEY2: val2,
+					KEY3: val3,
+					KEY4: val4,
+				},
+				KEY2: val2,
+				KEY3: val3,
+				KEY4: val4,
+			}
+
+			b, err := Provide(
+				v,
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key2":         val2,
+					"key3":         val3,
+					"key4":         val4,
+					"sub-key2":     val2,
+					"sub-key3":     val3,
+					"sub-yaml_key": val4,
+				},
+			)
+		},
+	)
+
+	t.Run(
+		"duration hash and date properly handled", func(t *testing.T) {
+
+			type LeafType struct {
+				KEY1 *time.Duration
+				KEY2 *time.Time
+				KEY3 *hash.Hash
+			}
+
+			val1 := dsco.V(13 * time.Minute)
+			val2 := dsco.V(time.Now())
+			val3 := dsco.V(hash.Hash(crypto.SHA256))
+
+			v := &LeafType{
+				KEY1: val1,
+				KEY2: val2,
+				KEY3: val3,
+			}
+
+			b, err := Provide(
+				v,
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key1": val1,
+					"key2": val2,
+					"key3": val3,
+				},
+			)
+		},
+	)
 }
 
 func (ks *Binder) checkValues(
@@ -98,82 +340,7 @@ func (ks *Binder) checkValues(
 	require.Equal(t, expectedKI, ki)
 }
 
-/*
-
-type GitTagOptions struct {
-	Pattern *string `yaml:"pattern,omitempty"`
-	Fmt     *string `yaml:"fmt,omitempty"`
+func TestBinder_GetPostProcessErrors(t *testing.T) {
+	b := &Binder{}
+	require.Nil(t, b.GetPostProcessErrors())
 }
-
-type GitOptions struct {
-	ScanCron *string        `yaml:"scan_cron,omitempty"`
-	URL      *string        // `yaml:"url,omitempty"`
-	Tag      *GitTagOptions `yaml:"tag,omitempty"`
-	File     *string        `yaml:"file,omitempty"`
-}
-
-type S3Options struct {
-	Bucket   *string  `yaml:"bucket,omitempty"`
-	Prefix   *string  `yaml:"prefix,omitempty"`
-	KeyFmt   *string  `yaml:"key_fmt,omitempty"`
-	MyFloat  *float64 `yaml:"my_float,omitempty"`
-	MyUint64 *uint64  `yaml:"my_uint64,omitempty"`
-}
-
-type SampleConf struct {
-	WorkDir      *string        `yaml:"work_dir,omitempty"`
-	Git          *GitOptions    `yaml:"git,omitempty"`
-	AWSRegion    *string        `yaml:"aws_region,omitempty"`
-	S3           *S3Options     `yaml:"s3,omitempty"`
-	SomeDuration *time.Duration `yaml:"some_duration,omitempty"`
-	SomeHash     *hash.Hash     `yaml:"some_hash,omitempty"`
-}
-
-func TestStruct(t *testing.T) {
-	c := SampleConf{
-		WorkDir: dsco.V("toto1"),
-		Git: &GitOptions{
-			ScanCron: dsco.V("toto2"),
-			Tag: &GitTagOptions{
-				Fmt: dsco.V("toto3"),
-			},
-			URL: dsco.V("beautiful.com"),
-		},
-		S3: &S3Options{
-			MyFloat:  dsco.V(123.123123),
-			MyUint64: dsco.V(uint64(12312315)),
-		},
-		SomeDuration: dsco.V(time.Second * 123),
-	}
-
-	s, err := Provide(&c)
-	require.Nil(t, err)
-	require.NotNil(t, s)
-
-	for s2, val := range s.values {
-		fmt.Println(s2, val)
-	}
-
-	{
-		var k *uint64
-		dstType := reflect.TypeOf(k)
-		dstValue := reflect.ValueOf(k)
-
-		origin, _, _, err := s.Bind("s3-my_uint64", true, dstType, &dstValue)
-		require.Equal(t, ID, origin)
-		require.NoError(t, err)
-
-		fmt.Println(*dstValue.Interface().(*uint64))
-	}
-
-	{
-		var k uint64
-		dstType := reflect.TypeOf(k)
-		dstValue := reflect.ValueOf(k)
-
-		origin, _, _, err := s.Bind("s3-my_uint64", true, dstType, &dstValue)
-		require.Equal(t, ID, origin)
-		require.ErrorIs(t, err, ErrTypeMismatch)
-	}
-}
-*/
