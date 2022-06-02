@@ -2,6 +2,7 @@ package strukt
 
 import (
 	"crypto"
+	"errors"
 	"testing"
 	"time"
 
@@ -343,4 +344,50 @@ func (ks *Binder) checkValues(
 func TestBinder_GetPostProcessErrors(t *testing.T) {
 	b := &Binder{}
 	require.Nil(t, b.GetPostProcessErrors())
+}
+
+var errMocked = errors.New("mocked error")
+
+type T1Root struct {
+	A *int
+	B *float64
+}
+
+func TestProvideFromInterfaceProvider(t *testing.T) {
+	t.Run(
+		"interface provider failure", func(t *testing.T) {
+			mip := NewMockInterfaceProvider(t)
+			mip.On("GetInterface").Once().Return(nil, errMocked)
+
+			provider, err := ProvideFromInterfaceProvider(mip)
+			require.ErrorIs(t, err, errMocked)
+			require.Nil(t, provider)
+		},
+	)
+
+	t.Run(
+		"success", func(t *testing.T) {
+			mip := NewMockInterfaceProvider(t)
+			valA := dsco.V(123)
+			valB := dsco.V(999.999)
+			mip.On("GetInterface").
+				Once().
+				Return(
+					&T1Root{
+						A: valA,
+						B: valB,
+					}, nil,
+				)
+
+			provider, err := ProvideFromInterfaceProvider(mip)
+			require.NoError(t, err)
+			require.NotNil(t, provider)
+			provider.checkValues(
+				t, mapKeyI{
+					"a": valA,
+					"b": valB,
+				},
+			)
+		},
+	)
 }

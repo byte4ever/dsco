@@ -4,11 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/utils"
@@ -102,32 +99,17 @@ type ReadCloseProvider interface {
 	ReadClose(perform func(r io.Reader) error) error
 }
 
-func ProvideFromReaderCloserProvider(i interface{}, rcProvider ReadCloseProvider) (*Binder, error) {
-	k := reflect.New(reflect.TypeOf(i).Elem()).Interface()
+type InterfaceProvider interface {
+	GetInterface() (interface{}, error)
+}
 
-	err := rcProvider.ReadClose(
-		func(reader io.Reader) error {
-			dec := yaml.NewDecoder(
-				reader,
-			)
-
-			if err := dec.Decode(k); err != nil {
-				return fmt.Errorf("while parsing yaml buffer: %w", err)
-			}
-
-			return nil
-		},
-	)
-
+func ProvideFromInterfaceProvider(ip InterfaceProvider) (*Binder, error) {
+	k, err := ip.GetInterface()
 	if err != nil {
 		return nil, err
 	}
 
 	return provide(k, IDYamlBuffer)
-}
-
-type FileProvider interface {
-	ProvideFile() (*os.File, error)
 }
 
 func (ks *Binder) scanStructure(
