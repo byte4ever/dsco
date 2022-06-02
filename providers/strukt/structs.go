@@ -21,9 +21,11 @@ type Entry struct {
 	Value reflect.Value
 }
 
+type Entries map[string]*Entry
+
 type Binder struct {
-	values map[string]*Entry
-	id     dsco.Origin
+	entries Entries
+	id      dsco.Origin
 }
 
 var (
@@ -49,7 +51,7 @@ func (ks *Binder) Bind(
 	origin = ks.id
 	keyOut = key
 
-	e, found := ks.values[key]
+	e, found := ks.entries[key]
 
 	if !found {
 		return
@@ -76,8 +78,8 @@ func (ks *Binder) Bind(
 
 // Provide creates nre env key searcher.
 func provide(i interface{}, id dsco.Origin) (*Binder, error) {
-	keys := make(map[string]*Entry)
-	res := &Binder{values: keys}
+	keys := make(Entries)
+	res := &Binder{entries: keys}
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 	res.id = id
@@ -148,7 +150,7 @@ func (ks *Binder) scanStructure(
 		case
 			"*time.Time":
 			if !v.Field(i).IsNil() {
-				ks.values[key] = &Entry{
+				ks.entries[key] = &Entry{
 					Type:  v.Field(i).Type(),
 					Value: v.Field(i),
 				}
@@ -195,7 +197,7 @@ func (ks *Binder) scanStructure(
 			reflect.Bool,
 			reflect.String:
 			if !v.Field(i).IsNil() {
-				ks.values[key] = &Entry{
+				ks.entries[key] = &Entry{
 					Type:  v.Field(i).Type(),
 					Value: v.Field(i),
 				}

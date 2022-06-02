@@ -3,6 +3,7 @@ package strukt
 import (
 	"crypto"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -331,9 +332,9 @@ func (ks *Binder) checkValues(
 ) {
 	t.Helper()
 
-	ki := make(mapKeyI, len(ks.values))
+	ki := make(mapKeyI, len(ks.entries))
 
-	for k, e := range ks.values {
+	for k, e := range ks.entries {
 		require.False(t, e.Value.IsNil())
 		ki[k] = e.Value.Interface()
 	}
@@ -388,6 +389,104 @@ func TestProvideFromInterfaceProvider(t *testing.T) {
 					"b": valB,
 				},
 			)
+		},
+	)
+}
+
+func TestBinder_Bind(t *testing.T) {
+	key := "a"
+
+	t.Run(
+		"success", func(t *testing.T) {
+			v := dsco.V(123.321)
+			vType := reflect.TypeOf(v)
+			vValue := reflect.ValueOf(v)
+
+			var k *float64
+			vTargetType := reflect.TypeOf(k)
+			vTargetValue := reflect.ValueOf(k)
+
+			b := &Binder{
+				entries: Entries{
+					key: &Entry{
+						Type:  vType,
+						Value: vValue,
+					},
+				},
+				id: ID,
+			}
+
+			o, keyOut, succeed, err := b.Bind(key, true, vTargetType, &vTargetValue)
+			require.NoError(t, err)
+			require.Equal(t, ID, o)
+			require.True(t, succeed)
+			require.Equal(t, key, keyOut)
+			k = vTargetValue.Interface().(*float64)
+			require.Equal(t, v, k)
+		},
+	)
+
+	t.Run(
+		"key not found", func(t *testing.T) {
+			v := dsco.V(123.321)
+
+			vType := reflect.TypeOf(v)
+			vValue := reflect.ValueOf(v)
+
+			var k *float64
+			vTargetType := reflect.TypeOf(k)
+			vTargetValue := reflect.ValueOf(k)
+
+			b := &Binder{
+				entries: Entries{
+					key: &Entry{
+						Type:  vType,
+						Value: vValue,
+					},
+				},
+				id: ID,
+			}
+
+			invalidKey := "not_existing"
+			o, keyOut, succeed, err := b.Bind(invalidKey, true, vTargetType, &vTargetValue)
+			require.NoError(t, err)
+			require.Equal(t, ID, o)
+			require.False(t, succeed)
+			require.Equal(t, invalidKey, keyOut)
+			k = vTargetValue.Interface().(*float64)
+			require.Nil(t, k)
+		},
+	)
+
+	t.Run(
+		"type mismatch", func(t *testing.T) {
+			v := dsco.V(123.321)
+
+			vType := reflect.TypeOf(v)
+			vValue := reflect.ValueOf(v)
+
+			var k *int
+			vTargetType := reflect.TypeOf(k)
+			vTargetValue := reflect.ValueOf(k)
+
+			b := &Binder{
+				entries: Entries{
+					key: &Entry{
+						Type:  vType,
+						Value: vValue,
+					},
+				},
+				id: ID,
+			}
+
+			o, keyOut, succeed, err := b.Bind(key, true, vTargetType, &vTargetValue)
+			require.ErrorIs(t, err, ErrTypeMismatch)
+			require.ErrorContains(t, err, "*float64 to type *int")
+			require.Equal(t, ID, o)
+			require.False(t, succeed)
+			require.Equal(t, key, keyOut)
+			k = vTargetValue.Interface().(*int)
+			require.Nil(t, k)
 		},
 	)
 }
