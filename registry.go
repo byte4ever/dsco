@@ -50,20 +50,9 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 		f := v.Field(i)
 		ft := t.Field(i)
 
-		name := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
-
-		var s string
-		if name != "" {
-			s = name
-		} else {
-			s = utils.ToSnakeCase(ft.Name)
-		}
+		s := getName(ft)
 
 		key := appendKey(rootKey, s)
-
-		if ft.Type.Kind() != reflect.Ptr && ft.Type.Kind() != reflect.Slice {
-			panic(fmt.Sprintf("opts support for type %v (%v)", key, ft))
-		}
 
 		switch ft.Type.String() {
 		case
@@ -109,6 +98,19 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 	return
 }
 
+func getName(ft reflect.StructField) string {
+	name := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
+
+	var s string
+	if name != "" {
+		s = name
+	} else {
+		s = utils.ToSnakeCase(ft.Name)
+	}
+
+	return s
+}
+
 func appendKey(a, b string) string {
 	if a == "" {
 		return b
@@ -133,7 +135,6 @@ var ErrUninitialized = errors.New("uninitialized")
 
 func (r *Filler) processReport() (errs []error) {
 	errs = r.perEntryReport(errs)
-
 	errs = r.perLayerReport(errs)
 
 	return
