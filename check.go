@@ -10,17 +10,22 @@ import (
 )
 
 var (
+	ErrInvalidDestination = errors.New("requires pointer on struct")
 	ErrUnsupportedType    = errors.New("unsupported type")
 	ErrRecursiveStruct    = errors.New("recursive struct")
 	ErrRequireEmptyStruct = errors.New("require empty struct")
 )
 
 func checkStruct(i interface{}) error {
-	t := reflect.TypeOf(i)
+	iType := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 
+	if iType.Kind() != reflect.Ptr || iType.Elem().Kind() != reflect.Struct || v.IsNil() {
+		return ErrInvalidDestination
+	}
+
 	return checkStructRec(
-		map[string]string{t.String(): ""},
+		map[string]string{iType.String(): ""},
 		"",
 		v.Elem(),
 	)
@@ -31,11 +36,9 @@ func checkStructRec(
 	inputKey string,
 	v reflect.Value,
 ) error {
-	t := v.Type()
-
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		ft := t.Field(i)
+		ft := v.Type().Field(i)
 
 		s := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
 		if s == "" {
@@ -46,6 +49,12 @@ func checkStructRec(
 
 		if ft.Type.Kind() != reflect.Ptr && ft.Type.Kind() != reflect.Slice {
 			return fmt.Errorf("%s(%s) : %w", key, ft.Type.String(), ErrUnsupportedType)
+		}
+
+		switch ft.Type.String() {
+		case
+			"*time.Time":
+			continue
 		}
 
 		e := ft.Type.Elem()

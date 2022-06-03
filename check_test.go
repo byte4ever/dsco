@@ -21,6 +21,7 @@ func Test_checkStruct(t *testing.T) {
 				KEY2 *float64
 				KEY3 *int
 				KEY4 *string
+				KEY5 *time.Time
 			}
 
 			v := &LeafType{}
@@ -167,6 +168,30 @@ func Test_checkStruct(t *testing.T) {
 			require.ErrorContains(t, err, "main struct")
 			require.ErrorContains(t, err, "sub_key_root-sub_key1-sub_key2-cycle_root")
 			require.ErrorContains(t, err, "*dsco.T3Root")
+		},
+	)
+
+	t.Run(
+		"detect invalid destination nil case", func(t *testing.T) {
+			var v *T4Root
+			err := checkStruct(v)
+			require.ErrorIs(t, err, ErrInvalidDestination)
+		},
+	)
+
+	t.Run(
+		"detect invalid destination not pointer", func(t *testing.T) {
+			var v int
+			err := checkStruct(v)
+			require.ErrorIs(t, err, ErrInvalidDestination)
+		},
+	)
+
+	t.Run(
+		"detect invalid destination not pointer on struct", func(t *testing.T) {
+			var v *int
+			err := checkStruct(v)
+			require.ErrorIs(t, err, ErrInvalidDestination)
 		},
 	)
 

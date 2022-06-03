@@ -42,7 +42,11 @@ func NewFiller(
 }
 
 //goland:noinspection SpellCheckingInspection
-func (r *Filler) fillStruct(rootKey string, t reflect.Type, v reflect.Value) {
+func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
+	fmt.Println(v.Type(), v)
+	t := v.Elem().Type()
+	v = v.Elem()
+
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		ft := t.Field(i)
@@ -82,8 +86,7 @@ func (r *Filler) fillStruct(rootKey string, t reflect.Type, v reflect.Value) {
 				fv := reflect.New(e)
 				r.fillStruct(
 					key,
-					e,
-					fv.Elem(),
+					fv,
 				)
 
 				f.Set(fv)
@@ -91,7 +94,7 @@ func (r *Filler) fillStruct(rootKey string, t reflect.Type, v reflect.Value) {
 				continue
 			}
 
-			r.fillStruct(key, e, f.Elem())
+			r.fillStruct(key, f)
 
 			continue
 		}
@@ -121,10 +124,8 @@ func (r *Filler) Fill(i interface{}) []error {
 		return []error{err}
 	}
 
-	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
-
-	r.fillStruct("", t.Elem(), v.Elem())
+	r.fillStruct("", v)
 
 	return r.processReport()
 }

@@ -39,7 +39,7 @@ type Root struct {
 func Test(t *testing.T) {
 	c1 := &Root{
 		L: []string{"A", "B", "C"},
-		A: gc.V(12),
+		// A: gc.V(12),
 		B: gc.V(123123.123),
 		H: gc.V(hash.Hash(crypto.SHA256)),
 		T: gc.V(time.Date(2014, 1, 1, 0, 0, 0, 0, time.UTC)),
@@ -66,7 +66,7 @@ func Test(t *testing.T) {
 		L: []string{"LA", "LB"},
 		B: gc.V(-20.0),
 		Z: &Zonk{
-			FirstName: gc.V("Laurent"),
+			// FirstName: gc.V("Laurent"),
 		},
 	}
 
@@ -86,11 +86,11 @@ func Test(t *testing.T) {
 	provideC4, err := strukt.Provide(c4)
 	require.NoError(t, err)
 
-	require.NoError(t, os.Setenv("SRV-Z-FIRST_NAME", `Celina`))
+	// require.NoError(t, os.Setenv("SRV-Z-FIRST_NAME", `Celina`))
 	require.NoError(t, os.Setenv("SRV-VERBOSITY", `yes`))
 	require.NoError(t, os.Setenv("SRV-L", `[q, w, e]`))
-	require.NoError(t, os.Setenv("SRV-BITOS", `asd`))
-	require.NoError(t, os.Setenv("SRV-NA_NA", `willFail`))
+	// require.NoError(t, os.Setenv("SRV-BITOS", `asd`))
+	require.NoError(t, os.Setenv("SRV-NA_NA", `111`))
 
 	provideC3p, err := env.Provide("SRV")
 	require.NoError(t, err)
@@ -107,10 +107,10 @@ func Test(t *testing.T) {
 
 	provideC5p, err := cmdline.Provide(
 		[]string{
-			`--shitty=123123`,
+			// `--shitty=123123`,
 			`--last_name=DOULOS`,
 			`--z-training_time=23s`,
-			`--a=1000`,
+			// `--a=1000`,
 		},
 	)
 	require.NoError(t, err)
@@ -139,11 +139,11 @@ func Test(t *testing.T) {
 	require.NoError(t, err)
 
 	var cc Root
+	fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	errs := cf.Fill(&cc)
+	fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
-	for idx, err2 := range errs {
-		fmt.Println("--------------", idx, err2) //nolint:forbidigo //ok
-	}
+	require.Empty(t, errs)
 
 	ll, err := yaml.Marshal(cc)
 	require.NoError(t, err)
