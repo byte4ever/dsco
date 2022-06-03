@@ -126,13 +126,7 @@ func (b *Binder) buildEntries(
 	for i := 0; i < v.NumField(); i++ {
 		fieldType := t.Field(i)
 
-		s := getName(fieldType)
-
-		if s == "" {
-			s = utils.ToSnakeCase(fieldType.Name)
-		}
-
-		key := appendKey(rootKey, s)
+		key := getKeyName(rootKey, fieldType)
 
 		if (fieldType.Type.Kind() != reflect.Ptr) &&
 			(fieldType.Type.Kind() != reflect.Slice) {
@@ -170,6 +164,18 @@ func (b *Binder) buildEntries(
 	}
 
 	return nil
+}
+
+func getKeyName(rootKey string, fieldType reflect.StructField) string {
+	s := getName(fieldType)
+
+	if s == "" {
+		s = utils.ToSnakeCase(fieldType.Name)
+	}
+
+	key := appendKey(rootKey, s)
+
+	return key
 }
 
 func getName(fieldType reflect.StructField) string {

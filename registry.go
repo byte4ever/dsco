@@ -132,6 +132,24 @@ func (r *Filler) Fill(i interface{}) []error {
 var ErrUninitialized = errors.New("uninitialized")
 
 func (r *Filler) processReport() (errs []error) {
+	errs = r.perEntryReport(errs)
+
+	errs = r.perLayerReport(errs)
+
+	return
+}
+
+func (r *Filler) perLayerReport(errs []error) []error {
+	for _, layer := range r.layers {
+		if e := layer.GetPostProcessErrors(); len(e) > 0 {
+			errs = append(errs, e...)
+		}
+	}
+
+	return errs
+}
+
+func (r *Filler) perEntryReport(errs []error) []error {
 	for _, entry := range r.m {
 		for _, err := range entry.Errors {
 			if err != nil {
@@ -144,11 +162,5 @@ func (r *Filler) processReport() (errs []error) {
 		}
 	}
 
-	for _, layer := range r.layers {
-		if e := layer.GetPostProcessErrors(); len(e) > 0 {
-			errs = append(errs, e...)
-		}
-	}
-
-	return
+	return errs
 }

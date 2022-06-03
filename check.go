@@ -22,22 +22,23 @@ func checkStruct(i interface{}) error {
 	return checkStructRec(
 		map[string]string{t.String(): ""},
 		"",
-		t.Elem(),
 		v.Elem(),
 	)
 }
 
-func checkStructRec(types map[string]string, inputKey string, t reflect.Type, v reflect.Value) error {
+func checkStructRec(
+	types map[string]string,
+	inputKey string,
+	v reflect.Value,
+) error {
+	t := v.Type()
+
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		ft := t.Field(i)
 
-		name := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
-
-		var s string
-		if name != "" {
-			s = name
-		} else {
+		s := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
+		if s == "" {
 			s = utils.ToSnakeCase(ft.Name)
 		}
 
@@ -45,18 +46,6 @@ func checkStructRec(types map[string]string, inputKey string, t reflect.Type, v 
 
 		if ft.Type.Kind() != reflect.Ptr && ft.Type.Kind() != reflect.Slice {
 			return fmt.Errorf("%s(%s) : %w", key, ft.Type.String(), ErrUnsupportedType)
-		}
-
-		switch ft.Type.String() {
-		case
-			"*hash.Hash",
-			"*time.Duration",
-			"*time.Time":
-			if !f.IsNil() {
-				return fmt.Errorf("key %s is defined: %w", key, ErrRequireEmptyStruct)
-			}
-
-			continue
 		}
 
 		e := ft.Type.Elem()
@@ -74,7 +63,7 @@ func checkStructRec(types map[string]string, inputKey string, t reflect.Type, v 
 
 			if f.IsNil() {
 				fv := reflect.New(e)
-				if err := checkStructRec(types, key, e, fv.Elem()); err != nil {
+				if err := checkStructRec(types, key, fv.Elem()); err != nil {
 					return err
 				}
 			} else {
