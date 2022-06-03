@@ -291,7 +291,7 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"duration hash and date properly handled", func(t *testing.T) {
+		"time type support", func(t *testing.T) {
 
 			type LeafType struct {
 				KEY1 *time.Duration
@@ -324,17 +324,43 @@ func Test(t *testing.T) {
 			)
 		},
 	)
+
+	t.Run(
+		"slice type support", func(t *testing.T) {
+
+			type LeafType struct {
+				KEY1 []int
+			}
+
+			val1 := []int{1, 2, 3}
+			v := &LeafType{
+				KEY1: val1,
+			}
+
+			b, err := Provide(
+				v,
+			)
+
+			require.NoError(t, err)
+			b.checkValues(
+				t,
+				mapKeyI{
+					"key1": val1,
+				},
+			)
+		},
+	)
 }
 
-func (ks *Binder) checkValues(
+func (b *Binder) checkValues(
 	t *testing.T,
 	expectedKI mapKeyI,
 ) {
 	t.Helper()
 
-	ki := make(mapKeyI, len(ks.entries))
+	ki := make(mapKeyI, len(b.entries))
 
-	for k, e := range ks.entries {
+	for k, e := range b.entries {
 		require.False(t, e.Value.IsNil())
 		ki[k] = e.Value.Interface()
 	}
@@ -489,4 +515,93 @@ func TestBinder_Bind(t *testing.T) {
 			require.Nil(t, k)
 		},
 	)
+}
+
+func Test_getName(t *testing.T) {
+	type args struct {
+		fieldType reflect.StructField
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "not yaml",
+			args: args{
+				fieldType: reflect.StructField{
+					Tag: `json:"toto"`,
+				},
+			},
+			want: "",
+		},
+		{
+			name: "none",
+			args: args{
+				fieldType: reflect.StructField{
+					Tag: "",
+				},
+			},
+			want: "",
+		},
+		{
+			name: "success",
+			args: args{
+				fieldType: reflect.StructField{
+					Tag: `yaml:"toto"`,
+				},
+			},
+			want: "toto",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				if got := getName(tt.args.fieldType); got != tt.want {
+					t.Errorf("getName() = %v, want %v", got, tt.want)
+				}
+			},
+		)
+	}
+}
+
+func Test_appendKey(t *testing.T) {
+	type args struct {
+		a string
+		b string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "when root",
+			args: args{
+				a: "",
+				b: "xxx",
+			},
+			want: "xxx",
+		}, {
+			name: "otherwise",
+			args: args{
+				a: "xxx",
+				b: "yyy",
+			},
+			want: "xxx-yyy",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				if got := appendKey(tt.args.a, tt.args.b); got != tt.want {
+					t.Errorf("appendKey() = %v, want %v", got, tt.want)
+				}
+			},
+		)
+	}
 }

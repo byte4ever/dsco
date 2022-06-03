@@ -33,11 +33,11 @@ var (
 	ErrTypeMismatch    = errors.New("type mismatch")
 )
 
-func (ks *Binder) GetPostProcessErrors() []error {
+func (b *Binder) GetPostProcessErrors() []error {
 	return nil
 }
 
-func (ks *Binder) Bind(
+func (b *Binder) Bind(
 	key string,
 	set bool,
 	dstType reflect.Type,
@@ -48,10 +48,10 @@ func (ks *Binder) Bind(
 	succeed bool,
 	err error,
 ) {
-	origin = ks.id
+	origin = b.id
 	keyOut = key
 
-	e, found := ks.entries[key]
+	e, found := b.entries[key]
 
 	if !found {
 		return
@@ -80,11 +80,10 @@ func (ks *Binder) Bind(
 func provide(i interface{}, id dsco.Origin) (*Binder, error) {
 	keys := make(Entries)
 	res := &Binder{entries: keys}
-	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 	res.id = id
 
-	err := res.scanStructure("", t.Elem(), v.Elem())
+	err := res.scanStructure("", v.Elem())
 	if err != nil {
 		return nil, err
 	}
@@ -114,28 +113,30 @@ func ProvideFromInterfaceProvider(ip InterfaceProvider) (*Binder, error) {
 	return provide(k, IDYamlBuffer)
 }
 
-func (ks *Binder) scanStructure(
+var structToIntercept = map[string]struct{}{
+	"*time.Time": {},
+}
+
+func (b *Binder) addEntry(key string, value reflect.Value) {
+	if !value.IsNil() {
+		b.entries[key] = &Entry{
+			Type:  value.Type(),
+			Value: value,
+		}
+	}
+}
+
+func (b *Binder) scanStructure(
 	rootKey string,
-	t reflect.Type,
 	v reflect.Value,
 ) (err error) {
+	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
 		fieldType := t.Field(i)
 
-		name := strings.Split(
-			strings.ReplaceAll(
-				fieldType.Tag.Get("yaml"),
-				" ",
-				"",
-			),
-			",",
-		)[0]
+		s := getName(fieldType)
 
-		var s string
-
-		if name != "" {
-			s = name
-		} else {
+		if s == "" {
 			s = utils.ToSnakeCase(fieldType.Name)
 		}
 
@@ -146,66 +147,48 @@ func (ks *Binder) scanStructure(
 			return fmt.Errorf("A %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 		}
 
-		switch fieldType.Type.String() {
-		case
-			"*time.Time":
-			if !v.Field(i).IsNil() {
-				ks.entries[key] = &Entry{
-					Type:  v.Field(i).Type(),
-					Value: v.Field(i),
-				}
-			}
-
+		if _, found := structToIntercept[fieldType.Type.String()]; found {
+			b.addEntry(key, v.Field(i))
 			continue
 		}
 
 		e := fieldType.Type.Elem()
+
 		switch e.Kind() {
 		case
-			reflect.Array,
-			reflect.Chan,
-			reflect.Complex128,
-			reflect.Complex64,
-			reflect.Func,
-			reflect.Interface,
-			reflect.Invalid,
-			reflect.Map,
-			reflect.Ptr,
-			reflect.Slice,
-			reflect.Uintptr,
-			reflect.UnsafePointer:
+			reflect.Array, reflect.Chan, reflect.Complex128, reflect.Complex64, reflect.Func, reflect.Interface,
+			reflect.Invalid, reflect.Map, reflect.Ptr, reflect.Slice, reflect.Uintptr, reflect.UnsafePointer:
 			return fmt.Errorf("B %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 
 		case reflect.Struct:
-			if err := ks.scanStructure(key, e, v.Field(i).Elem()); err != nil {
+			if err := b.scanStructure(key, v.Field(i).Elem()); err != nil {
 				return err
 			}
 
+			continue
+
 		case
-			reflect.Int64,
-			reflect.Uint64,
-			reflect.Int32,
-			reflect.Uint32,
-			reflect.Int16,
-			reflect.Uint16,
-			reflect.Int8,
-			reflect.Uint8,
-			reflect.Int,
-			reflect.Uint,
-			reflect.Float32,
-			reflect.Float64,
-			reflect.Bool,
+			reflect.Int64, reflect.Uint64, reflect.Int32, reflect.Uint32, reflect.Int16, reflect.Uint16,
+			reflect.Int8, reflect.Uint8, reflect.Int, reflect.Uint, reflect.Float32, reflect.Float64, reflect.Bool,
 			reflect.String:
-			if !v.Field(i).IsNil() {
-				ks.entries[key] = &Entry{
-					Type:  v.Field(i).Type(),
-					Value: v.Field(i),
-				}
-			}
+			b.addEntry(key, v.Field(i))
+
+			continue
 		}
 	}
 
 	return nil
+}
+
+func getName(fieldType reflect.StructField) string {
+	return strings.Split(
+		strings.ReplaceAll(
+			fieldType.Tag.Get("yaml"),
+			" ",
+			"",
+		),
+		",",
+	)[0]
 }
 
 func appendKey(a, b string) string {
