@@ -211,10 +211,9 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs *int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, err := b.Bind("k1_int", true, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind("k1_int", true, &dstValue)
 			require.NoError(t, err)
 			require.True(t, succeed)
 			require.Equal(t, "extK1Aliased", keyOut)
@@ -236,10 +235,9 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs *int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, err := b.Bind("k1_int", false, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind("k1_int", false, &dstValue)
 			require.NoError(t, err)
 			require.False(t, succeed)
 			require.Equal(t, "extK1Aliased", keyOut)
@@ -261,11 +259,10 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs *int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k2_string"
-			origin, keyOut, succeed, err := b.Bind(key, true, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind(key, true, &dstValue)
 			require.ErrorIs(t, err, ErrParse)
 			require.Equal(t, mockedOrigin, origin)
 			require.False(t, succeed)
@@ -284,11 +281,10 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs *int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "alias1"
-			origin, keyOut, succeed, err := b.Bind(key, true, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind(key, true, &dstValue)
 			require.ErrorIs(t, err, ErrAliasCollision)
 			require.Equal(t, mockedOrigin, origin)
 			require.False(t, succeed)
@@ -308,10 +304,9 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs *int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, err := b.Bind("not_found", true, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind("not_found", true, &dstValue)
 			require.NoError(t, err)
 			require.False(t, succeed)
 			require.Equal(t, "", keyOut)
@@ -333,11 +328,10 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs []int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k4_slice_int"
-			origin, keyOut, succeed, err := b.Bind(key, true, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind(key, true, &dstValue)
 			require.NoError(t, err)
 			require.True(t, succeed)
 			require.Equal(t, "extK4", keyOut)
@@ -359,11 +353,10 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs []int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k4_slice_int"
-			origin, keyOut, succeed, err := b.Bind(key, false, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind(key, false, &dstValue)
 			require.NoError(t, err)
 			require.False(t, succeed)
 			require.Equal(t, "extK4", keyOut)
@@ -385,11 +378,10 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs []int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k2_string"
-			origin, keyOut, succeed, err := b.Bind(key, false, dstType, &dstValue)
+			origin, keyOut, succeed, err := b.Bind(key, false, &dstValue)
 			require.ErrorIs(t, err, ErrParse)
 			require.Equal(t, mockedOrigin, origin)
 			require.False(t, succeed)
@@ -409,13 +401,12 @@ func TestBinder_Bind(t *testing.T) {
 			b.provider = pr
 
 			var rs int
-			dstType := reflect.TypeOf(rs)
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k1_int"
 			require.Panics(
 				t, func() {
-					_, _, _, _ = b.Bind(key, false, dstType, &dstValue)
+					_, _, _, _ = b.Bind(key, false, &dstValue)
 				},
 			)
 		},

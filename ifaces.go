@@ -8,7 +8,6 @@ type Binder interface {
 	Bind(
 		key string,
 		set bool,
-		dstType reflect.Type,
 		dstValue *reflect.Value,
 	) (
 		origin Origin,

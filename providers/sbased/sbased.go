@@ -21,16 +21,8 @@ var (
 	ErrAliasCollision = errors.New("alias collision")
 )
 
-func (s *Binder) Bind(
-	key string,
-	set bool,
-	dstType reflect.Type,
-	dstValue *reflect.Value,
-) (
-	origin dsco.Origin,
-	keyOut string,
-	succeed bool,
-	err error,
+func (s *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
+	origin dsco.Origin, keyOut string, succeed bool, err error,
 ) {
 	origin = s.provider.GetOrigin()
 
@@ -49,9 +41,10 @@ func (s *Binder) Bind(
 
 	var tp reflect.Value
 
-	switch dstType.Kind() { //nolint:exhaustive // it's expected
+	dType := (*dstValue).Type()
+	switch dType.Kind() { //nolint:exhaustive // it's expected
 	case reflect.Pointer:
-		tp = reflect.New(dstType.Elem())
+		tp = reflect.New(dType.Elem())
 
 		if err = yaml.Unmarshal([]byte(entry.Value), tp.Interface()); err != nil {
 			err = fmt.Errorf("%s/%s: %w", origin, entry.ExternalKey, ErrParse)
@@ -67,7 +60,7 @@ func (s *Binder) Bind(
 		return
 
 	case reflect.Slice:
-		tp = reflect.New(dstType)
+		tp = reflect.New(dType)
 
 		if err = yaml.Unmarshal([]byte(entry.Value), tp.Interface()); err != nil {
 			err = fmt.Errorf("%s/%s: %w", origin, entry.ExternalKey, ErrParse)

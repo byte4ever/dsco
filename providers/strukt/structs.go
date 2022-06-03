@@ -17,7 +17,6 @@ const (
 )
 
 type Entry struct {
-	Type  reflect.Type
 	Value reflect.Value
 }
 
@@ -37,16 +36,8 @@ func (b *Binder) GetPostProcessErrors() []error {
 	return nil
 }
 
-func (b *Binder) Bind(
-	key string,
-	set bool,
-	dstType reflect.Type,
-	dstValue *reflect.Value,
-) (
-	origin dsco.Origin,
-	keyOut string,
-	succeed bool,
-	err error,
+func (b *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
+	origin dsco.Origin, keyOut string, succeed bool, err error,
 ) {
 	origin = b.id
 	keyOut = key
@@ -57,11 +48,13 @@ func (b *Binder) Bind(
 		return
 	}
 
-	if e.Type.Kind() != dstType.Kind() || e.Type.Elem().Kind() != dstType.Elem().Kind() {
+	et := e.Value.Type()
+
+	if et.Kind() != (*dstValue).Type().Kind() || et.Elem().Kind() != (*dstValue).Type().Elem().Kind() {
 		err = fmt.Errorf(
 			"cannot bind type %v to type %v: %w",
-			e.Type,
-			dstType,
+			et,
+			(*dstValue).Type(),
 			ErrTypeMismatch,
 		)
 
@@ -83,7 +76,7 @@ func provide(i interface{}, id dsco.Origin) (*Binder, error) {
 	v := reflect.ValueOf(i)
 	res.id = id
 
-	err := res.scanStructure("", v.Elem())
+	err := res.buildEntries("", v.Elem())
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +113,12 @@ var structToIntercept = map[string]struct{}{
 func (b *Binder) addEntry(key string, value reflect.Value) {
 	if !value.IsNil() {
 		b.entries[key] = &Entry{
-			Type:  value.Type(),
 			Value: value,
 		}
 	}
 }
 
-func (b *Binder) scanStructure(
+func (b *Binder) buildEntries(
 	rootKey string,
 	v reflect.Value,
 ) (err error) {
@@ -161,7 +153,7 @@ func (b *Binder) scanStructure(
 			return fmt.Errorf("B %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 
 		case reflect.Struct:
-			if err := b.scanStructure(key, v.Field(i).Elem()); err != nil {
+			if err := b.buildEntries(key, v.Field(i).Elem()); err != nil {
 				return err
 			}
 

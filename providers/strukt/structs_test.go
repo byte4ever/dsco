@@ -425,24 +425,21 @@ func TestBinder_Bind(t *testing.T) {
 	t.Run(
 		"success", func(t *testing.T) {
 			v := dsco.V(123.321)
-			vType := reflect.TypeOf(v)
 			vValue := reflect.ValueOf(v)
 
 			var k *float64
-			vTargetType := reflect.TypeOf(k)
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
 				entries: Entries{
 					key: &Entry{
-						Type:  vType,
 						Value: vValue,
 					},
 				},
 				id: ID,
 			}
 
-			o, keyOut, succeed, err := b.Bind(key, true, vTargetType, &vTargetValue)
+			o, keyOut, succeed, err := b.Bind(key, true, &vTargetValue)
 			require.NoError(t, err)
 			require.Equal(t, ID, o)
 			require.True(t, succeed)
@@ -455,18 +452,14 @@ func TestBinder_Bind(t *testing.T) {
 	t.Run(
 		"key not found", func(t *testing.T) {
 			v := dsco.V(123.321)
-
-			vType := reflect.TypeOf(v)
 			vValue := reflect.ValueOf(v)
 
 			var k *float64
-			vTargetType := reflect.TypeOf(k)
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
 				entries: Entries{
 					key: &Entry{
-						Type:  vType,
 						Value: vValue,
 					},
 				},
@@ -474,7 +467,7 @@ func TestBinder_Bind(t *testing.T) {
 			}
 
 			invalidKey := "not_existing"
-			o, keyOut, succeed, err := b.Bind(invalidKey, true, vTargetType, &vTargetValue)
+			o, keyOut, succeed, err := b.Bind(invalidKey, true, &vTargetValue)
 			require.NoError(t, err)
 			require.Equal(t, ID, o)
 			require.False(t, succeed)
@@ -487,25 +480,21 @@ func TestBinder_Bind(t *testing.T) {
 	t.Run(
 		"type mismatch", func(t *testing.T) {
 			v := dsco.V(123.321)
-
-			vType := reflect.TypeOf(v)
 			vValue := reflect.ValueOf(v)
 
 			var k *int
-			vTargetType := reflect.TypeOf(k)
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
 				entries: Entries{
 					key: &Entry{
-						Type:  vType,
 						Value: vValue,
 					},
 				},
 				id: ID,
 			}
 
-			o, keyOut, succeed, err := b.Bind(key, true, vTargetType, &vTargetValue)
+			o, keyOut, succeed, err := b.Bind(key, true, &vTargetValue)
 			require.ErrorIs(t, err, ErrTypeMismatch)
 			require.ErrorContains(t, err, "*float64 to type *int")
 			require.Equal(t, ID, o)

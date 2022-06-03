@@ -6,7 +6,6 @@ import (
 
 func (r *Filler) bind(
 	key string,
-	dstType reflect.Type,
 	dstValue *reflect.Value,
 ) bool {
 	var (
@@ -16,7 +15,7 @@ func (r *Filler) bind(
 	)
 
 	for idx, binder := range r.layers {
-		_, keyOut, success, err := binder.Bind(key, idxFound == -1, dstType, dstValue)
+		_, keyOut, success, err := binder.Bind(key, idxFound == -1, dstValue)
 
 		if err == nil && idxFound == -1 && success {
 			idxFound = idx

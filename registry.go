@@ -42,7 +42,7 @@ func NewFiller(
 }
 
 //goland:noinspection SpellCheckingInspection
-func (r *Filler) initializeStruct(rootKey string, t reflect.Type, v reflect.Value) {
+func (r *Filler) fillStruct(rootKey string, t reflect.Type, v reflect.Value) {
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		ft := t.Field(i)
@@ -68,7 +68,7 @@ func (r *Filler) initializeStruct(rootKey string, t reflect.Type, v reflect.Valu
 			vv := f.Interface()
 			vvValue := reflect.ValueOf(vv)
 
-			if r.bind(key, ft.Type, &vvValue) {
+			if r.bind(key, &vvValue) {
 				f.Set(vvValue)
 			}
 
@@ -80,7 +80,7 @@ func (r *Filler) initializeStruct(rootKey string, t reflect.Type, v reflect.Valu
 		if e.Kind() == reflect.Struct {
 			if f.IsNil() {
 				fv := reflect.New(e)
-				r.initializeStruct(
+				r.fillStruct(
 					key,
 					e,
 					fv.Elem(),
@@ -91,7 +91,7 @@ func (r *Filler) initializeStruct(rootKey string, t reflect.Type, v reflect.Valu
 				continue
 			}
 
-			r.initializeStruct(key, e, f.Elem())
+			r.fillStruct(key, e, f.Elem())
 
 			continue
 		}
@@ -99,7 +99,7 @@ func (r *Filler) initializeStruct(rootKey string, t reflect.Type, v reflect.Valu
 		vv := f.Interface()
 		vvValue := reflect.ValueOf(vv)
 
-		if r.bind(key, ft.Type, &vvValue) {
+		if r.bind(key, &vvValue) {
 			f.Set(vvValue)
 		}
 	}
@@ -124,7 +124,7 @@ func (r *Filler) Fill(i interface{}) []error {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 
-	r.initializeStruct("", t.Elem(), v.Elem())
+	r.fillStruct("", t.Elem(), v.Elem())
 
 	return r.processReport()
 }
