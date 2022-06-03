@@ -43,7 +43,6 @@ func NewFiller(
 
 //goland:noinspection SpellCheckingInspection
 func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
-	fmt.Println(v.Type(), v)
 	t := v.Elem().Type()
 	v = v.Elem()
 

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"crypto"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -139,10 +138,7 @@ func Test(t *testing.T) {
 	require.NoError(t, err)
 
 	var cc Root
-	fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	errs := cf.Fill(&cc)
-	fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-
 	require.Empty(t, errs)
 
 	ll, err := yaml.Marshal(cc)
