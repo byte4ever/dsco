@@ -27,71 +27,52 @@ type Filler struct {
 	m      Report
 }
 
-// CheckedConfig is dummy
-type CheckedConfig struct{}
+var ErrInvalidLayers = errors.New("invalid layers")
 
 // NewFiller is dummy
-func NewFiller(
-	_ *CheckedConfig,
-	layers Layers,
-) (
-	*Filler,
-	error,
-) {
+func NewFiller(layers Layers) (*Filler, error) {
+	if len(layers) < 1 {
+		return nil, fmt.Errorf("at least on layer MUST be provided: %w", ErrInvalidLayers)
+	}
+
 	return &Filler{layers: layers}, nil
 }
 
 //goland:noinspection SpellCheckingInspection
 func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 	t := v.Elem().Type()
-	v = v.Elem()
+	ve := v.Elem()
 
-	for i := 0; i < v.NumField(); i++ {
-		f := v.Field(i)
+	for i := 0; i < ve.NumField(); i++ {
+		f := ve.Field(i)
 		ft := t.Field(i)
-
 		s := getName(ft)
-
 		key := appendKey(rootKey, s)
 
 		switch ft.Type.String() {
-		case
-			"*time.Time":
-			vv := f.Interface()
-			vvValue := reflect.ValueOf(vv)
-
-			if r.bind(key, &vvValue) {
-				f.Set(vvValue)
+		case "*time.Time":
+			if r.bind(key, &f) {
+				ve.Field(i).Set(f)
 			}
 
 			continue
 		}
 
 		e := ft.Type.Elem()
-
 		if e.Kind() == reflect.Struct {
-			if f.IsNil() {
-				fv := reflect.New(e)
-				r.fillStruct(
-					key,
-					fv,
-				)
+			fv := reflect.New(e)
+			r.fillStruct(
+				key,
+				fv,
+			)
 
-				f.Set(fv)
-
-				continue
-			}
-
-			r.fillStruct(key, f)
+			ve.Field(i).Set(fv)
 
 			continue
 		}
 
-		vv := f.Interface()
-		vvValue := reflect.ValueOf(vv)
-
-		if r.bind(key, &vvValue) {
-			f.Set(vvValue)
+		if r.bind(key, &f) {
+			ve.Field(i).Set(f)
 		}
 	}
 

@@ -72,3 +72,34 @@ func TestFiller_errReport2(t *testing.T) {
 	require.ErrorIs(t, ur, ErrUninitialized)
 	require.ErrorContains(t, ur, "invalidKey")
 }
+
+func TestNewFiller(t *testing.T) {
+	t.Run(
+		"no layers provided nil case", func(t *testing.T) {
+			b, err := NewFiller(nil)
+			require.Nil(t, b)
+			require.ErrorIs(t, err, ErrInvalidLayers)
+		},
+	)
+
+	t.Run(
+		"no layers provided empty case", func(t *testing.T) {
+			b, err := NewFiller([]Binder{})
+			require.Nil(t, b)
+			require.ErrorIs(t, err, ErrInvalidLayers)
+		},
+	)
+
+	t.Run(
+		"success", func(t *testing.T) {
+			b1 := NewMockBinder(t)
+			b2 := NewMockBinder(t)
+			b3 := NewMockBinder(t)
+			layers := []Binder{b1, b2, b3}
+			b, err := NewFiller(layers)
+			require.NotNil(t, b)
+			require.NoError(t, err)
+			require.Equal(t, Layers(layers), b.layers)
+		},
+	)
+}
