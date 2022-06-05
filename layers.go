@@ -10,7 +10,7 @@ type layers []Binder
 
 func (l layers) bind(
 	key string,
-	dstValue *reflect.Value,
+	dstValue reflect.Value,
 ) ReportEntry {
 	var (
 		e                []error
@@ -19,7 +19,7 @@ func (l layers) bind(
 	)
 
 	for idx, binder := range l {
-		_, keyOut, success, err := binder.Bind(key, idxFound == -1, dstValue)
+		_, keyOut, success, err := binder.Bind(key, idxFound == -1, &dstValue)
 
 		if err == nil && idxFound == -1 && success {
 			idxFound = idx
@@ -30,6 +30,7 @@ func (l layers) bind(
 	}
 
 	return ReportEntry{
+		Value:       dstValue,
 		Key:         key,
 		ExternalKey: ExternalKeyFound,
 		Idx:         idxFound,

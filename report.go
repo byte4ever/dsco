@@ -2,9 +2,11 @@ package dsco
 
 import (
 	"fmt"
+	"reflect"
 )
 
 type ReportEntry struct {
+	Value       reflect.Value
 	Key         string
 	ExternalKey string
 	Idx         int

@@ -41,10 +41,10 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 
 		switch ft.Type.String() {
 		case "*time.Time":
-			re := r.layers.bind(key, &f)
+			re := r.layers.bind(key, f)
 
 			if re.isFound() {
-				ve.Field(i).Set(f)
+				ve.Field(i).Set(re.Value)
 			}
 
 			r.report.addEntry(re)
@@ -65,10 +65,10 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 			continue
 		}
 
-		re := r.layers.bind(key, &f)
+		re := r.layers.bind(key, f)
 
 		if re.isFound() {
-			ve.Field(i).Set(f)
+			ve.Field(i).Set(re.Value)
 		}
 
 		r.report.addEntry(re)

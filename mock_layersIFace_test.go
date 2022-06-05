@@ -14,11 +14,11 @@ type mockLayersIFace struct {
 }
 
 // bind provides a mock function with given fields: key, dstValue
-func (_m *mockLayersIFace) bind(key string, dstValue *reflect.Value) ReportEntry {
+func (_m *mockLayersIFace) bind(key string, dstValue reflect.Value) ReportEntry {
 	ret := _m.Called(key, dstValue)
 
 	var r0 ReportEntry
-	if rf, ok := ret.Get(0).(func(string, *reflect.Value) ReportEntry); ok {
+	if rf, ok := ret.Get(0).(func(string, reflect.Value) ReportEntry); ok {
 		r0 = rf(key, dstValue)
 	} else {
 		r0 = ret.Get(0).(ReportEntry)

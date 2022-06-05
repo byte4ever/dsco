@@ -21,7 +21,7 @@ type Binder interface {
 type layersIFace interface {
 	bind(
 		key string,
-		dstValue *reflect.Value,
+		dstValue reflect.Value,
 	) ReportEntry
 	getPostProcessErrors() []error
 }
