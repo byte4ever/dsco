@@ -11,10 +11,16 @@ import (
 	"github.com/byte4ever/dsco/providers/sbased"
 )
 
+const id = dsco.Origin("env")
+
+// ErrInvalidPrefix represents an error when creating the provider with an
+// invalid prefix.
 var ErrInvalidPrefix = errors.New("invalid prefix")
 
-type Provider struct {
-	entries sbased.StrEntries
+// EntriesProvider is an entries' provider that extract entries from
+// environment variables.
+type EntriesProvider struct {
+	entries sbased.Entries
 	prefix  string
 }
 
@@ -23,22 +29,24 @@ var (
 	rePrefix = regexp.MustCompile(`^[A-Z][A-Z\d]*$`)
 )
 
-func Provide(prefix string) (*Provider, error) {
+// NewEntriesProvider creates an entries provider based on environment variable scanning.
+// It's sensitive to a prefix that *MUST* match this regexp '^[A-Z][A-Z\d]*$'.
+func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 	// ensure prefix is uppercase
 	if !rePrefix.MatchString(prefix) {
 		return nil, fmt.Errorf("%q : %w", prefix, ErrInvalidPrefix)
 	}
 
-	res := &Provider{
+	res := &EntriesProvider{
 		prefix: prefix,
 	}
 	env := os.Environ()
-	r := make(sbased.StrEntries, len(env))
+	r := make(sbased.Entries, len(env))
 
 	for _, s := range env {
 		m := re.FindStringSubmatch(s)
 		if len(m) == 4 && m[1] == res.prefix {
-			r[strings.ToLower(m[2])] = &sbased.StrEntry{
+			r[strings.ToLower(m[2])] = &sbased.Entry{
 				ExternalKey: fmt.Sprintf("%s-%s", res.prefix, m[2]),
 				Value:       m[3],
 			}
@@ -52,12 +60,10 @@ func Provide(prefix string) (*Provider, error) {
 	return res, nil
 }
 
-func (ks *Provider) GetEntries() sbased.StrEntries {
+func (ks *EntriesProvider) GetEntries() sbased.Entries {
 	return ks.entries
 }
 
-const ID = dsco.Origin("env")
-
-func (ks *Provider) GetOrigin() dsco.Origin {
-	return ID
+func (ks *EntriesProvider) GetOrigin() dsco.Origin {
+	return id
 }

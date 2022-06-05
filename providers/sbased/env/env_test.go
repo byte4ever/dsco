@@ -155,7 +155,7 @@ func TestProvide(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *Provider
+		want    *EntriesProvider
 		wantErr error
 	}{
 		{
@@ -173,7 +173,7 @@ func TestProvide(t *testing.T) {
 				env:    nil,
 				prefix: "PREFIX",
 			},
-			want: &Provider{
+			want: &EntriesProvider{
 				prefix: "PREFIX",
 			},
 		},
@@ -186,10 +186,10 @@ func TestProvide(t *testing.T) {
 				},
 				prefix: "PREFIX",
 			},
-			want: &Provider{
+			want: &EntriesProvider{
 				prefix: "PREFIX",
-				entries: sbased.StrEntries{
-					"arg1": &sbased.StrEntry{
+				entries: sbased.Entries{
+					"arg1": &sbased.Entry{
 						ExternalKey: "PREFIX-ARG1",
 						Value:       "val1",
 					},
@@ -206,14 +206,14 @@ func TestProvide(t *testing.T) {
 				},
 				prefix: "PREFIX",
 			},
-			want: &Provider{
+			want: &EntriesProvider{
 				prefix: "PREFIX",
-				entries: sbased.StrEntries{
-					"arg1": &sbased.StrEntry{
+				entries: sbased.Entries{
+					"arg1": &sbased.Entry{
 						ExternalKey: "PREFIX-ARG1",
 						Value:       "val1",
 					},
-					"arg1_v2": &sbased.StrEntry{
+					"arg1_v2": &sbased.Entry{
 						ExternalKey: "PREFIX-ARG1_V2",
 						Value:       "val2",
 					},
@@ -226,7 +226,7 @@ func TestProvide(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				setEnv(t, tt.args.env)
-				got, err := Provide(tt.args.prefix)
+				got, err := NewEntriesProvider(tt.args.prefix)
 
 				require.ErrorIs(t, err, tt.wantErr)
 				require.Equal(t, tt.want, got)
@@ -236,18 +236,18 @@ func TestProvide(t *testing.T) {
 }
 
 func TestProvider_GetEntries(t *testing.T) {
-	entries := sbased.StrEntries{
-		"a1": &sbased.StrEntry{
+	entries := sbased.Entries{
+		"a1": &sbased.Entry{
 			ExternalKey: "a",
 			Value:       "b",
 		},
-		"b1": &sbased.StrEntry{
+		"b1": &sbased.Entry{
 			ExternalKey: "a",
 			Value:       "b",
 		},
 	}
 
-	p := &Provider{
+	p := &EntriesProvider{
 		entries: entries,
 	}
 
@@ -255,5 +255,5 @@ func TestProvider_GetEntries(t *testing.T) {
 }
 
 func TestProvider_GetOrigin(t *testing.T) {
-	require.Equal(t, dsco.Origin("env"), (&Provider{}).GetOrigin())
+	require.Equal(t, dsco.Origin("env"), (&EntriesProvider{}).GetOrigin())
 }

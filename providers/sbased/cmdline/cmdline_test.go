@@ -19,7 +19,7 @@ func TestProvide(t *testing.T) {
 	tests := []struct {
 		name               string
 		args               args
-		want               *Provider
+		want               *EntriesProvider
 		wantErr            error
 		invalidArgPosition int
 	}{
@@ -28,7 +28,7 @@ func TestProvide(t *testing.T) {
 			args: args{
 				optionsLine: []string{},
 			},
-			want: &Provider{
+			want: &EntriesProvider{
 				values: nil,
 			},
 			wantErr: nil,
@@ -38,7 +38,7 @@ func TestProvide(t *testing.T) {
 			args: args{
 				optionsLine: nil,
 			},
-			want: &Provider{
+			want: &EntriesProvider{
 				values: nil,
 			},
 			wantErr: nil,
@@ -75,9 +75,9 @@ func TestProvide(t *testing.T) {
 			args: args{
 				optionsLine: []string{"--arg1=value1"},
 			},
-			want: &Provider{
-				values: sbased.StrEntries{
-					"arg1": &sbased.StrEntry{
+			want: &EntriesProvider{
+				values: sbased.Entries{
+					"arg1": &sbased.Entry{
 						ExternalKey: "--arg1",
 						Value:       "value1",
 					},
@@ -92,13 +92,13 @@ func TestProvide(t *testing.T) {
 					"--arg2=value2",
 				},
 			},
-			want: &Provider{
-				values: sbased.StrEntries{
-					"arg1": &sbased.StrEntry{
+			want: &EntriesProvider{
+				values: sbased.Entries{
+					"arg1": &sbased.Entry{
 						ExternalKey: "--arg1",
 						Value:       "value1",
 					},
-					"arg2": &sbased.StrEntry{
+					"arg2": &sbased.Entry{
 						ExternalKey: "--arg2",
 						Value:       "value2",
 					},
@@ -113,13 +113,13 @@ func TestProvide(t *testing.T) {
 					"--arg2=value2",
 				},
 			},
-			want: &Provider{
-				values: sbased.StrEntries{
-					"arg1": &sbased.StrEntry{
+			want: &EntriesProvider{
+				values: sbased.Entries{
+					"arg1": &sbased.Entry{
 						ExternalKey: "--arg1",
 						Value:       "value1",
 					},
-					"arg2": &sbased.StrEntry{
+					"arg2": &sbased.Entry{
 						ExternalKey: "--arg2",
 						Value:       "value2",
 					},
@@ -131,10 +131,10 @@ func TestProvide(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				got, err := Provide(tt.args.optionsLine)
+				got, err := NewEntriesProvider(tt.args.optionsLine)
 
-				require.ErrorIsf(t, err, tt.wantErr, "Provide() error = %v, wantErr %v", err, tt.wantErr)
-				require.Equalf(t, got, tt.want, "Provide() got = %v, want %v", got, tt.want)
+				require.ErrorIsf(t, err, tt.wantErr, "NewEntriesProvider() error = %v, wantErr %v", err, tt.wantErr)
+				require.Equalf(t, got, tt.want, "NewEntriesProvider() got = %v, want %v", got, tt.want)
 
 				if err != nil {
 					if errors.Is(err, ErrFormatParam) {
@@ -159,18 +159,18 @@ func TestProvide(t *testing.T) {
 }
 
 func TestProvider_GetEntries(t *testing.T) {
-	entries := sbased.StrEntries{
-		"a1": &sbased.StrEntry{
+	entries := sbased.Entries{
+		"a1": &sbased.Entry{
 			ExternalKey: "a",
 			Value:       "b",
 		},
-		"b1": &sbased.StrEntry{
+		"b1": &sbased.Entry{
 			ExternalKey: "a",
 			Value:       "b",
 		},
 	}
 
-	p := &Provider{
+	p := &EntriesProvider{
 		values: entries,
 	}
 
@@ -178,5 +178,5 @@ func TestProvider_GetEntries(t *testing.T) {
 }
 
 func TestProvider_GetOrigin(t *testing.T) {
-	require.Equal(t, dsco.Origin("cmdline"), (&Provider{}).GetOrigin())
+	require.Equal(t, dsco.Origin("cmdline"), (&EntriesProvider{}).GetOrigin())
 }

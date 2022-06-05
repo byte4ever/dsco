@@ -102,7 +102,7 @@ func Test(t *testing.T) {
 	// require.NoError(t, os.Setenv("SRV-BITOS", `asd`))
 	require.NoError(t, os.Setenv("SRV-NA_NA", `111`))
 
-	provideC3p, err := env.Provide("SRV")
+	provideC3p, err := env.NewEntriesProvider("SRV")
 	require.NoError(t, err)
 
 	provideC3, err := sbased.Provide(
@@ -115,7 +115,7 @@ func Test(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	provideC5p, err := cmdline.Provide(
+	provideC5p, err := cmdline.NewEntriesProvider(
 		[]string{
 			// `--shitty=123123`,
 			`--last_name=DOULOS`,

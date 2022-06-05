@@ -8,7 +8,6 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-// Filler is dummy...
 type Filler struct {
 	layers layersIFace
 	report reportIface
@@ -16,7 +15,6 @@ type Filler struct {
 
 var ErrInvalidLayers = errors.New("invalid layers")
 
-// NewFiller is dummy
 func NewFiller(l ...Binder) (*Filler, error) {
 	if len(l) < 1 {
 		return nil, fmt.Errorf("at least on layer MUST be provided: %w", ErrInvalidLayers)
@@ -76,7 +74,6 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 	return
 }
 
-// Fill is dummy....
 func (r *Filler) Fill(i interface{}) []error {
 	if err := checkStruct(i); err != nil {
 		return []error{err}

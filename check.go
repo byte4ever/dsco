@@ -9,9 +9,20 @@ import (
 )
 
 var (
-	ErrInvalidDestination = errors.New("requires pointer on struct")
-	ErrUnsupportedType    = errors.New("unsupported type")
-	ErrRecursiveStruct    = errors.New("recursive struct")
+	// ErrNotPointerOnStruct represents an error where the interface to fill
+	// is not a pointer to struct.
+	ErrNotPointerOnStruct = errors.New("not pointer on struct")
+
+	// ErrUnsupportedType represents an error where the interface to fill
+	// contains some unsupported types.
+	ErrUnsupportedType = errors.New("unsupported type")
+
+	// ErrRecursiveStruct represents an error where the interface to fill
+	// is recursive. So it cannot be allocated by the filler.
+	ErrRecursiveStruct = errors.New("recursive struct")
+
+	// ErrRequireEmptyStruct represents an error where the interface to fill
+	// is not empty (nil pointers for every field).
 	ErrRequireEmptyStruct = errors.New("require empty struct")
 )
 
@@ -20,7 +31,7 @@ func checkStruct(i interface{}) error {
 	v := reflect.ValueOf(i)
 
 	if iType.Kind() != reflect.Ptr || iType.Elem().Kind() != reflect.Struct || v.IsNil() {
-		return ErrInvalidDestination
+		return ErrNotPointerOnStruct
 	}
 
 	return checkStructRec(

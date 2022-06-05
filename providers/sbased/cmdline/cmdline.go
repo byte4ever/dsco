@@ -8,44 +8,53 @@ import (
 	"github.com/byte4ever/dsco/providers/sbased"
 )
 
-const ID = dsco.Origin("cmdline")
+const id = dsco.Origin("cmdline")
 
 var re = regexp.MustCompile(`^--([a-z\d_-]+)=(.+)$`)
 
-// Provider is dummy.
-type Provider struct {
-	values sbased.StrEntries
+// EntriesProvider is an entries' provider that extract entries from
+// command line.
+type EntriesProvider struct {
+	values sbased.Entries
 }
 
-func (ks *Provider) GetEntries() sbased.StrEntries {
+// GetEntries implements sbased.EntriesProvider interface.
+func (ks *EntriesProvider) GetEntries() sbased.Entries {
 	return ks.values
 }
 
-func (ks *Provider) GetOrigin() dsco.Origin {
-	return ID
+// GetOrigin implements sbased.EntriesProvider interface.
+func (ks *EntriesProvider) GetOrigin() dsco.Origin {
+	return id
 }
 
-func Provide(optionsLine []string) (*Provider, error) {
-	lo := len(optionsLine)
+// NewEntriesProvider creates an entries' provider that parses and extract
+// parameters from command line.
+//
+// 		ep, err := NewEntriesProvider(os.Args[1:])
+//
+// Each command line parameter MUST match  regexp.
+func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
+	lo := len(commandLine)
 
 	if lo == 0 {
-		return &Provider{}, nil
+		return &EntriesProvider{}, nil
 	}
 
-	keys := make(sbased.StrEntries, lo)
+	keys := make(sbased.Entries, lo)
 
-	for idx, arg := range optionsLine {
+	for idx, arg := range commandLine {
 		m := re.FindStringSubmatch(arg)
 
 		if 3 != len(m) { //nolint:gomnd // ok
 			return nil, fmt.Errorf("arg #%d - (%s): %w", idx, arg, ErrFormatParam)
 		}
 
-		keys[m[1]] = &sbased.StrEntry{
+		keys[m[1]] = &sbased.Entry{
 			ExternalKey: fmt.Sprintf("--%s", m[1]),
 			Value:       m[2],
 		}
 	}
 
-	return &Provider{values: keys}, nil
+	return &EntriesProvider{values: keys}, nil
 }

@@ -175,7 +175,7 @@ func Test_checkStruct(t *testing.T) {
 		"detect invalid destination nil case", func(t *testing.T) {
 			var v *T4Root
 			err := checkStruct(v)
-			require.ErrorIs(t, err, ErrInvalidDestination)
+			require.ErrorIs(t, err, ErrNotPointerOnStruct)
 		},
 	)
 
@@ -183,7 +183,7 @@ func Test_checkStruct(t *testing.T) {
 		"detect invalid destination not pointer", func(t *testing.T) {
 			var v int
 			err := checkStruct(v)
-			require.ErrorIs(t, err, ErrInvalidDestination)
+			require.ErrorIs(t, err, ErrNotPointerOnStruct)
 		},
 	)
 
@@ -191,7 +191,7 @@ func Test_checkStruct(t *testing.T) {
 		"detect invalid destination not pointer on struct", func(t *testing.T) {
 			var v *int
 			err := checkStruct(v)
-			require.ErrorIs(t, err, ErrInvalidDestination)
+			require.ErrorIs(t, err, ErrNotPointerOnStruct)
 		},
 	)
 

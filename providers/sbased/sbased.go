@@ -13,7 +13,7 @@ import (
 type Binder struct {
 	internalOpts
 	entries  entries
-	provider StrEntriesProvider
+	provider EntriesProvider
 }
 
 var (
@@ -80,7 +80,7 @@ func (s *Binder) Bind(key string, set bool, dstValue reflect.Value) (
 	}
 }
 
-func Provide(p StrEntriesProvider, options ...Option) (*Binder, error) {
+func Provide(p EntriesProvider, options ...Option) (*Binder, error) {
 	o := internalOpts{}
 
 	if err := o.applyOptions(options); err != nil {
@@ -101,9 +101,9 @@ func Provide(p StrEntriesProvider, options ...Option) (*Binder, error) {
 			}
 
 			es[actualKey] = &entry{
-				StrEntry: *v,
-				bounded:  false,
-				used:     false,
+				Entry:   *v,
+				bounded: false,
+				used:    false,
 			}
 		}
 	}

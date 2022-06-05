@@ -18,12 +18,12 @@ func TestProvide(t *testing.T) {
 			sep := NewMockStrEntriesProvider(t)
 			sep.On("GetEntries").Once().
 				Return(
-					StrEntries{
-						"k1": &StrEntry{
+					Entries{
+						"k1": &Entry{
 							ExternalKey: "extK1",
 							Value:       "val1",
 						},
-						"k2": &StrEntry{
+						"k2": &Entry{
 							ExternalKey: "extK2",
 							Value:       "val2",
 						},
@@ -41,7 +41,7 @@ func TestProvide(t *testing.T) {
 					},
 					entries: entries{
 						"k1": &entry{
-							StrEntry: StrEntry{
+							Entry: Entry{
 								ExternalKey: "extK1",
 								Value:       "val1",
 							},
@@ -49,7 +49,7 @@ func TestProvide(t *testing.T) {
 							used:    false,
 						},
 						"k2": &entry{
-							StrEntry: StrEntry{
+							Entry: Entry{
 								ExternalKey: "extK2",
 								Value:       "val2",
 							},
@@ -68,16 +68,16 @@ func TestProvide(t *testing.T) {
 			sep := NewMockStrEntriesProvider(t)
 			sep.On("GetEntries").Once().
 				Return(
-					StrEntries{
-						"alias1": &StrEntry{
+					Entries{
+						"alias1": &Entry{
 							ExternalKey: "extK1Aliased",
 							Value:       "val1",
 						},
-						"k2": &StrEntry{
+						"k2": &Entry{
 							ExternalKey: "extK2",
 							Value:       "val2",
 						},
-						"alias3": &StrEntry{
+						"alias3": &Entry{
 							ExternalKey: "extK3Aliased",
 							Value:       "val3",
 						},
@@ -106,7 +106,7 @@ func TestProvide(t *testing.T) {
 					},
 					entries: entries{
 						"k1": &entry{
-							StrEntry: StrEntry{
+							Entry: Entry{
 								ExternalKey: "extK1Aliased",
 								Value:       "val1",
 							},
@@ -114,7 +114,7 @@ func TestProvide(t *testing.T) {
 							used:    false,
 						},
 						"k2": &entry{
-							StrEntry: StrEntry{
+							Entry: Entry{
 								ExternalKey: "extK2",
 								Value:       "val2",
 							},
@@ -122,7 +122,7 @@ func TestProvide(t *testing.T) {
 							used:    false,
 						},
 						"k3": &entry{
-							StrEntry: StrEntry{
+							Entry: Entry{
 								ExternalKey: "extK3Aliased",
 								Value:       "val3",
 							},
@@ -164,7 +164,7 @@ func getBinder() *Binder {
 		},
 		entries: entries{
 			"k1_int": &entry{
-				StrEntry: StrEntry{
+				Entry: Entry{
 					ExternalKey: "extK1Aliased",
 					Value:       "1234",
 				},
@@ -172,7 +172,7 @@ func getBinder() *Binder {
 				used:    false,
 			},
 			"k2_string": &entry{
-				StrEntry: StrEntry{
+				Entry: Entry{
 					ExternalKey: "extK2",
 					Value:       "val2",
 				},
@@ -180,7 +180,7 @@ func getBinder() *Binder {
 				used:    false,
 			},
 			"k3_float64": &entry{
-				StrEntry: StrEntry{
+				Entry: Entry{
 					ExternalKey: "extK3Aliased",
 					Value:       "val3",
 				},
@@ -188,7 +188,7 @@ func getBinder() *Binder {
 				used:    false,
 			},
 			"k4_slice_int": &entry{
-				StrEntry: StrEntry{
+				Entry: Entry{
 					ExternalKey: "extK4",
 					Value:       `[1,2,3,4,5]`,
 				},
@@ -436,7 +436,7 @@ func TestBinder_GetErrors(t *testing.T) {
 	type fields struct {
 		internalOpts internalOpts
 		entries      entries
-		provider     StrEntriesProvider
+		provider     EntriesProvider
 	}
 
 	tests := []struct {
@@ -449,42 +449,42 @@ func TestBinder_GetErrors(t *testing.T) {
 			fields: fields{
 				entries: entries{
 					"k2a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k2aExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k3a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k3aExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k1a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k1aExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k2b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k2bExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k3b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k3bExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k1b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k1bExt",
 						},
 						bounded: true,
@@ -499,42 +499,42 @@ func TestBinder_GetErrors(t *testing.T) {
 			fields: fields{
 				entries: entries{
 					"k2a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k2aExt",
 						},
 						bounded: false,
 						used:    false,
 					},
 					"k3a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k3aExt",
 						},
 						bounded: true,
 						used:    false,
 					},
 					"k1a": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k1aExt",
 						},
 						bounded: true,
 						used:    true,
 					},
 					"k2b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k2bExt",
 						},
 						bounded: false,
 						used:    false,
 					},
 					"k3b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k3bExt",
 						},
 						bounded: true,
 						used:    false,
 					},
 					"k1b": &entry{
-						StrEntry: StrEntry{
+						Entry: Entry{
 							ExternalKey: "k1bExt",
 						},
 						bounded: true,
