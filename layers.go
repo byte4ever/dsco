@@ -13,12 +13,12 @@ func (l layers) bind(
 	dstValue reflect.Value,
 ) ReportEntry {
 	var (
-		e                []error
 		idxFound         = -1
 		ExternalKeyFound = ""
+		outVal           reflect.Value
 	)
 
-	var outVal reflect.Value
+	e := make([]error, 0, len(l))
 
 	for idx, binder := range l {
 		// todo :- lmartin 6/5/22 -: to many results here, should be simplified
