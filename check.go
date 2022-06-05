@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/byte4ever/dsco/utils"
 )
@@ -40,12 +39,7 @@ func checkStructRec(
 		f := v.Field(i)
 		ft := v.Type().Field(i)
 
-		s := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
-		if s == "" {
-			s = utils.ToSnakeCase(ft.Name)
-		}
-
-		key := appendKey(inputKey, s)
+		key := utils.GetKeyName(inputKey, ft)
 
 		if ft.Type.Kind() != reflect.Ptr && ft.Type.Kind() != reflect.Slice {
 			return fmt.Errorf("%s(%s) : %w", key, ft.Type.String(), ErrUnsupportedType)

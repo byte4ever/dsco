@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/byte4ever/dsco/utils"
 )
@@ -36,8 +35,8 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 	for i := 0; i < ve.NumField(); i++ {
 		f := ve.Field(i)
 		ft := t.Field(i)
-		s := getName(ft)
-		key := appendKey(rootKey, s)
+
+		key := utils.GetKeyName(rootKey, ft)
 
 		switch ft.Type.String() {
 		case "*time.Time":
@@ -75,27 +74,6 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 	}
 
 	return
-}
-
-func getName(ft reflect.StructField) string {
-	name := strings.Split(strings.Replace(ft.Tag.Get("yaml"), " ", "", -1), ",")[0]
-
-	var s string
-	if name != "" {
-		s = name
-	} else {
-		s = utils.ToSnakeCase(ft.Name)
-	}
-
-	return s
-}
-
-func appendKey(a, b string) string {
-	if a == "" {
-		return b
-	}
-
-	return a + "-" + b
 }
 
 // Fill is dummy....
