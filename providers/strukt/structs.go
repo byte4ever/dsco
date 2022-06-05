@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 
 	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/utils"
@@ -126,7 +125,7 @@ func (b *Binder) buildEntries(
 	for i := 0; i < v.NumField(); i++ {
 		fieldType := t.Field(i)
 
-		key := getKeyName(rootKey, fieldType)
+		key := utils.GetKeyName(rootKey, fieldType)
 
 		if (fieldType.Type.Kind() != reflect.Ptr) &&
 			(fieldType.Type.Kind() != reflect.Slice) {
@@ -164,35 +163,4 @@ func (b *Binder) buildEntries(
 	}
 
 	return nil
-}
-
-func getKeyName(rootKey string, fieldType reflect.StructField) string {
-	s := getName(fieldType)
-
-	if s == "" {
-		s = utils.ToSnakeCase(fieldType.Name)
-	}
-
-	key := appendKey(rootKey, s)
-
-	return key
-}
-
-func getName(fieldType reflect.StructField) string {
-	return strings.Split(
-		strings.ReplaceAll(
-			fieldType.Tag.Get("yaml"),
-			" ",
-			"",
-		),
-		",",
-	)[0]
-}
-
-func appendKey(a, b string) string {
-	if a == "" {
-		return b
-	}
-
-	return a + "-" + b
 }
