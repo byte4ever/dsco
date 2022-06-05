@@ -126,13 +126,11 @@ func Test(t *testing.T) {
 	require.NoError(t, err)
 
 	cf, err := gc.NewFiller(
-		gc.Layers{
-			provideC4,
-			provideC5,
-			provideC3,
-			provideC2,
-			provideC1,
-		},
+		provideC4,
+		provideC5,
+		provideC3,
+		provideC2,
+		provideC1,
 	)
 	require.NoError(t, err)
 

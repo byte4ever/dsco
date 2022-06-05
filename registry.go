@@ -30,7 +30,7 @@ type Filler struct {
 var ErrInvalidLayers = errors.New("invalid layers")
 
 // NewFiller is dummy
-func NewFiller(layers Layers) (*Filler, error) {
+func NewFiller(layers ...Binder) (*Filler, error) {
 	if len(layers) < 1 {
 		return nil, fmt.Errorf("at least on layer MUST be provided: %w", ErrInvalidLayers)
 	}
