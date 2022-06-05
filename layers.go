@@ -4,17 +4,21 @@ import (
 	"reflect"
 )
 
-func (r *Filler) bind(
+var _ layersIFace = layers{}
+
+type layers []Binder
+
+func (l layers) bind(
 	key string,
 	dstValue *reflect.Value,
-) bool {
+) ReportEntry {
 	var (
 		e                []error
 		idxFound         = -1
 		ExternalKeyFound = ""
 	)
 
-	for idx, binder := range r.layers {
+	for idx, binder := range l {
 		_, keyOut, success, err := binder.Bind(key, idxFound == -1, dstValue)
 
 		if err == nil && idxFound == -1 && success {
@@ -25,14 +29,20 @@ func (r *Filler) bind(
 		e = append(e, err)
 	}
 
-	r.m = append(
-		r.m, ReportEntry{
-			Key:         key,
-			ExternalKey: ExternalKeyFound,
-			Idx:         idxFound,
-			Errors:      e,
-		},
-	)
+	return ReportEntry{
+		Key:         key,
+		ExternalKey: ExternalKeyFound,
+		Idx:         idxFound,
+		Errors:      e,
+	}
+}
 
-	return idxFound != -1
+func (l layers) getPostProcessErrors() (errs []error) {
+	for _, layer := range l {
+		if e := layer.GetPostProcessErrors(); len(e) > 0 {
+			errs = append(errs, e...)
+		}
+	}
+
+	return
 }

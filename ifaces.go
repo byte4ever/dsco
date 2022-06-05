@@ -17,3 +17,15 @@ type Binder interface {
 	)
 	GetPostProcessErrors() []error
 }
+
+type layersIFace interface {
+	bind(
+		key string,
+		dstValue *reflect.Value,
+	) ReportEntry
+	getPostProcessErrors() []error
+}
+type reportIface interface {
+	perEntryReport() (errs []error)
+	addEntry(e ReportEntry)
+}

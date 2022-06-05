@@ -9,33 +9,23 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-// Layers is dummy...
-type Layers []Binder
-
-type ReportEntry struct {
-	Key         string
-	ExternalKey string
-	Idx         int
-	Errors      []error
-}
-
-type Report []ReportEntry
-
 // Filler is dummy...
 type Filler struct {
-	layers Layers
-	m      Report
+	layers layersIFace
+	report reportIface
 }
 
 var ErrInvalidLayers = errors.New("invalid layers")
 
 // NewFiller is dummy
-func NewFiller(layers ...Binder) (*Filler, error) {
-	if len(layers) < 1 {
+func NewFiller(l ...Binder) (*Filler, error) {
+	if len(l) < 1 {
 		return nil, fmt.Errorf("at least on layer MUST be provided: %w", ErrInvalidLayers)
 	}
 
-	return &Filler{layers: layers}, nil
+	r := Report{}
+
+	return &Filler{layers: layers(l), report: &r}, nil
 }
 
 //goland:noinspection SpellCheckingInspection
@@ -51,9 +41,13 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 
 		switch ft.Type.String() {
 		case "*time.Time":
-			if r.bind(key, &f) {
+			re := r.layers.bind(key, &f)
+
+			if re.isFound() {
 				ve.Field(i).Set(f)
 			}
+
+			r.report.addEntry(re)
 
 			continue
 		}
@@ -71,9 +65,13 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 			continue
 		}
 
-		if r.bind(key, &f) {
+		re := r.layers.bind(key, &f)
+
+		if re.isFound() {
 			ve.Field(i).Set(f)
 		}
+
+		r.report.addEntry(re)
 	}
 
 	return
@@ -115,34 +113,8 @@ func (r *Filler) Fill(i interface{}) []error {
 var ErrUninitialized = errors.New("uninitialized")
 
 func (r *Filler) processReport() (errs []error) {
-	errs = r.perEntryReport(errs)
-	errs = r.perLayerReport(errs)
+	errs = append(errs, r.report.perEntryReport()...)
+	errs = append(errs, r.layers.getPostProcessErrors()...)
 
 	return
-}
-
-func (r *Filler) perLayerReport(errs []error) []error {
-	for _, layer := range r.layers {
-		if e := layer.GetPostProcessErrors(); len(e) > 0 {
-			errs = append(errs, e...)
-		}
-	}
-
-	return errs
-}
-
-func (r *Filler) perEntryReport(errs []error) []error {
-	for _, entry := range r.m {
-		for _, err := range entry.Errors {
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-
-		if entry.Idx == -1 {
-			errs = append(errs, fmt.Errorf("key <%v>: %w", entry.Key, ErrUninitialized))
-		}
-	}
-
-	return errs
 }
