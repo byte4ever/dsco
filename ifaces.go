@@ -8,11 +8,12 @@ type Binder interface {
 	Bind(
 		key string,
 		set bool,
-		dstValue *reflect.Value,
+		dstValue reflect.Value,
 	) (
 		origin Origin,
 		keyOut string,
 		succeed bool,
+		outVal reflect.Value,
 		err error,
 	)
 	GetPostProcessErrors() []error

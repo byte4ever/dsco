@@ -439,12 +439,12 @@ func TestBinder_Bind(t *testing.T) {
 				id: ID,
 			}
 
-			o, keyOut, succeed, err := b.Bind(key, true, &vTargetValue)
+			o, keyOut, succeed, outVal, err := b.Bind(key, true, vTargetValue)
 			require.NoError(t, err)
 			require.Equal(t, ID, o)
 			require.True(t, succeed)
 			require.Equal(t, key, keyOut)
-			k = vTargetValue.Interface().(*float64)
+			k = outVal.Interface().(*float64)
 			require.Equal(t, v, k)
 		},
 	)
@@ -467,13 +467,12 @@ func TestBinder_Bind(t *testing.T) {
 			}
 
 			invalidKey := "not_existing"
-			o, keyOut, succeed, err := b.Bind(invalidKey, true, &vTargetValue)
+			o, keyOut, succeed, outVal, err := b.Bind(invalidKey, true, vTargetValue)
 			require.NoError(t, err)
 			require.Equal(t, ID, o)
 			require.False(t, succeed)
 			require.Equal(t, invalidKey, keyOut)
-			k = vTargetValue.Interface().(*float64)
-			require.Nil(t, k)
+			require.Equal(t, reflect.Value{}, outVal)
 		},
 	)
 
@@ -494,14 +493,13 @@ func TestBinder_Bind(t *testing.T) {
 				id: ID,
 			}
 
-			o, keyOut, succeed, err := b.Bind(key, true, &vTargetValue)
+			o, keyOut, succeed, outVal, err := b.Bind(key, true, vTargetValue)
 			require.ErrorIs(t, err, ErrTypeMismatch)
 			require.ErrorContains(t, err, "*float64 to type *int")
 			require.Equal(t, ID, o)
 			require.False(t, succeed)
 			require.Equal(t, key, keyOut)
-			k = vTargetValue.Interface().(*int)
-			require.Nil(t, k)
+			require.Equal(t, reflect.Value{}, outVal)
 		},
 	)
 }

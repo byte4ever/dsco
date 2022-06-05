@@ -41,7 +41,18 @@ func Test(t *testing.T) {
 		// A: gc.V(12),
 		B: gc.V(123123.123),
 		H: gc.V(hash.Hash(crypto.SHA256)),
-		T: gc.V(time.Date(2014, 1, 1, 0, 0, 0, 0, time.UTC)),
+		T: gc.V(
+			time.Date(
+				2014,
+				1,
+				1,
+				0,
+				0,
+				0,
+				0,
+				time.UTC,
+			),
+		),
 		Z: &Zonk{
 			LastName:     gc.V("ORI2"),
 			B:            gc.V(false),

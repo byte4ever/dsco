@@ -14,38 +14,45 @@ type MockBinder struct {
 }
 
 // Bind provides a mock function with given fields: key, set, dstValue
-func (_m *MockBinder) Bind(key string, set bool, dstValue *reflect.Value) (Origin, string, bool, error) {
+func (_m *MockBinder) Bind(key string, set bool, dstValue reflect.Value) (Origin, string, bool, reflect.Value, error) {
 	ret := _m.Called(key, set, dstValue)
 
 	var r0 Origin
-	if rf, ok := ret.Get(0).(func(string, bool, *reflect.Value) Origin); ok {
+	if rf, ok := ret.Get(0).(func(string, bool, reflect.Value) Origin); ok {
 		r0 = rf(key, set, dstValue)
 	} else {
 		r0 = ret.Get(0).(Origin)
 	}
 
 	var r1 string
-	if rf, ok := ret.Get(1).(func(string, bool, *reflect.Value) string); ok {
+	if rf, ok := ret.Get(1).(func(string, bool, reflect.Value) string); ok {
 		r1 = rf(key, set, dstValue)
 	} else {
 		r1 = ret.Get(1).(string)
 	}
 
 	var r2 bool
-	if rf, ok := ret.Get(2).(func(string, bool, *reflect.Value) bool); ok {
+	if rf, ok := ret.Get(2).(func(string, bool, reflect.Value) bool); ok {
 		r2 = rf(key, set, dstValue)
 	} else {
 		r2 = ret.Get(2).(bool)
 	}
 
-	var r3 error
-	if rf, ok := ret.Get(3).(func(string, bool, *reflect.Value) error); ok {
+	var r3 reflect.Value
+	if rf, ok := ret.Get(3).(func(string, bool, reflect.Value) reflect.Value); ok {
 		r3 = rf(key, set, dstValue)
 	} else {
-		r3 = ret.Error(3)
+		r3 = ret.Get(3).(reflect.Value)
 	}
 
-	return r0, r1, r2, r3
+	var r4 error
+	if rf, ok := ret.Get(4).(func(string, bool, reflect.Value) error); ok {
+		r4 = rf(key, set, dstValue)
+	} else {
+		r4 = ret.Error(4)
+	}
+
+	return r0, r1, r2, r3, r4
 }
 
 // GetPostProcessErrors provides a mock function with given fields:

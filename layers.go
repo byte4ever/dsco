@@ -18,19 +18,23 @@ func (l layers) bind(
 		ExternalKeyFound = ""
 	)
 
+	var outVal reflect.Value
+
 	for idx, binder := range l {
-		_, keyOut, success, err := binder.Bind(key, idxFound == -1, &dstValue)
+		// todo :- lmartin 6/5/22 -: to many results here, should be simplified
+		_, keyOut, success, v, err := binder.Bind(key, idxFound == -1, dstValue)
 
 		if err == nil && idxFound == -1 && success {
 			idxFound = idx
 			ExternalKeyFound = keyOut
+			outVal = v
 		}
 
 		e = append(e, err)
 	}
 
 	return ReportEntry{
-		Value:       dstValue,
+		Value:       outVal,
 		Key:         key,
 		ExternalKey: ExternalKeyFound,
 		Idx:         idxFound,

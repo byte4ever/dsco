@@ -21,8 +21,8 @@ var (
 	ErrAliasCollision = errors.New("alias collision")
 )
 
-func (s *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
-	origin dsco.Origin, keyOut string, succeed bool, err error,
+func (s *Binder) Bind(key string, set bool, dstValue reflect.Value) (
+	origin dsco.Origin, keyOut string, succeed bool, outVal reflect.Value, err error,
 ) {
 	origin = s.provider.GetOrigin()
 
@@ -41,7 +41,7 @@ func (s *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
 
 	var tp reflect.Value
 
-	dType := (*dstValue).Type()
+	dType := (dstValue).Type()
 	switch dType.Kind() { //nolint:exhaustive // it's expected
 	case reflect.Pointer:
 		tp = reflect.New(dType.Elem())
@@ -54,7 +54,7 @@ func (s *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
 		if set {
 			entry.used = true
 			succeed = true
-			*dstValue = tp
+			outVal = tp
 		}
 
 		return
@@ -70,7 +70,7 @@ func (s *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
 		if set {
 			entry.used = true
 			succeed = true
-			*dstValue = tp.Elem()
+			outVal = tp.Elem()
 		}
 
 		return

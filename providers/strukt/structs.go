@@ -35,8 +35,16 @@ func (b *Binder) GetPostProcessErrors() []error {
 	return nil
 }
 
-func (b *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
-	origin dsco.Origin, keyOut string, succeed bool, err error,
+func (b *Binder) Bind(
+	key string,
+	set bool,
+	dstValue reflect.Value,
+) (
+	origin dsco.Origin,
+	keyOut string,
+	succeed bool,
+	outVal reflect.Value,
+	err error,
 ) {
 	origin = b.id
 	keyOut = key
@@ -49,11 +57,11 @@ func (b *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
 
 	et := e.Value.Type()
 
-	if et.Kind() != (*dstValue).Type().Kind() || et.Elem().Kind() != (*dstValue).Type().Elem().Kind() {
+	if et.Kind() != (dstValue).Type().Kind() || et.Elem().Kind() != (dstValue).Type().Elem().Kind() {
 		err = fmt.Errorf(
 			"cannot bind type %v to type %v: %w",
 			et,
-			(*dstValue).Type(),
+			(dstValue).Type(),
 			ErrTypeMismatch,
 		)
 
@@ -61,7 +69,7 @@ func (b *Binder) Bind(key string, set bool, dstValue *reflect.Value) (
 	}
 
 	if set {
-		*dstValue = e.Value
+		outVal = e.Value
 		succeed = true
 	}
 
