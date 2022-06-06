@@ -31,9 +31,7 @@ func getRePrefixed(prefix string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^%s([^=]+)=(.*)$", prefix))
 }
 
-// NewEntriesProvider creates an entries provider based on environment variable scanning.
-// It's sensitive to a prefix that *MUST* match this regexp '^[A-Z][A-Z\d]*$'.
-func NewEntriesProvider(prefix string) (*EntriesProvider, []error) {
+func newEntriesProvider(prefix string, environ []string) (*EntriesProvider, []error) {
 	// ensure prefix is uppercase
 	if !rePrefix.MatchString(prefix) {
 		return nil, []error{fmt.Errorf("%q : %w", prefix, ErrInvalidPrefix)}
@@ -42,8 +40,7 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, []error) {
 	res := &EntriesProvider{
 		prefix: prefix,
 	}
-	env := os.Environ()
-	r, errs := extractEntries(env, prefix)
+	r, errs := extractEntries(environ, prefix)
 
 	if len(errs) > 0 {
 		return nil, errs
@@ -54,6 +51,12 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, []error) {
 	}
 
 	return res, nil
+}
+
+// NewEntriesProvider creates an entries provider based on environment variable scanning.
+// It's sensitive to a prefix that *MUST* match this regexp '^[A-Z][A-Z\d]*$'.
+func NewEntriesProvider(prefix string) (*EntriesProvider, []error) {
+	return newEntriesProvider(prefix, os.Environ())
 }
 
 func extractEntries(env []string, prefix string) (sbased.Entries, []error) {
