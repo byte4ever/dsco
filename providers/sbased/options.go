@@ -14,10 +14,12 @@ func (o *internalOpts) applyOptions(os []Option) (err error) {
 	return
 }
 
+// Option is processing option for string based binder.
 type Option interface {
 	apply(opts *internalOpts) error
 }
 
+// AliasesOption defines keys aliasing.
 type AliasesOption map[string]string
 
 func (a AliasesOption) apply(opts *internalOpts) error {
@@ -25,6 +27,7 @@ func (a AliasesOption) apply(opts *internalOpts) error {
 	return nil
 }
 
+// WithAliases returns a keys aliasing option.
 func WithAliases(mapping map[string]string) AliasesOption {
 	if lm := len(mapping); lm == 0 {
 		return nil

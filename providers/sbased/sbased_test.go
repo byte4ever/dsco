@@ -30,7 +30,7 @@ func TestProvide(t *testing.T) {
 					},
 				)
 
-			p, err := Provide(sep)
+			p, err := NewBinder(sep)
 			require.NoError(t, err)
 			require.NotNil(t, p)
 
@@ -84,7 +84,7 @@ func TestProvide(t *testing.T) {
 					},
 				)
 
-			p, err := Provide(
+			p, err := NewBinder(
 				sep,
 				WithAliases(
 					map[string]string{
@@ -142,7 +142,7 @@ func TestProvide(t *testing.T) {
 			option.On("apply", mock.Anything).Once().
 				Return(mockedError)
 
-			p, err := Provide(
+			p, err := NewBinder(
 				nil,
 				option,
 			)

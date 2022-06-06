@@ -105,7 +105,7 @@ func Test(t *testing.T) {
 	provideC3p, errs := env.NewEntriesProvider("SRV")
 	require.Nil(t, errs)
 
-	provideC3, err := sbased.Provide(
+	provideC3, err := sbased.NewBinder(
 		provideC3p,
 		sbased.WithAliases(
 			map[string]string{
@@ -125,7 +125,7 @@ func Test(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	provideC5, err := sbased.Provide(
+	provideC5, err := sbased.NewBinder(
 		provideC5p,
 		sbased.WithAliases(
 			map[string]string{

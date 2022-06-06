@@ -1,7 +1,6 @@
 package sbased
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -10,19 +9,26 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
+// Binder is a string value binder.
 type Binder struct {
 	internalOpts
 	entries  entries
 	provider EntriesProvider
 }
 
-var (
-	ErrParse          = errors.New("parse error")
-	ErrAliasCollision = errors.New("alias collision")
-)
+var _ dsco.Binder = &Binder{}
 
-func (s *Binder) Bind(key string, set bool, dstValue reflect.Value) (
-	origin dsco.Origin, keyOut string, succeed bool, outVal reflect.Value, err error,
+// Bind implements the dscoBinder interface.
+func (s *Binder) Bind(
+	key string,
+	set bool,
+	dstValue reflect.Value,
+) (
+	origin dsco.Origin,
+	keyOut string,
+	succeed bool,
+	outVal reflect.Value,
+	err error,
 ) {
 	origin = s.provider.GetOrigin()
 
@@ -80,7 +86,14 @@ func (s *Binder) Bind(key string, set bool, dstValue reflect.Value) (
 	}
 }
 
-func Provide(p EntriesProvider, options ...Option) (*Binder, error) {
+// NewBinder creates a new string based binder.
+func NewBinder(
+	p EntriesProvider,
+	options ...Option,
+) (
+	*Binder,
+	error,
+) {
 	o := internalOpts{}
 
 	if err := o.applyOptions(options); err != nil {
@@ -115,11 +128,8 @@ func Provide(p EntriesProvider, options ...Option) (*Binder, error) {
 	}, nil
 }
 
-var (
-	ErrUnboundKey    = errors.New("unbound key")
-	ErrOverriddenKey = errors.New("overridden key")
-)
-
+// GetPostProcessErrors returns all errors encountered during processing of the
+// layer.
 func (s *Binder) GetPostProcessErrors() (errs []error) {
 	o := s.provider.GetOrigin()
 
