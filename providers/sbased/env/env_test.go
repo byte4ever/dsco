@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -19,19 +20,68 @@ func setEnv(t *testing.T, env map[string]string) {
 	}
 }
 
-func Test_Regexp(t *testing.T) {
+func TestRegexpPrefix(t *testing.T) {
 	tests := []struct {
 		name    string
 		str     string
+		prefix  string
 		matches []string
+	}{
+		{
+			name:   "",
+			str:    "really wrong",
+			prefix: "PREFIX",
+		},
+		{
+			name:   "",
+			str:    "A-B-C",
+			prefix: "A",
+		},
+		{
+			name:   "",
+			str:    "--A-B-C",
+			prefix: "PREFIX",
+		},
+		{
+			name:   "",
+			str:    "PRE_FIX-B-C_D=abcdef",
+			prefix: "PREFIX",
+		},
+		{
+			name:    "",
+			str:     "PREFIX-1B-C_D=abcdef",
+			matches: []string{"PREFIX-1B-C_D=abcdef", "-1B-C_D", "abcdef"},
+			prefix:  "PREFIX",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(
+			test.name, func(t *testing.T) {
+				require.Equal(
+					t,
+					test.matches,
+					getRePrefixed(test.prefix).FindStringSubmatch(test.str),
+				)
+			},
+		)
+	}
+}
+
+func TestRegexpKey(t *testing.T) {
+	tests := []struct {
+		name    string
+		str     string
+		matches bool
 	}{
 		{
 			name: "",
 			str:  "really wrong",
 		},
 		{
-			name: "",
-			str:  "A-B-C",
+			name:    "",
+			str:     "-A-B-C",
+			matches: true,
 		},
 		{
 			name: "",
@@ -39,60 +89,22 @@ func Test_Regexp(t *testing.T) {
 		},
 		{
 			name: "",
-			str:  "PRE_FIX-B-C_D=abcdef",
+			str:  "-1B-C_D=abcdef",
 		},
 		{
 			name: "",
-			str:  "1PREFIX-B-C_D=abcdef",
+			str:  "-B-1C_D=abcdef",
 		},
 		{
 			name: "",
-			str:  "PREFIX.B-C_D=abcdef",
-		},
-		{
-			name: "",
-			str:  "A1A-1B-C_D=abcdef",
-		},
-		{
-			name: "",
-			str:  "A1A-B-1C_D=abcdef",
-		},
-		{
-			name:    "",
-			str:     "A-B-C=abcdef",
-			matches: []string{"A-B-C=abcdef", "A", "B-C", "abcdef"},
-		},
-		{
-			name:    "",
-			str:     "A-B-C_D=abcdef",
-			matches: []string{"A-B-C_D=abcdef", "A", "B-C_D", "abcdef"},
-		},
-		{
-			name:    "",
-			str:     "A1-B-C_D=abcdef",
-			matches: []string{"A1-B-C_D=abcdef", "A1", "B-C_D", "abcdef"},
-		},
-		{
-			name:    "",
-			str:     "A1A-B-C_D=abcdef",
-			matches: []string{"A1A-B-C_D=abcdef", "A1A", "B-C_D", "abcdef"},
-		},
-		{
-			name:    "",
-			str:     "PREFIX-B-C_D=abcdef",
-			matches: []string{"PREFIX-B-C_D=abcdef", "PREFIX", "B-C_D", "abcdef"},
-		},
-		{
-			name:    "",
-			str:     "A1A-B-C_D=abc=def",
-			matches: []string{"A1A-B-C_D=abc=def", "A1A", "B-C_D", "abc=def"},
+			str:  "-.B-C_D=abcdef",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(
 			test.name, func(t *testing.T) {
-				require.Equal(t, test.matches, re.FindStringSubmatch(test.str))
+				require.Equal(t, test.matches, reSubKey.MatchString(test.str))
 			},
 		)
 	}
@@ -156,17 +168,8 @@ func TestProvide(t *testing.T) {
 		name    string
 		args    args
 		want    *EntriesProvider
-		wantErr error
+		wantErr []error
 	}{
-		{
-			name: "",
-			args: args{
-				env:    nil,
-				prefix: "A A",
-			},
-			want:    nil,
-			wantErr: ErrInvalidPrefix,
-		},
 		{
 			name: "",
 			args: args{
@@ -226,10 +229,28 @@ func TestProvide(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				setEnv(t, tt.args.env)
-				got, err := NewEntriesProvider(tt.args.prefix)
+				got, errs := NewEntriesProvider(tt.args.prefix)
 
-				require.ErrorIs(t, err, tt.wantErr)
+				require.Equal(t, tt.wantErr, errs)
 				require.Equal(t, tt.want, got)
+			},
+		)
+	}
+}
+
+func TestProvide_InvalidPrefix(t *testing.T) {
+	for _, prefix := range []string{
+		"A A",
+		"ad",
+		"1A",
+	} {
+		t.Run(
+			fmt.Sprintf("invalid prefix %s", prefix), func(t *testing.T) {
+				p, errs := NewEntriesProvider(prefix)
+				require.Len(t, errs, 1)
+				require.ErrorIs(t, errs[0], ErrInvalidPrefix)
+				require.ErrorContains(t, errs[0], prefix)
+				require.Nil(t, p)
 			},
 		)
 	}
@@ -256,4 +277,36 @@ func TestProvider_GetEntries(t *testing.T) {
 
 func TestProvider_GetOrigin(t *testing.T) {
 	require.Equal(t, dsco.Origin("env"), (&EntriesProvider{}).GetOrigin())
+}
+
+func TestProvideKeySyntaxError(t *testing.T) {
+	t.Run(
+		"", func(t *testing.T) {
+			keys := []string{
+				"PREFIX-1A-B",
+				"PREFIX-A-1B",
+				"PREFIX-A-_B",
+				"PREFIX-AS,DD",
+				"PREFIX-a-b",
+				"PREFIXASDD",
+			}
+			envMap := make(map[string]string, len(keys))
+
+			for i, key := range keys {
+				envMap[key] = fmt.Sprintf("Value%d", i)
+			}
+
+			setEnv(
+				t, envMap,
+			)
+
+			p, errs := NewEntriesProvider("PREFIX")
+			require.Nil(t, p)
+
+			for i, err := range errs {
+				require.ErrorIs(t, err, ErrInvalidKeyFormat)
+				require.ErrorContains(t, err, keys[i])
+			}
+		},
+	)
 }

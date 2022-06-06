@@ -102,8 +102,8 @@ func Test(t *testing.T) {
 	// require.NoError(t, os.Setenv("SRV-BITOS", `asd`))
 	require.NoError(t, os.Setenv("SRV-NA_NA", `111`))
 
-	provideC3p, err := env.NewEntriesProvider("SRV")
-	require.NoError(t, err)
+	provideC3p, errs := env.NewEntriesProvider("SRV")
+	require.Nil(t, errs)
 
 	provideC3, err := sbased.Provide(
 		provideC3p,
@@ -146,7 +146,7 @@ func Test(t *testing.T) {
 	require.NoError(t, err)
 
 	var cc Root
-	errs := cf.Fill(&cc)
+	errs = cf.Fill(&cc)
 	require.Empty(t, errs)
 
 	ll, err := yaml.Marshal(cc)
