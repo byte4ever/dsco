@@ -49,7 +49,7 @@ func TestProvide(t *testing.T) {
 				optionsLine: []string{"invalid_arg", "--arg1=value1", "--arg2=value2"},
 			},
 			want:               nil,
-			wantErr:            ErrFormatParam,
+			wantErr:            ErrParamFormat,
 			invalidArgPosition: 0,
 		},
 		{
@@ -58,16 +58,25 @@ func TestProvide(t *testing.T) {
 				optionsLine: []string{"--arg1=value1", "--arg2=value2", "invalid_arg"},
 			},
 			want:               nil,
-			wantErr:            ErrFormatParam,
+			wantErr:            ErrParamFormat,
 			invalidArgPosition: 2,
 		},
 		{
-			name: "invalid format in middle position",
+			name: "invalid format in middle position 1",
 			args: args{
 				optionsLine: []string{"--arg1=value1", "invalid_arg", "--arg2=value2"},
 			},
 			want:               nil,
-			wantErr:            ErrFormatParam,
+			wantErr:            ErrParamFormat,
+			invalidArgPosition: 1,
+		},
+		{
+			name: "invalid format in middle position 2",
+			args: args{
+				optionsLine: []string{"--arg1=value1", "--asd-_asd=failure", "--arg2=value2"},
+			},
+			want:               nil,
+			wantErr:            ErrParamFormat,
 			invalidArgPosition: 1,
 		},
 		{
@@ -106,6 +115,18 @@ func TestProvide(t *testing.T) {
 			},
 		},
 		{
+			name: "duplicate params",
+			args: args{
+				optionsLine: []string{
+					"--arg1=value1",
+					"--arg1=value1x",
+					"--arg2=value2",
+				},
+			},
+			want:    nil,
+			wantErr: ErrDuplicateParam,
+		},
+		{
 			name: "with valid option",
 			args: args{
 				optionsLine: []string{
@@ -137,7 +158,7 @@ func TestProvide(t *testing.T) {
 				require.Equalf(t, got, tt.want, "NewEntriesProvider() got = %v, want %v", got, tt.want)
 
 				if err != nil {
-					if errors.Is(err, ErrFormatParam) {
+					if errors.Is(err, ErrParamFormat) {
 						require.ErrorContainsf(
 							t,
 							err,

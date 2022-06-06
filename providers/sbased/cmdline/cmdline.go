@@ -10,7 +10,7 @@ import (
 
 const id = dsco.Origin("cmdline")
 
-var re = regexp.MustCompile(`^--([a-z\d_-]+)=(.+)$`)
+var re = regexp.MustCompile(`^--([a-z][a-z\d]*(?:[-_][a-z][a-z\d]*)*)=(.+)$`)
 
 // EntriesProvider is an entries' provider that extract entries from
 // command line.
@@ -31,9 +31,12 @@ func (ks *EntriesProvider) GetOrigin() dsco.Origin {
 // NewEntriesProvider creates an entries' provider that parses and extract
 // parameters from command line.
 //
-// 		ep, err := NewEntriesProvider(os.Args[1:])
+// Each command line parameter MUST match regexp '^--([a-z\d_-]+)=(.+)$'.
+// ErrParamFormat is returned in such a case.
 //
-// Each command line parameter MUST match  regexp.
+// Creation will fail if some duplicated options are present.
+// ErrDuplicateParam is returned in such case.
+//
 func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 	lo := len(commandLine)
 
@@ -47,7 +50,12 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 		m := re.FindStringSubmatch(arg)
 
 		if 3 != len(m) { //nolint:gomnd // ok
-			return nil, fmt.Errorf("arg #%d - (%s): %w", idx, arg, ErrFormatParam)
+			return nil, fmt.Errorf("arg #%d - (%s): %w", idx, arg, ErrParamFormat)
+		}
+
+		_, found := keys[m[1]]
+		if found {
+			return nil, fmt.Errorf("--%s: %w", m[1], ErrDuplicateParam)
 		}
 
 		keys[m[1]] = &sbased.Entry{
