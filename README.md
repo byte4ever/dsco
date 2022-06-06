@@ -10,6 +10,9 @@
 [![codecov](https://codecov.io/gh/byte4ever/dsco/branch/master/graph/badge.svg?token=E5OURNE56X)](https://codecov.io/gh/byte4ever/dsco)
 [![BCH compliance](https://bettercodehub.com/edge/badge/byte4ever/dsco?branch=master)](https://bettercodehub.com/)
 
+[![Scc Count Badge](https://sloc.xyz/github/byte4ever/dsco)](https://github.com/byte4ever/dsco/)
+
+
 [//]: # ([![Known Vulnerabilities]&#40;https://snyk.io/test/github/byte4ever/dsco/badge.svg&#41;]&#40;https://snyk.io/test/github/byte4ever/dsco&#41;)
 
 [//]: # ([![Foresight Docs]&#40;https://foresight.service.thundra.io/public/api/v1/badge/utilization?repoId=d50e5cf2-5749-4983-8a6b-00e6e12927a2&#41;]&#40;https://foresight.docs.thundra.io/&#41;)
