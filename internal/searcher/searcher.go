@@ -1,41 +1,48 @@
 package searcher
 
 import (
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
 )
 
-// ErrConfNotFound is returned when no file is found.
-var ErrConfNotFound = errors.New("no configuration file found")
-var ErrNoSearchPath = errors.New("no search path")
-
+// MultiPathFileSearcher represents a configuration file searcher that supports
+// multiple paths.
 type MultiPathFileSearcher struct {
 	file  *os.File
 	paths []string
 }
 
-func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, error) {
+func searchfile(paths []string, fileName string) (*os.File, error) {
 	if len(paths) == 0 {
 		return nil, ErrNoSearchPath
 	}
 
 	for _, path := range paths {
 		fp := filepath.Join(path, fileName)
-		input, err := os.Open(fp)
 
-		if err == nil {
-			return &MultiPathFileSearcher{
-				file:  input,
-				paths: paths,
-			}, nil
+		if f, err := os.Open(fp); err == nil {
+			return f, nil
 		}
 	}
 
 	return nil, ErrConfNotFound
 }
 
+// NewMultiPath creates a configuration searcher.
+func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, error) {
+	f, err := searchfile(paths, fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MultiPathFileSearcher{
+		file:  f,
+		paths: paths,
+	}, nil
+}
+
+// ReadClose implements strukt.ReadCloseProvider.
 func (m *MultiPathFileSearcher) ReadClose(perform func(r io.Reader) error) (err error) {
 	defer func() {
 		errClose := m.file.Close()
@@ -45,8 +52,4 @@ func (m *MultiPathFileSearcher) ReadClose(perform func(r io.Reader) error) (err 
 	}()
 
 	return perform(m.file)
-}
-
-func (m *MultiPathFileSearcher) ProvideFile() (*os.File, error) {
-	return m.file, nil
 }

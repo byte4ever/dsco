@@ -1,15 +1,12 @@
 package yaml_provider
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"reflect"
 
 	"gopkg.in/yaml.v3"
 )
-
-var ErrNilInterfaces = errors.New("nil interfaces")
 
 type ReadCloseProvider interface {
 	ReadClose(perform func(r io.Reader) error) error

@@ -14,7 +14,7 @@ func Example_newEntriesProvider_1() {
 	fmt.Println("when processing invalid params got error:")
 	fmt.Println(err)
 	// Output:
-	// when getting invalid params got error:
+	// when processing invalid params got error:
 	// arg #0 - (some-thing): options param not in --xxx=val format
 }
 

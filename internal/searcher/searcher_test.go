@@ -43,15 +43,13 @@ func Test_NewSearchPath(t *testing.T) {
 			paths := []string{p1, p2, p3}
 
 			for i := 0; i < 3; i++ {
-				s, err := NewMultiPath(paths, "f")
-				require.NoError(t, err)
-
-				of, err := s.ProvideFile()
+				of, err := searchfile(paths, "f")
 				require.NoError(t, err)
 
 				require.Equal(t, pf, of.Name())
 				require.NoError(t, of.Close())
 				paths = append(paths[2:], paths[:2]...)
+
 			}
 		},
 	)
