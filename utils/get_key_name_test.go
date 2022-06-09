@@ -60,6 +60,16 @@ func Test_getKeyName(t *testing.T) {
 			},
 			want: "root-toto",
 		},
+		{
+			name: "success with no prefix",
+			args: args{
+				rootKey: "",
+				fieldType: reflect.StructField{
+					Tag: `yaml:"toto"`,
+				},
+			},
+			want: "toto",
+		},
 	}
 
 	for _, tt := range tests {
@@ -67,45 +77,6 @@ func Test_getKeyName(t *testing.T) {
 			tt.name, func(t *testing.T) {
 				if got := GetKeyName(tt.args.rootKey, tt.args.fieldType); got != tt.want {
 					t.Errorf("GetKeyName() = %v, want %v", got, tt.want)
-				}
-			},
-		)
-	}
-}
-
-func Test_appendKey(t *testing.T) {
-	type args struct {
-		a string
-		b string
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "when root",
-			args: args{
-				a: "",
-				b: "xxx",
-			},
-			want: "xxx",
-		}, {
-			name: "otherwise",
-			args: args{
-				a: "xxx",
-				b: "yyy",
-			},
-			want: "xxx-yyy",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(
-			tt.name, func(t *testing.T) {
-				if got := appendKey(tt.args.a, tt.args.b); got != tt.want {
-					t.Errorf("appendKey() = %v, want %v", got, tt.want)
 				}
 			},
 		)

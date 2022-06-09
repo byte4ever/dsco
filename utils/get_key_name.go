@@ -5,19 +5,28 @@ import (
 	"strings"
 )
 
-func GetKeyName(rootKey string, fieldType reflect.StructField) string {
-	s := getName(fieldType)
+// GetKeyName returns key name based on root prefix and struct field.
+func GetKeyName(prefix string, fieldType reflect.StructField) (keyName string) {
+	fn := fieldName(fieldType)
 
-	if s == "" {
-		s = ToSnakeCase(fieldType.Name)
+	if fn == "" {
+		fn = toSnakeCase(fieldType.Name)
 	}
 
-	key := appendKey(rootKey, s)
+	if prefix == "" {
+		return fn
+	}
 
-	return key
+	var sb strings.Builder
+
+	sb.WriteString(prefix)
+	sb.WriteRune('-')
+	sb.WriteString(fn)
+
+	return sb.String()
 }
 
-func getName(fieldType reflect.StructField) string {
+func fieldName(fieldType reflect.StructField) string {
 	return strings.Split(
 		strings.ReplaceAll(
 			fieldType.Tag.Get("yaml"),
@@ -26,12 +35,4 @@ func getName(fieldType reflect.StructField) string {
 		),
 		",",
 	)[0]
-}
-
-func appendKey(a, b string) string {
-	if a == "" {
-		return b
-	}
-
-	return a + "-" + b
 }

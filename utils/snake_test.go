@@ -41,8 +41,8 @@ func TestToSnakeCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				if got := ToSnakeCase(tt.args.str); got != tt.want {
-					t.Errorf("ToSnakeCase() = %v, want %v", got, tt.want)
+				if got := toSnakeCase(tt.args.str); got != tt.want {
+					t.Errorf("toSnakeCase() = %v, want %v", got, tt.want)
 				}
 			},
 		)
