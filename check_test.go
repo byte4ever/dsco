@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/byte4ever/dsco/utils/hash"
 )
 
 func Test_checkStruct(t *testing.T) {
@@ -114,8 +112,8 @@ func Test_checkStruct(t *testing.T) {
 			type Sub3 struct {
 				Key1        *float64
 				KeyDuration *time.Duration
-				KeyTime     *time.Duration
-				KeyHash     *hash.Hash
+				KeyTime     *time.Time
+				KeyUInt32   *uint32
 			}
 
 			type Sub2 struct {
@@ -225,15 +223,3 @@ func Test_checkStruct(t *testing.T) {
 		},
 	)
 }
-
-// ///////////////////////////////////
-
-// ///////////////////////////////////////
-
-// //////////////////////////////////////////////
-
-// ////////////////////////////////////////
-
-// ////////////////////////////////////////
-
-// ////////////////////////////////////////////

@@ -1,7 +1,6 @@
 package strukt
 
 import (
-	"crypto"
 	"errors"
 	"reflect"
 	"testing"
@@ -10,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/byte4ever/dsco"
-	"github.com/byte4ever/dsco/utils/hash"
 )
 
 type mapKeyI map[string]interface{}
@@ -296,12 +294,12 @@ func Test(t *testing.T) {
 			type LeafType struct {
 				KEY1 *time.Duration
 				KEY2 *time.Time
-				KEY3 *hash.Hash
+				KEY3 *uint32
 			}
 
 			val1 := dsco.V(13 * time.Minute)
 			val2 := dsco.V(time.Now())
-			val3 := dsco.V(hash.Hash(crypto.SHA256))
+			val3 := dsco.V(uint32(34))
 
 			v := &LeafType{
 				KEY1: val1,

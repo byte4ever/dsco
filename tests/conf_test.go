@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"crypto"
 	"os"
 	"testing"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"github.com/byte4ever/dsco/providers/sbased/cmdline"
 	"github.com/byte4ever/dsco/providers/sbased/env"
 	"github.com/byte4ever/dsco/providers/strukt"
-	"github.com/byte4ever/dsco/utils/hash"
 )
 
 type Zonk struct {
@@ -28,7 +26,6 @@ type Zonk struct {
 type Root struct {
 	A    *int
 	B    *float64
-	H    *hash.Hash
 	T    *time.Time
 	Z    *Zonk
 	L    []string
@@ -40,7 +37,6 @@ func Test(t *testing.T) {
 		L: []string{"A", "B", "C"},
 		// A: gc.V(12),
 		B: gc.V(123123.123),
-		H: gc.V(hash.Hash(crypto.SHA256)),
 		T: gc.V(
 			time.Date(
 				2014,
@@ -96,10 +92,8 @@ func Test(t *testing.T) {
 	provideC4, err := strukt.Provide(c4)
 	require.NoError(t, err)
 
-	// require.NoError(t, os.Setenv("SRV-Z-FIRST_NAME", `Celina`))
 	require.NoError(t, os.Setenv("SRV-VERBOSITY", `yes`))
 	require.NoError(t, os.Setenv("SRV-L", `[q, w, e]`))
-	// require.NoError(t, os.Setenv("SRV-BITOS", `asd`))
 	require.NoError(t, os.Setenv("SRV-NA_NA", `111`))
 
 	provideC3p, errs := env.NewEntriesProvider("SRV")
