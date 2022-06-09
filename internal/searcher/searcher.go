@@ -13,7 +13,7 @@ type MultiPathFileSearcher struct {
 	paths []string
 }
 
-func searchfile(paths []string, fileName string) (*os.File, error) {
+func searchFile(paths []string, fileName string) (*os.File, error) {
 	if len(paths) == 0 {
 		return nil, ErrNoSearchPath
 	}
@@ -31,7 +31,7 @@ func searchfile(paths []string, fileName string) (*os.File, error) {
 
 // NewMultiPath creates a configuration searcher.
 func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, error) {
-	f, err := searchfile(paths, fileName)
+	f, err := searchFile(paths, fileName)
 	if err != nil {
 		return nil, err
 	}

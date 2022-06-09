@@ -43,7 +43,7 @@ func Test_NewSearchPath(t *testing.T) {
 			paths := []string{p1, p2, p3}
 
 			for i := 0; i < 3; i++ {
-				of, err := searchfile(paths, "f")
+				of, err := searchFile(paths, "f")
 				require.NoError(t, err)
 
 				require.Equal(t, pf, of.Name())
