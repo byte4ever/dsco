@@ -3,7 +3,6 @@ package strukt
 import (
 	"errors"
 	"fmt"
-	"io"
 	"reflect"
 
 	"github.com/byte4ever/dsco"
@@ -94,10 +93,6 @@ func provide(i interface{}, id dsco.Origin) (*Binder, error) {
 // Provide creates nre env key searcher.
 func Provide(i interface{}) (*Binder, error) {
 	return provide(i, ID)
-}
-
-type ReadCloseProvider interface {
-	ReadClose(perform func(r io.Reader) error) error
 }
 
 type InterfaceProvider interface {

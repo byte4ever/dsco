@@ -93,7 +93,7 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 			s, err := NewMultiPath(paths, "f")
 			require.NoError(t, err)
 			require.NoError(
-				t, s.ReadClose(
+				t, s.Apply(
 					func(reader io.Reader) error {
 						content, err := ioutil.ReadAll(reader)
 						require.NoError(t, err)
@@ -116,7 +116,7 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 			require.NoError(t, err)
 			require.ErrorIs(
 				t,
-				s.ReadClose(
+				s.Apply(
 					func(reader io.Reader) error {
 						return errMocked
 					},
@@ -139,7 +139,7 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 
 			require.ErrorIs(
 				t,
-				s.ReadClose(
+				s.Apply(
 					func(reader io.Reader) error {
 						return nil
 					},

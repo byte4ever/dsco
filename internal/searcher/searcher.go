@@ -42,8 +42,8 @@ func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, erro
 	}, nil
 }
 
-// ReadClose implements strukt.ReadCloseProvider.
-func (m *MultiPathFileSearcher) ReadClose(perform func(r io.Reader) error) (err error) {
+// Apply applies action using the reader.
+func (m *MultiPathFileSearcher) Apply(action func(r io.Reader) error) (err error) {
 	defer func() {
 		errClose := m.file.Close()
 		if errClose != nil && err == nil {
@@ -51,5 +51,5 @@ func (m *MultiPathFileSearcher) ReadClose(perform func(r io.Reader) error) (err 
 		}
 	}()
 
-	return perform(m.file)
+	return action(m.file)
 }

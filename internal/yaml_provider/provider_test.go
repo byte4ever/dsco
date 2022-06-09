@@ -14,7 +14,7 @@ var errMocked = errors.New("mocked error")
 
 type failReaderCloser struct{}
 
-func (f *failReaderCloser) ReadClose(func(r io.Reader) error) error {
+func (f *failReaderCloser) Apply(func(r io.Reader) error) error {
 	return errMocked
 }
 
@@ -22,7 +22,7 @@ type bufferReaderCloser struct {
 	buf []byte
 }
 
-func (b *bufferReaderCloser) ReadClose(f func(r io.Reader) error) error {
+func (b *bufferReaderCloser) Apply(f func(r io.Reader) error) error {
 	return f(bytes.NewReader(b.buf))
 }
 
@@ -33,9 +33,39 @@ type T1Root struct {
 
 func TestProvide(t *testing.T) {
 	t.Run(
-		"return error if interface is nil", func(t *testing.T) {
-			provider, err := Provide(nil, nil)
-			require.ErrorIs(t, err, ErrNilInterfaces)
+		"error when model interface is nil", func(t *testing.T) {
+			provider, err := New(nil, nil)
+			require.ErrorIs(t, err, ErrInvalidModel)
+			require.ErrorContains(t, err, "nil")
+			require.Nil(t, provider)
+		},
+	)
+
+	t.Run(
+		"error when model interface not a pointer", func(t *testing.T) {
+			provider, err := New(123, nil)
+			require.ErrorIs(t, err, ErrInvalidModel)
+			require.ErrorContains(t, err, "pointer")
+			require.Nil(t, provider)
+		},
+	)
+
+	t.Run(
+		"error when model interface not a pointer on struct", func(t *testing.T) {
+			v := 5
+			provider, err := New(&v, nil)
+			require.ErrorIs(t, err, ErrInvalidModel)
+			require.ErrorContains(t, err, "struct")
+			require.Nil(t, provider)
+		},
+	)
+
+	t.Run(
+		"error when performer is nil", func(t *testing.T) {
+			k := &struct{}{}
+			provider, err := New(k, nil)
+			require.ErrorIs(t, err, ErrNilReaderFunctor)
+			require.ErrorContains(t, err, "nil")
 			require.Nil(t, provider)
 		},
 	)
@@ -44,7 +74,7 @@ func TestProvide(t *testing.T) {
 		"reader provider internal failure", func(t *testing.T) {
 			k := &struct{}{}
 			mrc := &failReaderCloser{}
-			provider, err := Provide(k, mrc)
+			provider, err := New(k, mrc)
 			require.ErrorIs(t, err, errMocked)
 			require.Nil(t, provider)
 		},
@@ -56,7 +86,7 @@ func TestProvide(t *testing.T) {
 				buf: []byte("invalid yaml content"),
 			}
 			k := &T1Root{}
-			provider, err := Provide(k, mrc)
+			provider, err := New(k, mrc)
 			require.Nil(t, provider)
 			var e *yaml.TypeError
 			require.ErrorAs(t, err, &e)
@@ -74,7 +104,7 @@ b: 999.99
 `),
 			}
 			k := &T1Root{}
-			provider, err := Provide(k, mrc)
+			provider, err := New(k, mrc)
 			require.NoError(t, err)
 			require.NotNil(t, provider)
 
