@@ -13,9 +13,9 @@ func TestWithAliases(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
 		args args
 		want AliasesOption
+		name string
 	}{
 		{
 			name: "empty map returns nil",
@@ -99,10 +99,10 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
 		wantErr error
+		fields  fields
+		name    string
+		args    args
 	}{
 		{
 			name: "nil option list",

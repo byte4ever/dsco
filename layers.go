@@ -14,11 +14,11 @@ func (l layers) bind(
 ) ReportEntry {
 	var (
 		idxFound         = -1
-		ExternalKeyFound = ""
+		externalKeyFound = ""
 		outVal           reflect.Value
 	)
 
-	e := make([]error, 0, len(l))
+	errs := make([]error, 0, len(l))
 
 	for idx, binder := range l {
 		// todo :- lmartin 6/5/22 -: to many results here, should be simplified
@@ -26,28 +26,30 @@ func (l layers) bind(
 
 		if err == nil && idxFound == -1 && success {
 			idxFound = idx
-			ExternalKeyFound = keyOut
+			externalKeyFound = keyOut
 			outVal = v
 		}
 
-		e = append(e, err)
+		errs = append(errs, err)
 	}
 
 	return ReportEntry{
 		Value:       outVal,
 		Key:         key,
-		ExternalKey: ExternalKeyFound,
+		ExternalKey: externalKeyFound,
 		Idx:         idxFound,
-		Errors:      e,
+		Errors:      errs,
 	}
 }
 
-func (l layers) getPostProcessErrors() (errs []error) {
+func (l layers) getPostProcessErrors() []error {
+	var errs []error
+
 	for _, layer := range l {
 		if e := layer.GetPostProcessErrors(); len(e) > 0 {
 			errs = append(errs, e...)
 		}
 	}
 
-	return
+	return errs
 }

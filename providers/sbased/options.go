@@ -1,26 +1,34 @@
 package sbased
 
-type internalOpts struct {
-	aliases map[string]string
-}
-
-func (o *internalOpts) applyOptions(os []Option) (err error) {
-	for _, option := range os {
-		if err = option.apply(o); err != nil {
-			return
-		}
-	}
-
-	return
-}
+import (
+	"fmt"
+)
 
 // Option is processing option for string based binder.
 type Option interface {
 	apply(opts *internalOpts) error
 }
 
+type internalOpts struct {
+	aliases map[string]string
+}
+
 // AliasesOption defines keys aliasing.
 type AliasesOption map[string]string
+
+func (o *internalOpts) applyOptions(options []Option) error {
+	for i, option := range options {
+		if err := option.apply(o); err != nil {
+			return fmt.Errorf(
+				"when processing option #%d: %w",
+				i,
+				err,
+			)
+		}
+	}
+
+	return nil
+}
 
 func (a AliasesOption) apply(opts *internalOpts) error {
 	opts.aliases = a

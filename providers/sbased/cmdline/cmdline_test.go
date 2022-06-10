@@ -174,9 +174,9 @@ func TestProvide(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
 			tt.name, func(t *testing.T) {
-				tt := tt
 				t.Parallel()
 
 				got, err := NewEntriesProvider(tt.args.optionsLine)
@@ -299,8 +299,10 @@ func TestNewEntriesProvider(t *testing.T) {
 						tt.wantErr,
 					)
 					require.Nil(t, got)
+
 					return
 				}
+
 				require.Equal(
 					t,
 					tt.want,

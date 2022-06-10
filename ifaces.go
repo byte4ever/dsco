@@ -4,6 +4,12 @@ import (
 	"reflect"
 )
 
+// TODO :- lmartin 6/10/22 -: need some refactoring - to big and complex.
+//  interface Bind should only take a type, it returns too many values.
+
+// Binder defines the ability to bind/create a value based on a given key. When
+// set is true the value is actually created otherwise it will only perform all
+// checks and value is not created.
 type Binder interface {
 	Bind(
 		key string,
@@ -26,7 +32,7 @@ type layersIFace interface {
 	) ReportEntry
 	getPostProcessErrors() []error
 }
-type reportIface interface {
+type reportInterface interface {
 	perEntryReport() (errs []error)
 	addEntry(e ReportEntry)
 }

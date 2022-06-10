@@ -10,6 +10,7 @@ import (
 )
 
 func TestFiller_errReport2(t *testing.T) {
+	t.Parallel()
 	report := newMockReportIface(t)
 	report.On("perEntryReport").Once().Return([]error{err1, err2, err3})
 
@@ -26,8 +27,10 @@ func TestFiller_errReport2(t *testing.T) {
 }
 
 func TestNewFiller(t *testing.T) {
+	t.Parallel()
 	t.Run(
 		"no layers provided nil case", func(t *testing.T) {
+			t.Parallel()
 			b, err := NewFiller()
 			require.Nil(t, b)
 			require.ErrorIs(t, err, ErrInvalidLayers)
@@ -36,6 +39,7 @@ func TestNewFiller(t *testing.T) {
 
 	t.Run(
 		"no layers provided empty case", func(t *testing.T) {
+			t.Parallel()
 			b, err := NewFiller([]Binder{}...)
 			require.Nil(t, b)
 			require.ErrorIs(t, err, ErrInvalidLayers)
@@ -44,6 +48,7 @@ func TestNewFiller(t *testing.T) {
 
 	t.Run(
 		"success", func(t *testing.T) {
+			t.Parallel()
 			b1 := NewMockBinder(t)
 			b2 := NewMockBinder(t)
 			b3 := NewMockBinder(t)
@@ -65,10 +70,12 @@ func exactMatchString(s string) interface{} {
 }
 
 func TestFiller_Fill(t *testing.T) {
+	t.Parallel()
 	t.Run(
 		"success", func(t *testing.T) {
+			t.Parallel()
 			layers := newMockLayersIFace(t)
-			val1 := V("stringValue")
+			val1 := R("stringValue")
 			re1 := ReportEntry{
 				Value:       reflect.ValueOf(val1),
 				Key:         "sub-key1",
@@ -77,7 +84,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val2 := V(uint8(34))
+			val2 := R(uint8(34))
 			re2 := ReportEntry{
 				Value:       reflect.ValueOf(val2),
 				Key:         "sub-key2",
@@ -86,7 +93,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val3 := V(34)
+			val3 := R(34)
 			re3 := ReportEntry{
 				Value:       reflect.ValueOf(val3),
 				Key:         "key1",
@@ -95,7 +102,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val4 := V(123.321)
+			val4 := R(123.321)
 			re4 := ReportEntry{
 				Value:       reflect.ValueOf(val4),
 				Key:         "key2",
@@ -105,7 +112,7 @@ func TestFiller_Fill(t *testing.T) {
 			}
 
 			n := time.Now().UTC()
-			val5 := V(n)
+			val5 := R(n)
 			re5 := ReportEntry{
 				Value:       reflect.ValueOf(val5),
 				Key:         "key3",
@@ -114,63 +121,68 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			layers.On(
-				"bind",
-				exactMatchString("sub-key1"),
-				mock.MatchedBy(
-					func(v reflect.Value) bool {
-						return true
-					},
-				),
-			).Return(
+			layers.
+				On(
+					"bind",
+					exactMatchString("sub-key1"),
+					mock.MatchedBy(
+						func(v reflect.Value) bool {
+							return true
+						},
+					),
+				).Return(
 				re1,
 			).Once()
 
-			layers.On(
-				"bind",
-				exactMatchString("sub-key2"),
-				mock.MatchedBy(
-					func(v reflect.Value) bool {
-						return true
-					},
-				),
-			).Return(
+			layers.
+				On(
+					"bind",
+					exactMatchString("sub-key2"),
+					mock.MatchedBy(
+						func(v reflect.Value) bool {
+							return true
+						},
+					),
+				).Return(
 				re2,
 			).Once()
 
-			layers.On(
-				"bind",
-				exactMatchString("key1"),
-				mock.MatchedBy(
-					func(v reflect.Value) bool {
-						return true
-					},
-				),
-			).Return(
+			layers.
+				On(
+					"bind",
+					exactMatchString("key1"),
+					mock.MatchedBy(
+						func(v reflect.Value) bool {
+							return true
+						},
+					),
+				).Return(
 				re3,
 			).Once()
 
-			layers.On(
-				"bind",
-				exactMatchString("key2"),
-				mock.MatchedBy(
-					func(v reflect.Value) bool {
-						return true
-					},
-				),
-			).Return(
+			layers.
+				On(
+					"bind",
+					exactMatchString("key2"),
+					mock.MatchedBy(
+						func(v reflect.Value) bool {
+							return true
+						},
+					),
+				).Return(
 				re4,
 			).Once()
 
-			layers.On(
-				"bind",
-				exactMatchString("key3"),
-				mock.MatchedBy(
-					func(v reflect.Value) bool {
-						return true
-					},
-				),
-			).Return(
+			layers.
+				On(
+					"bind",
+					exactMatchString("key3"),
+					mock.MatchedBy(
+						func(v reflect.Value) bool {
+							return true
+						},
+					),
+				).Return(
 				re5,
 			).Once()
 
@@ -185,14 +197,22 @@ func TestFiller_Fill(t *testing.T) {
 					mock.MatchedBy(
 						func(v ReportEntry) bool {
 							collectedKeys[v.Key]++
-							collectedKeysOrder = append(collectedKeysOrder, v.Key)
+							collectedKeysOrder =
+								append(collectedKeysOrder, v.Key)
+
 							return true
 						},
 					),
 				).Return().Times(5)
 
-			report.On("perEntryReport").Return(nil).Once()
-			layers.On("getPostProcessErrors").Return(nil).Once()
+			report.
+				On("perEntryReport").
+				Return(nil).
+				Once()
+			layers.
+				On("getPostProcessErrors").
+				Return(nil).
+				Once()
 
 			f := &Filler{
 				layers: layers,
@@ -207,7 +227,13 @@ func TestFiller_Fill(t *testing.T) {
 			require.Equal(
 				t,
 				collectedKeysOrder,
-				[]string{"sub-key1", "sub-key2", "key1", "key2", "key3"},
+				[]string{
+					"sub-key1",
+					"sub-key2",
+					"key1",
+					"key2",
+					"key3",
+				},
 			)
 			require.Equal(t, val1, dst.Sub.Key1)
 			require.Equal(t, val2, dst.Sub.Key2)
@@ -219,8 +245,9 @@ func TestFiller_Fill(t *testing.T) {
 
 	t.Run(
 		"not found", func(t *testing.T) {
+			t.Parallel()
 			layers := newMockLayersIFace(t)
-			val1 := V("stringValue")
+			val1 := R("stringValue")
 			re1 := ReportEntry{
 				Value:       reflect.ValueOf(val1),
 				Key:         "sub-key1",
@@ -229,7 +256,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val2 := V(uint8(34))
+			val2 := R(uint8(34))
 			re2 := ReportEntry{
 				Value:       reflect.ValueOf(val2),
 				Key:         "sub-key2",
@@ -238,7 +265,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val3 := V(34)
+			val3 := R(34)
 			re3 := ReportEntry{
 				Value:       reflect.ValueOf(val3),
 				Key:         "key1",
@@ -247,7 +274,7 @@ func TestFiller_Fill(t *testing.T) {
 				Errors:      nil,
 			}
 
-			val4 := V(123.321)
+			val4 := R(123.321)
 			re4 := ReportEntry{
 				Value:       reflect.ValueOf(val4),
 				Key:         "key2",
@@ -257,7 +284,7 @@ func TestFiller_Fill(t *testing.T) {
 			}
 
 			n := time.Now().UTC()
-			val5 := V(n)
+			val5 := R(n)
 			re5 := ReportEntry{
 				Value:       reflect.ValueOf(val5),
 				Key:         "key3",
@@ -338,15 +365,23 @@ func TestFiller_Fill(t *testing.T) {
 						func(v ReportEntry) bool {
 							if !v.isFound() {
 								collectedKeys[v.Key]++
-								collectedKeysOrder = append(collectedKeysOrder, v.Key)
+								collectedKeysOrder =
+									append(collectedKeysOrder, v.Key)
 							}
+
 							return true
 						},
 					),
 				).Return().Times(5)
 
-			report.On("perEntryReport").Return(nil).Once()
-			layers.On("getPostProcessErrors").Return(nil).Once()
+			report.
+				On("perEntryReport").
+				Return(nil).
+				Once()
+			layers.
+				On("getPostProcessErrors").
+				Return(nil).
+				Once()
 
 			f := &Filler{
 				layers: layers,
@@ -373,6 +408,7 @@ func TestFiller_Fill(t *testing.T) {
 
 	t.Run(
 		"check struct failure", func(t *testing.T) {
+			t.Parallel()
 			f := &Filler{}
 			errs := f.Fill(&T1Root{})
 			require.Len(t, errs, 1)
@@ -414,7 +450,7 @@ func Test_formatIndexSequence(t *testing.T) {
 			args: args{
 				indexes: []int{123, 4000, 233},
 			},
-			want: "#123, #4000, amd #233",
+			want: "#123, #4000 and #233",
 		},
 		{
 			name: "many indexes",
@@ -430,13 +466,15 @@ func Test_formatIndexSequence(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				t.Parallel()
-				if got := formatIndexSequence(tt.args.indexes); got != tt.want {
-					t.Errorf(
-						"formatIndexSequence() = %v, want %v",
-						got,
-						tt.want,
-					)
-				}
+				got := formatIndexSequence(tt.args.indexes)
+				require.Equal(
+					t,
+					tt.want,
+					got,
+					"formatIndexSequence() = %v, want %v",
+					got,
+					tt.want,
+				)
 			},
 		)
 	}

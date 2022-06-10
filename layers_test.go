@@ -8,6 +8,7 @@ import (
 )
 
 func Test_layers_getPostProcessErrors(t *testing.T) {
+	t.Parallel()
 	b1 := NewMockBinder(t)
 	b2 := NewMockBinder(t)
 	b3 := NewMockBinder(t)
@@ -18,12 +19,18 @@ func Test_layers_getPostProcessErrors(t *testing.T) {
 
 	l := layers{b1, b2, b3}
 
-	require.Equal(t, []error{err1, err2, err3, err4, err5}, l.getPostProcessErrors())
+	require.Equal(
+		t,
+		[]error{err1, err2, err3, err4, err5},
+		l.getPostProcessErrors(),
+	)
 }
 
 func Test_layers_bind(t *testing.T) {
+	t.Parallel()
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
 			fakeOrigin1 := Origin("mocked1")
 			fakeOrigin2 := Origin("mocked2")
 			fakeOrigin3 := Origin("mocked3")

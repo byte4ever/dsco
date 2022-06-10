@@ -13,18 +13,30 @@ import (
 
 type mapKeyI map[string]interface{}
 
-func Test(t *testing.T) {
+var errMocked = errors.New("mocked error")
+
+type T1Root struct {
+	A *int
+	B *float64
+}
+
+func TestProvide(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"support empty struct in root struct", func(t *testing.T) {
+		"support empty struct in root struct",
+		func(t *testing.T) {
+			t.Parallel()
+
 			type Root struct {
 				Key1 *float64
 				Key2 *int
 				Key3 *string
 			}
 
-			val1 := dsco.V(123.423)
-			val3 := dsco.V("Haha")
-			b, err := Provide(
+			val1 := dsco.R(123.423)
+			val3 := dsco.R("Haha")
+			binder, err := NewBinder(
 				&Root{
 					Key1: val1,
 					Key3: val3,
@@ -32,7 +44,7 @@ func Test(t *testing.T) {
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"key1": val1,
@@ -43,7 +55,10 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"detect unsupported types in root struct", func(t *testing.T) {
+		"detect unsupported types in root struct",
+		func(t *testing.T) {
+			t.Parallel()
+
 			type Root struct {
 				Key1    *float64
 				Key2    *int
@@ -51,7 +66,7 @@ func Test(t *testing.T) {
 				Invalid int
 			}
 
-			_, err := Provide(
+			_, err := NewBinder(
 				&Root{},
 			)
 
@@ -63,7 +78,10 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"support empty struct in sub struct", func(t *testing.T) {
+		"support empty struct in sub struct",
+		func(t *testing.T) {
+			t.Parallel()
+
 			type Sub struct {
 				Key1 *float64
 				Key2 *int
@@ -77,9 +95,9 @@ func Test(t *testing.T) {
 				Key3 *string
 			}
 
-			val1 := dsco.V(123.423)
-			val3 := dsco.V("Haha")
-			b, err := Provide(
+			val1 := dsco.R(123.423)
+			val3 := dsco.R("Haha")
+			binder, err := NewBinder(
 				&Root{
 					Sub: &Sub{
 						Key1: val1,
@@ -91,7 +109,7 @@ func Test(t *testing.T) {
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"key1":     val1,
@@ -104,7 +122,10 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"detect unsupported types in sub struct", func(t *testing.T) {
+		"detect unsupported types in sub struct",
+		func(t *testing.T) {
+			t.Parallel()
+
 			type Sub struct {
 				Key1    *float64
 				Key2    *int
@@ -119,7 +140,7 @@ func Test(t *testing.T) {
 				Key3 *string
 			}
 
-			_, err := Provide(
+			_, err := NewBinder(
 				&Root{
 					Sub: &Sub{},
 				},
@@ -131,7 +152,10 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"detect unsupported pointer types in sub struct", func(t *testing.T) {
+		"detect unsupported pointer types in sub struct",
+		func(t *testing.T) {
+			t.Parallel()
+
 			type Sub struct {
 				Key1    *float64
 				Key2    *int
@@ -146,7 +170,7 @@ func Test(t *testing.T) {
 				Key3 *string
 			}
 
-			_, err := Provide(
+			_, err := NewBinder(
 				&Root{
 					Sub: &Sub{},
 				},
@@ -159,7 +183,9 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"detect embedded struct", func(t *testing.T) {
+		"detect embedded struct",
+		func(t *testing.T) {
+			t.Parallel()
 
 			type Embedded struct {
 				KEY1 *float64
@@ -172,26 +198,24 @@ func Test(t *testing.T) {
 				KEY4 *string
 			}
 
-			val1 := dsco.V(1.124)
-			val2 := dsco.V(123.423)
-			val3 := dsco.V(123)
-			val4 := dsco.V("Haha")
+			val1 := dsco.R(1.124)
+			val2 := dsco.R(123.423)
+			val3 := dsco.R(123)
+			val4 := dsco.R("Haha")
 
-			v := &LeafType{
-				Embedded: &Embedded{
-					KEY1: val1,
+			binder, err := NewBinder(
+				&LeafType{
+					Embedded: &Embedded{
+						KEY1: val1,
+					},
+					KEY2: val2,
+					KEY3: val3,
+					KEY4: val4,
 				},
-				KEY2: val2,
-				KEY3: val3,
-				KEY4: val4,
-			}
-
-			b, err := Provide(
-				v,
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"embedded-key1": val1,
@@ -204,7 +228,9 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"support yaml tag in root struct", func(t *testing.T) {
+		"support yaml tag in root struct",
+		func(t *testing.T) {
+			t.Parallel()
 
 			type LeafType struct {
 				KEY2 *float64
@@ -212,22 +238,20 @@ func Test(t *testing.T) {
 				KEY4 *string `yaml:"yaml_key"`
 			}
 
-			val2 := dsco.V(123.423)
-			val3 := dsco.V(123)
-			val4 := dsco.V("Haha")
+			val2 := dsco.R(123.423)
+			val3 := dsco.R(123)
+			val4 := dsco.R("Haha")
 
-			v := &LeafType{
-				KEY2: val2,
-				KEY3: val3,
-				KEY4: val4,
-			}
-
-			b, err := Provide(
-				v,
+			binder, err := NewBinder(
+				&LeafType{
+					KEY2: val2,
+					KEY3: val3,
+					KEY4: val4,
+				},
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"key2":     val2,
@@ -239,7 +263,9 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"support yaml tag in sub struct", func(t *testing.T) {
+		"support yaml tag in sub struct",
+		func(t *testing.T) {
+			t.Parallel()
 
 			type SubType struct {
 				KEY2 *float64
@@ -254,27 +280,25 @@ func Test(t *testing.T) {
 				KEY4 *string
 			}
 
-			val2 := dsco.V(123.423)
-			val3 := dsco.V(123)
-			val4 := dsco.V("Haha")
+			val2 := dsco.R(123.423)
+			val3 := dsco.R(123)
+			val4 := dsco.R("Haha")
 
-			v := &RootType{
-				Sub: &SubType{
+			binder, err := NewBinder(
+				&RootType{
+					Sub: &SubType{
+						KEY2: val2,
+						KEY3: val3,
+						KEY4: val4,
+					},
 					KEY2: val2,
 					KEY3: val3,
 					KEY4: val4,
 				},
-				KEY2: val2,
-				KEY3: val3,
-				KEY4: val4,
-			}
-
-			b, err := Provide(
-				v,
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"key2":         val2,
@@ -289,7 +313,9 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"time type support", func(t *testing.T) {
+		"time type support",
+		func(t *testing.T) {
+			t.Parallel()
 
 			type LeafType struct {
 				KEY1 *time.Duration
@@ -297,22 +323,20 @@ func Test(t *testing.T) {
 				KEY3 *uint32
 			}
 
-			val1 := dsco.V(13 * time.Minute)
-			val2 := dsco.V(time.Now())
-			val3 := dsco.V(uint32(34))
+			val1 := dsco.R(13 * time.Minute)
+			val2 := dsco.R(time.Now())
+			val3 := dsco.R(uint32(34))
 
-			v := &LeafType{
-				KEY1: val1,
-				KEY2: val2,
-				KEY3: val3,
-			}
-
-			b, err := Provide(
-				v,
+			binder, err := NewBinder(
+				&LeafType{
+					KEY1: val1,
+					KEY2: val2,
+					KEY3: val3,
+				},
 			)
 
 			require.NoError(t, err)
-			b.checkValues(
+			binder.checkValues(
 				t,
 				mapKeyI{
 					"key1": val1,
@@ -324,7 +348,9 @@ func Test(t *testing.T) {
 	)
 
 	t.Run(
-		"slice type support", func(t *testing.T) {
+		"slice type support",
+		func(t *testing.T) {
+			t.Parallel()
 
 			type LeafType struct {
 				KEY1 []int
@@ -335,7 +361,7 @@ func Test(t *testing.T) {
 				KEY1: val1,
 			}
 
-			b, err := Provide(
+			b, err := NewBinder(
 				v,
 			)
 
@@ -367,20 +393,20 @@ func (b *Binder) checkValues(
 }
 
 func TestBinder_GetPostProcessErrors(t *testing.T) {
+	t.Parallel()
+
 	b := &Binder{}
 	require.Nil(t, b.GetPostProcessErrors())
 }
 
-var errMocked = errors.New("mocked error")
-
-type T1Root struct {
-	A *int
-	B *float64
-}
-
 func TestProvideFromInterfaceProvider(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"interface provider failure", func(t *testing.T) {
+		"interface provider failure",
+		func(t *testing.T) {
+			t.Parallel()
+
 			mip := NewMockInterfaceProvider(t)
 			mip.On("GetInterface").Once().Return(nil, errMocked)
 
@@ -391,10 +417,13 @@ func TestProvideFromInterfaceProvider(t *testing.T) {
 	)
 
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
 			mip := NewMockInterfaceProvider(t)
-			valA := dsco.V(123)
-			valB := dsco.V(999.999)
+			valA := dsco.R(123)
+			valB := dsco.R(999.999)
 			mip.On("GetInterface").
 				Once().
 				Return(
@@ -418,28 +447,32 @@ func TestProvideFromInterfaceProvider(t *testing.T) {
 }
 
 func TestBinder_Bind(t *testing.T) {
+	t.Parallel()
+
 	key := "a"
 
 	t.Run(
-		"success", func(t *testing.T) {
-			v := dsco.V(123.321)
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
+			v := dsco.R(123.321)
 			vValue := reflect.ValueOf(v)
 
 			var k *float64
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
-				entries: Entries{
-					key: &Entry{
+				entries: entries{
+					key: &entry{
 						Value: vValue,
 					},
 				},
-				id: ID,
 			}
 
 			o, keyOut, succeed, outVal, err := b.Bind(key, true, vTargetValue)
 			require.NoError(t, err)
-			require.Equal(t, ID, o)
+			require.Equal(t, id, o)
 			require.True(t, succeed)
 			require.Equal(t, key, keyOut)
 			k = outVal.Interface().(*float64)
@@ -448,26 +481,28 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"key not found", func(t *testing.T) {
-			v := dsco.V(123.321)
+		"key not found",
+		func(t *testing.T) {
+			t.Parallel()
+
+			v := dsco.R(123.321)
 			vValue := reflect.ValueOf(v)
 
 			var k *float64
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
-				entries: Entries{
-					key: &Entry{
+				entries: entries{
+					key: &entry{
 						Value: vValue,
 					},
 				},
-				id: ID,
 			}
 
 			invalidKey := "not_existing"
 			o, keyOut, succeed, outVal, err := b.Bind(invalidKey, true, vTargetValue)
 			require.NoError(t, err)
-			require.Equal(t, ID, o)
+			require.Equal(t, id, o)
 			require.False(t, succeed)
 			require.Equal(t, invalidKey, keyOut)
 			require.Equal(t, reflect.Value{}, outVal)
@@ -475,26 +510,28 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"type mismatch", func(t *testing.T) {
-			v := dsco.V(123.321)
+		"type mismatch",
+		func(t *testing.T) {
+			t.Parallel()
+
+			v := dsco.R(123.321)
 			vValue := reflect.ValueOf(v)
 
 			var k *int
 			vTargetValue := reflect.ValueOf(k)
 
 			b := &Binder{
-				entries: Entries{
-					key: &Entry{
+				entries: entries{
+					key: &entry{
 						Value: vValue,
 					},
 				},
-				id: ID,
 			}
 
 			o, keyOut, succeed, outVal, err := b.Bind(key, true, vTargetValue)
 			require.ErrorIs(t, err, ErrTypeMismatch)
 			require.ErrorContains(t, err, "*float64 to type *int")
-			require.Equal(t, ID, o)
+			require.Equal(t, id, o)
 			require.False(t, succeed)
 			require.Equal(t, key, keyOut)
 			require.Equal(t, reflect.Value{}, outVal)

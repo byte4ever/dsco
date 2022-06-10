@@ -12,7 +12,7 @@ import (
 // Filler represents a structure Filler.
 type Filler struct {
 	layers layersIFace
-	report reportIface
+	report reportInterface
 }
 
 // ErrInvalidLayers represents am error when layers are invalid at Filler
@@ -96,33 +96,33 @@ func NewFiller(l ...Binder) (*Filler, error) {
 }
 
 //goland:noinspection SpellCheckingInspection
-func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
+func (filler *Filler) fillStruct(rootKey string, v reflect.Value) {
 	t := v.Elem().Type()
 	ve := v.Elem()
 
 	for i := 0; i < ve.NumField(); i++ {
-		f := ve.Field(i)
-		ft := t.Field(i)
+		field := ve.Field(i)
+		fieldTyp := t.Field(i)
 
-		key := utils.GetKeyName(rootKey, ft)
+		key := utils.GetKeyName(rootKey, fieldTyp)
 
-		switch ft.Type.String() {
+		switch fieldTyp.Type.String() {
 		case "*time.Time":
-			re := r.layers.bind(key, f)
+			re := filler.layers.bind(key, field)
 
 			if re.isFound() {
 				ve.Field(i).Set(re.Value)
 			}
 
-			r.report.addEntry(re)
+			filler.report.addEntry(re)
 
 			continue
 		}
 
-		e := ft.Type.Elem()
+		e := fieldTyp.Type.Elem()
 		if e.Kind() == reflect.Struct {
 			fv := reflect.New(e)
-			r.fillStruct(
+			filler.fillStruct(
 				key,
 				fv,
 			)
@@ -132,32 +132,32 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 			continue
 		}
 
-		re := r.layers.bind(key, f)
+		re := filler.layers.bind(key, field)
 
 		if re.isFound() {
 			ve.Field(i).Set(re.Value)
 		}
 
-		r.report.addEntry(re)
+		filler.report.addEntry(re)
 	}
 }
 
-func (r *Filler) Fill(i interface{}) []error {
-	if err := checkStruct(i); err != nil {
+// Fill model based on layers. The parameter model must be a non nil interface
+// and a non nil pointer to a struct.
+func (filler *Filler) Fill(model interface{}) []error {
+	if err := checkStruct(model); err != nil {
 		return []error{err}
 	}
 
-	v := reflect.ValueOf(i)
-	r.fillStruct("", v)
+	v := reflect.ValueOf(model)
+	filler.fillStruct("", v)
 
-	return r.processReport()
+	return filler.processReport()
 }
 
-var ErrUninitialized = errors.New("uninitialized")
+func (filler *Filler) processReport() []error {
+	errs := append([]error{}, filler.report.perEntryReport()...)
+	errs = append(errs, filler.layers.getPostProcessErrors()...)
 
-func (r *Filler) processReport() (errs []error) {
-	errs = append(errs, r.report.perEntryReport()...)
-	errs = append(errs, r.layers.getPostProcessErrors()...)
-
-	return
+	return errs
 }

@@ -35,9 +35,9 @@ type Root struct {
 func Test(t *testing.T) {
 	c1 := &Root{
 		L: []string{"A", "B", "C"},
-		// A: gc.V(12),
-		B: gc.V(123123.123),
-		T: gc.V(
+		// A: gc.R(12),
+		B: gc.R(123123.123),
+		T: gc.R(
 			time.Date(
 				2014,
 				1,
@@ -50,10 +50,10 @@ func Test(t *testing.T) {
 			),
 		),
 		Z: &Zonk{
-			LastName:     gc.V("ORI2"),
-			B:            gc.V(false),
-			TrainingTime: gc.V(time.Second),
-			T: gc.V(
+			LastName:     gc.R("ORI2"),
+			B:            gc.R(false),
+			TrainingTime: gc.R(time.Second),
+			T: gc.R(
 				time.Date(
 					1970,
 					2,
@@ -70,26 +70,26 @@ func Test(t *testing.T) {
 
 	c2 := &Root{
 		L: []string{"LA", "LB"},
-		B: gc.V(-20.0),
+		B: gc.R(-20.0),
 		Z: &Zonk{
-			// FirstName: gc.V("Laurent"),
+			// FirstName: gc.R("Laurent"),
 		},
 	}
 
 	c4 := &Root{
-		A: gc.V(111),
+		A: gc.R(111),
 		Z: &Zonk{
-			FirstName: gc.V("NoWay"),
+			FirstName: gc.R("NoWay"),
 		},
 	}
 
-	provideC1, err := strukt.Provide(c1)
+	provideC1, err := strukt.NewBinder(c1)
 	require.NoError(t, err)
 
-	provideC2, err := strukt.Provide(c2)
+	provideC2, err := strukt.NewBinder(c2)
 	require.NoError(t, err)
 
-	provideC4, err := strukt.Provide(c4)
+	provideC4, err := strukt.NewBinder(c4)
 	require.NoError(t, err)
 
 	require.NoError(t, os.Setenv("SRV-VERBOSITY", `yes`))

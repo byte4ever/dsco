@@ -9,31 +9,44 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-const (
-	ID           = dsco.Origin("struct")
-	IDYamlBuffer = dsco.Origin("yaml buffer")
-)
+const id = dsco.Origin("struct")
 
-type Entry struct {
+// TODO :- lmartin 6/10/22 -: need to add a global type interceptor
+
+//nolint:gochecknoglobals // need to add a global interceptor
+var structToIntercept = map[string]struct{}{"*time.Time": {}}
+
+type entry struct {
 	Value reflect.Value
 }
 
-type Entries map[string]*Entry
+type entries map[string]*entry
 
+// Binder is a binder for struct.
 type Binder struct {
-	entries Entries
-	id      dsco.Origin
+	entries entries
 }
 
-var (
-	ErrUnsupportedType = errors.New("unsupported type")
-	ErrTypeMismatch    = errors.New("type mismatch")
-)
+// InterfaceProvider defines the ability to provide an interface.
+type InterfaceProvider interface {
+	GetInterface() (interface{}, error)
+}
 
-func (b *Binder) GetPostProcessErrors() []error {
+// ErrUnsupportedType represents an error when the struct contains a field with
+// an unsupported type.
+var ErrUnsupportedType = errors.New("unsupported type")
+
+// ErrTypeMismatch represents am error when binding fail because type differ for
+// the same key.
+var ErrTypeMismatch = errors.New("type mismatch")
+
+// GetPostProcessErrors implements dsco.Binder interface.
+func (*Binder) GetPostProcessErrors() []error {
 	return nil
 }
 
+// Bind implements dsco.Binder interface.
+//nolint:nakedret, revive // need refactoring here
 func (b *Binder) Bind(
 	key string,
 	set bool,
@@ -45,21 +58,22 @@ func (b *Binder) Bind(
 	outVal reflect.Value,
 	err error,
 ) {
-	origin = b.id
+	origin = id
 	keyOut = key
 
-	e, found := b.entries[key]
+	entry, found := b.entries[key]
 
 	if !found {
 		return
 	}
 
-	et := e.Value.Type()
+	entryValTyp := entry.Value.Type()
 
-	if et.Kind() != (dstValue).Type().Kind() || et.Elem().Kind() != (dstValue).Type().Elem().Kind() {
+	if entryValTyp.Kind() != (dstValue).Type().Kind() ||
+		entryValTyp.Elem().Kind() != (dstValue).Type().Elem().Kind() {
 		err = fmt.Errorf(
 			"cannot bind type %v to type %v: %w",
-			et,
+			entryValTyp,
 			(dstValue).Type(),
 			ErrTypeMismatch,
 		)
@@ -68,76 +82,72 @@ func (b *Binder) Bind(
 	}
 
 	if set {
-		outVal = e.Value
+		outVal = entry.Value
 		succeed = true
 	}
 
 	return
 }
 
-// Provide creates nre env key searcher.
-func provide(i interface{}, id dsco.Origin) (*Binder, error) {
-	keys := make(Entries)
+// NewBinder creates nre env key searcher.
+func NewBinder(i interface{}) (*Binder, error) {
+	keys := make(entries)
 	res := &Binder{entries: keys}
 	v := reflect.ValueOf(i)
-	res.id = id
 
-	err := res.buildEntries("", v.Elem())
-	if err != nil {
+	if err := res.buildEntries("", v.Elem()); err != nil {
 		return nil, err
 	}
 
 	return res, nil
 }
 
-// Provide creates nre env key searcher.
-func Provide(i interface{}) (*Binder, error) {
-	return provide(i, ID)
-}
-
-type InterfaceProvider interface {
-	GetInterface() (interface{}, error)
-}
-
+// ProvideFromInterfaceProvider creates a binder using an interface provider.
 func ProvideFromInterfaceProvider(ip InterfaceProvider) (*Binder, error) {
 	k, err := ip.GetInterface()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("when getting interface: %w", err)
 	}
 
-	return provide(k, IDYamlBuffer)
-}
-
-var structToIntercept = map[string]struct{}{
-	"*time.Time": {},
+	return NewBinder(k)
 }
 
 func (b *Binder) addEntry(key string, value reflect.Value) {
 	if !value.IsNil() {
-		b.entries[key] = &Entry{
+		b.entries[key] = &entry{
 			Value: value,
 		}
 	}
 }
 
+//nolint:gocognit // is going to be refactored
 func (b *Binder) buildEntries(
 	rootKey string,
-	v reflect.Value,
+	value reflect.Value,
 ) (err error) {
-	t := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		fieldType := t.Field(i)
+	// TODO :- lmartin 6/10/22 -: use structure checker from dsco at
+	//  creation time.
+	const errFormat = "%s/%value: %w"
+
+	valueTyp := value.Type()
+
+	for i := 0; i < value.NumField(); i++ {
+		fieldType := valueTyp.Field(i)
 
 		key := utils.GetKeyName(rootKey, fieldType)
 
 		if (fieldType.Type.Kind() != reflect.Ptr) &&
 			(fieldType.Type.Kind() != reflect.Slice) {
-
-			return fmt.Errorf("A %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
+			return fmt.Errorf(
+				errFormat,
+				key,
+				fieldType.Type.String(),
+				ErrUnsupportedType,
+			)
 		}
 
 		if _, found := structToIntercept[fieldType.Type.String()]; found {
-			b.addEntry(key, v.Field(i))
+			b.addEntry(key, value.Field(i))
 			continue
 		}
 
@@ -145,22 +155,29 @@ func (b *Binder) buildEntries(
 
 		switch e.Kind() {
 		case
-			reflect.Array, reflect.Chan, reflect.Complex128, reflect.Complex64, reflect.Func, reflect.Interface,
-			reflect.Invalid, reflect.Map, reflect.Ptr, reflect.Slice, reflect.Uintptr, reflect.UnsafePointer:
-			return fmt.Errorf("B %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
+			reflect.Array, reflect.Chan, reflect.Complex128, reflect.Complex64,
+			reflect.Func, reflect.Interface, reflect.Invalid, reflect.Map,
+			reflect.Ptr, reflect.Slice, reflect.Uintptr, reflect.UnsafePointer:
+			return fmt.Errorf(
+				errFormat,
+				key,
+				fieldType.Type.String(),
+				ErrUnsupportedType,
+			)
 
 		case reflect.Struct:
-			if err := b.buildEntries(key, v.Field(i).Elem()); err != nil {
+			if err := b.buildEntries(key, value.Field(i).Elem()); err != nil {
 				return err
 			}
 
 			continue
 
 		case
-			reflect.Int64, reflect.Uint64, reflect.Int32, reflect.Uint32, reflect.Int16, reflect.Uint16,
-			reflect.Int8, reflect.Uint8, reflect.Int, reflect.Uint, reflect.Float32, reflect.Float64, reflect.Bool,
-			reflect.String:
-			b.addEntry(key, v.Field(i))
+			reflect.Int64, reflect.Uint64, reflect.Int32, reflect.Uint32,
+			reflect.Int16, reflect.Uint16, reflect.Int8, reflect.Uint8,
+			reflect.Int, reflect.Uint, reflect.Float32, reflect.Float64,
+			reflect.Bool, reflect.String:
+			b.addEntry(key, value.Field(i))
 
 			continue
 		}

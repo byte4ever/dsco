@@ -24,18 +24,20 @@ var ErrRecursiveStruct = errors.New("recursive struct")
 // is not empty (nil pointers for every field).
 var ErrRequireEmptyStruct = errors.New("require empty struct")
 
-func checkStruct(i interface{}) error {
-	iType := reflect.TypeOf(i)
-	v := reflect.ValueOf(i)
+func checkStruct(model interface{}) error {
+	modelType := reflect.TypeOf(model)
+	modelValue := reflect.ValueOf(model)
 
-	if iType.Kind() != reflect.Ptr || iType.Elem().Kind() != reflect.Struct || v.IsNil() {
+	if modelType.Kind() != reflect.Ptr ||
+		modelType.Elem().Kind() != reflect.Struct ||
+		modelValue.IsNil() {
 		return ErrNotPointerOnStruct
 	}
 
 	return checkStructRec(
-		map[string]string{iType.String(): ""},
+		map[string]string{modelType.String(): ""},
 		"",
-		v.Elem(),
+		modelValue.Elem(),
 	)
 }
 
@@ -45,40 +47,54 @@ func checkStructRec(
 	v reflect.Value,
 ) error {
 	for i := 0; i < v.NumField(); i++ {
-		f := v.Field(i)
-		ft := v.Type().Field(i)
+		fieldVal := v.Field(i)
+		fieldTyp := v.Type().Field(i)
 
-		key := utils.GetKeyName(inputKey, ft)
+		key := utils.GetKeyName(inputKey, fieldTyp)
 
-		if ft.Type.Kind() != reflect.Ptr && ft.Type.Kind() != reflect.Slice {
-			return fmt.Errorf("%s(%s) : %w", key, ft.Type.String(), ErrUnsupportedType)
+		if fieldTyp.Type.Kind() != reflect.Ptr &&
+			fieldTyp.Type.Kind() != reflect.Slice {
+			return fmt.Errorf(
+				"%s(%s) : %w",
+				key,
+				fieldTyp.Type.String(),
+				ErrUnsupportedType,
+			)
 		}
 
-		switch ft.Type.String() {
+		switch fieldTyp.Type.String() {
 		case "*time.Time":
 			continue
 		}
 
-		e := ft.Type.Elem()
+		fieldRefTyp := fieldTyp.Type.Elem()
 
-		if e.Kind() == reflect.Struct {
-			en := ft.Type.String()
+		if fieldRefTyp.Kind() == reflect.Struct {
+			en := fieldTyp.Type.String()
 
 			if pKey, found := types[en]; found {
 				return fmt.Errorf(
-					"%s cycles with %s for type %s: %w", displayRoot(pKey), displayRoot(key), en, ErrRecursiveStruct,
+					"%s cycles with %s for type %s: %w",
+					displayRoot(pKey),
+					displayRoot(key),
+					en,
+					ErrRecursiveStruct,
 				)
 			}
 
 			types[en] = key
 
-			if f.IsNil() {
-				fv := reflect.New(e)
-				if err := checkStructRec(types, key, fv.Elem()); err != nil {
-					return err
-				}
-			} else {
-				return fmt.Errorf("key %s is defined: %w", key, ErrRequireEmptyStruct)
+			if !fieldVal.IsNil() {
+				return fmt.Errorf(
+					"key %s is defined: %w",
+					key,
+					ErrRequireEmptyStruct,
+				)
+			}
+
+			fv := reflect.New(fieldRefTyp)
+			if err := checkStructRec(types, key, fv.Elem()); err != nil {
+				return err
 			}
 
 			delete(types, en)
@@ -86,8 +102,12 @@ func checkStructRec(
 			continue
 		}
 
-		if !f.IsNil() {
-			return fmt.Errorf("key %s is defined: %w", key, ErrRequireEmptyStruct)
+		if !fieldVal.IsNil() {
+			return fmt.Errorf(
+				"key %s is defined: %w",
+				key,
+				ErrRequireEmptyStruct,
+			)
 		}
 	}
 
