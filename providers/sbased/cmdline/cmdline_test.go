@@ -3,7 +3,6 @@ package cmdline
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,10 +25,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	tests := []struct {
+		wantErr            error
+		want               *EntriesProvider
 		name               string
 		args               args
-		want               *EntriesProvider
-		wantErr            error
 		invalidArgPosition int
 	}{
 		{
@@ -177,11 +176,28 @@ func TestProvide(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
+				tt := tt
 				t.Parallel()
+
 				got, err := NewEntriesProvider(tt.args.optionsLine)
 
-				require.ErrorIsf(t, err, tt.wantErr, "NewEntriesProvider() error = %v, wantErr %v", err, tt.wantErr)
-				require.Equalf(t, got, tt.want, "NewEntriesProvider() got = %v, want %v", got, tt.want)
+				require.ErrorIsf(
+					t,
+					err,
+					tt.wantErr,
+					"NewEntriesProvider() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+
+				require.Equalf(
+					t,
+					got,
+					tt.want,
+					"NewEntriesProvider() got = %v, want %v",
+					got,
+					tt.want,
+				)
 
 				if err != nil {
 					if errors.Is(err, ErrParamFormat) {
@@ -189,14 +205,19 @@ func TestProvide(t *testing.T) {
 							t,
 							err,
 							tt.args.optionsLine[tt.invalidArgPosition],
-							"error message (%v) does not contains invalid arg content", err,
+							"error message (%v) does not contains "+
+								"invalid arg content",
+							err,
 						)
 						require.ErrorContainsf(
 							t,
 							err,
 							fmt.Sprintf("#%d", tt.invalidArgPosition),
-							"error message (%v) does not contains invalid arg position", err,
+							"error message (%v) does not contains "+
+								"invalid arg position",
+							err,
 						)
+
 						return
 					}
 				}
@@ -207,6 +228,7 @@ func TestProvide(t *testing.T) {
 
 func TestProvider_GetEntries(t *testing.T) {
 	t.Parallel()
+
 	entries := sbased.Entries{
 		"a1": &sbased.Entry{
 			ExternalKey: "a",
@@ -232,14 +254,15 @@ func TestProvider_GetOrigin(t *testing.T) {
 
 func TestNewEntriesProvider(t *testing.T) {
 	t.Parallel()
+
 	type args struct {
 		commandLine []string
 	}
 
 	tests := []struct {
+		want    *EntriesProvider
 		name    string
 		args    args
-		want    *EntriesProvider
 		wantErr bool
 	}{
 		{
@@ -266,21 +289,26 @@ func TestNewEntriesProvider(t *testing.T) {
 			tt.name, func(t *testing.T) {
 				t.Parallel()
 				got, err := NewEntriesProvider(tt.args.commandLine)
-				if (err != nil) != tt.wantErr {
-					t.Errorf(
-						"NewEntriesProvider() error = %v, wantErr %v",
+				if tt.wantErr {
+					require.Error(
+						t,
+						err,
+						"NewEntriesProvider() "+
+							"error = %v, wantErr %v",
 						err,
 						tt.wantErr,
 					)
+					require.Nil(t, got)
 					return
 				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf(
-						"NewEntriesProvider() got = %v, want %v",
-						got,
-						tt.want,
-					)
-				}
+				require.Equal(
+					t,
+					tt.want,
+					got,
+					"NewEntriesProvider() got = %v, want %v",
+					got,
+					tt.want,
+				)
 			},
 		)
 	}

@@ -49,10 +49,11 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 	keys := make(sbased.Entries, lo)
 
 	expectedGroups := re.NumSubexp() + 1
-	for idx, arg := range commandLine {
-		m := re.FindStringSubmatch(arg)
 
-		if len(m) != expectedGroups {
+	for idx, arg := range commandLine {
+		groups := re.FindStringSubmatch(arg)
+
+		if len(groups) != expectedGroups {
 			return nil, fmt.Errorf(
 				"arg #%d - (%s): %w",
 				idx,
@@ -61,14 +62,14 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 			)
 		}
 
-		_, found := keys[m[1]]
+		_, found := keys[groups[1]]
 		if found {
-			return nil, fmt.Errorf("--%s: %w", m[1], ErrDuplicateParam)
+			return nil, fmt.Errorf("--%s: %w", groups[1], ErrDuplicateParam)
 		}
 
-		keys[m[1]] = &sbased.Entry{
-			ExternalKey: fmt.Sprintf("--%s", m[1]),
-			Value:       m[2],
+		keys[groups[1]] = &sbased.Entry{
+			ExternalKey: fmt.Sprintf("--%s", groups[1]),
+			Value:       groups[2],
 		}
 	}
 
