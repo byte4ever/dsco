@@ -36,12 +36,14 @@ func checkLayers(layers []Binder) error {
 	switch nilIndexesLen := len(nilIndexes); nilIndexesLen {
 	case 0:
 		return nil
+
 	case 1:
 		return fmt.Errorf(
 			"layer %s is nil: %w",
 			formatIndexSequence(nilIndexes),
 			ErrInvalidLayers,
 		)
+
 	default:
 		return fmt.Errorf(
 			"layers %s are nil: %w",
