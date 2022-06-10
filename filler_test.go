@@ -382,3 +382,212 @@ func TestFiller_Fill(t *testing.T) {
 		},
 	)
 }
+
+func Test_formatIndexSequence(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		indexes []int
+	}
+
+	tests := []struct {
+		name string
+		want string
+		args args
+	}{
+		{
+			name: "single idx",
+			args: args{
+				indexes: []int{123},
+			},
+			want: "#123",
+		},
+		{
+			name: "2 indexes",
+			args: args{
+				indexes: []int{123, 4000},
+			},
+			want: "#123 and #4000",
+		},
+		{
+			name: "3 indexes",
+			args: args{
+				indexes: []int{123, 4000, 233},
+			},
+			want: "#123, #4000, amd #233",
+		},
+		{
+			name: "many indexes",
+			args: args{
+				indexes: []int{1, 2, 3, 4},
+			},
+			want: "#1, #2, #3 and #4",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
+				if got := formatIndexSequence(tt.args.indexes); got != tt.want {
+					t.Errorf(
+						"formatIndexSequence() = %v, want %v",
+						got,
+						tt.want,
+					)
+				}
+			},
+		)
+	}
+}
+
+func Test_formatIndexSequence_panics(t *testing.T) {
+	t.Parallel()
+	require.Panics(
+		t, func() {
+			formatIndexSequence(nil)
+		},
+	)
+	require.Panics(
+		t, func() {
+			formatIndexSequence([]int{})
+		},
+	)
+}
+
+func TestNewFiller_checkLayers(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		l []Binder
+	}
+
+	tests := []struct {
+		name              string
+		args              args
+		want              *Filler
+		wantErr           error
+		expectErrContains []string
+	}{
+		{
+			name: "nil case",
+			args: args{
+				l: nil,
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"no layers"},
+		},
+		{
+			name: "empty case",
+			args: args{
+				l: []Binder{},
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"no layers"},
+		},
+		{
+			name: "single nil binder",
+			args: args{
+				l: []Binder{nil},
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"#0", "is", "nil"},
+		},
+		{
+			name: "second binder is nil",
+			args: args{
+				l: []Binder{NewMockBinder(t), nil},
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"#1", "is", "nil"},
+		},
+		{
+			name: "second binder is nil (middle)",
+			args: args{
+				l: []Binder{
+					NewMockBinder(t),
+					nil,
+					NewMockBinder(t),
+				},
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"#1", "is", "nil"},
+		},
+		{
+			name: "last binder is nil",
+			args: args{
+				l: []Binder{
+					NewMockBinder(t),
+					NewMockBinder(t),
+					NewMockBinder(t),
+					nil,
+				},
+			},
+			want:              nil,
+			wantErr:           ErrInvalidLayers,
+			expectErrContains: []string{"#3", "is", "nil"},
+		},
+		{
+			name: "multiple binder are nil",
+			args: args{
+				l: []Binder{
+					NewMockBinder(t),
+					nil, // #1
+					NewMockBinder(t),
+					NewMockBinder(t),
+					nil, // #4
+					nil, // #5
+					NewMockBinder(t),
+					NewMockBinder(t),
+					NewMockBinder(t),
+					nil, // #9
+					nil, // #10
+					nil, // #11
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidLayers,
+			expectErrContains: []string{
+				"#1",
+				"#4",
+				"#5",
+				"#9",
+				"#10",
+				"#11",
+				"are",
+				"nil",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
+				got, err := NewFiller(tt.args.l...)
+				if tt.wantErr != nil {
+					require.ErrorIs(t, err, tt.wantErr)
+					require.Nil(t, got)
+					for _, s := range tt.expectErrContains {
+						require.ErrorContains(t, err, s)
+					}
+				}
+
+				require.Equal(
+					t,
+					tt.want,
+					got,
+					"NewFiller() got = %v, want %v",
+					got, tt.want,
+				)
+			},
+		)
+	}
+}

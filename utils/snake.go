@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	matchAllCap   = regexp.MustCompile("([a-z\\d])([A-Z])")
+	matchFirstCap = regexp.MustCompile(`(.)([A-Z][a-z]+)`)
+	matchAllCap   = regexp.MustCompile(`([a-z\\d])([A-Z])`)
 )
 
 func toSnakeCase(str string) string {
@@ -16,3 +16,9 @@ func toSnakeCase(str string) string {
 
 	return strings.ToLower(snake)
 }
+
+// Shitty stuff
+//
+// func pipo() {
+// 	fmt.Println("zob")
+// }

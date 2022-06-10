@@ -4,9 +4,8 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
-// EntriesProvider defines string based entries provider behaviour.
+// EntriesProvider defines string based entries provider behavior.
 type EntriesProvider interface {
-
 	// GetOrigin returns the origin id of the provider.
 	GetOrigin() dsco.Origin
 

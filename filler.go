@@ -4,25 +4,95 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/byte4ever/dsco/utils"
 )
 
+// Filler represents a structure Filler.
 type Filler struct {
 	layers layersIFace
 	report reportIface
 }
 
+// ErrInvalidLayers represents am error when layers are invalid at Filler
+// creation time.
 var ErrInvalidLayers = errors.New("invalid layers")
 
-func NewFiller(l ...Binder) (*Filler, error) {
-	if len(l) < 1 {
-		return nil, fmt.Errorf("at least on layer MUST be provided: %w", ErrInvalidLayers)
+func checkLayers(layers []Binder) error {
+	layersLength := len(layers)
+	if layersLength < 1 {
+		return fmt.Errorf("no layers: %w", ErrInvalidLayers)
 	}
 
-	r := Report{}
+	nilIndexes := make([]int, 0, layersLength)
 
-	return &Filler{layers: layers(l), report: &r}, nil
+	for i, layer := range layers {
+		if layer == nil {
+			nilIndexes = append(nilIndexes, i)
+		}
+	}
+
+	switch nilIndexesLen := len(nilIndexes); nilIndexesLen {
+	case 0:
+		return nil
+	case 1:
+		return fmt.Errorf(
+			"layer %s is nil: %w",
+			formatIndexSequence(nilIndexes),
+			ErrInvalidLayers,
+		)
+	default:
+		return fmt.Errorf(
+			"layers %s are nil: %w",
+			formatIndexSequence(nilIndexes),
+			ErrInvalidLayers,
+		)
+	}
+}
+
+func formatIndexSequence(indexes []int) string {
+	const (
+		single     = "#%d"
+		comaSingle = ", " + single
+		andSingle  = " and " + single
+	)
+
+	indexesLen := len(indexes)
+
+	if indexesLen == 0 {
+		panic("no sequence to format")
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf(single, indexes[0]))
+
+	if indexesLen == 1 {
+		return sb.String()
+	}
+
+	if indexesLen > 2 {
+		for _, idx := range indexes[1 : indexesLen-1] {
+			sb.WriteString(fmt.Sprintf(comaSingle, idx))
+		}
+	}
+
+	sb.WriteString(fmt.Sprintf(andSingle, indexes[indexesLen-1]))
+
+	return sb.String()
+}
+
+// NewFiller creates a new filler using layers.
+func NewFiller(l ...Binder) (*Filler, error) {
+	if err := checkLayers(l); err != nil {
+		return nil, err
+	}
+
+	return &Filler{
+		layers: layers(l),
+		report: &Report{},
+	}, nil
 }
 
 //goland:noinspection SpellCheckingInspection
@@ -70,8 +140,6 @@ func (r *Filler) fillStruct(rootKey string, v reflect.Value) {
 
 		r.report.addEntry(re)
 	}
-
-	return
 }
 
 func (r *Filler) Fill(i interface{}) []error {

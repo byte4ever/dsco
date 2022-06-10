@@ -3,6 +3,7 @@ package cmdline
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,9 +13,17 @@ import (
 )
 
 func TestProvide(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		optionsLine []string
 	}
+
+	const (
+		arg1       = "--arg1=value1"
+		arg2       = "--arg2=value2"
+		invalidArg = "invalid_arg"
+	)
 
 	tests := []struct {
 		name               string
@@ -46,7 +55,11 @@ func TestProvide(t *testing.T) {
 		{
 			name: "invalid format in first position",
 			args: args{
-				optionsLine: []string{"invalid_arg", "--arg1=value1", "--arg2=value2"},
+				optionsLine: []string{
+					invalidArg,
+					arg1,
+					arg2,
+				},
 			},
 			want:               nil,
 			wantErr:            ErrParamFormat,
@@ -55,7 +68,11 @@ func TestProvide(t *testing.T) {
 		{
 			name: "invalid format in last position",
 			args: args{
-				optionsLine: []string{"--arg1=value1", "--arg2=value2", "invalid_arg"},
+				optionsLine: []string{
+					arg1,
+					arg2,
+					invalidArg,
+				},
 			},
 			want:               nil,
 			wantErr:            ErrParamFormat,
@@ -64,7 +81,11 @@ func TestProvide(t *testing.T) {
 		{
 			name: "invalid format in middle position 1",
 			args: args{
-				optionsLine: []string{"--arg1=value1", "invalid_arg", "--arg2=value2"},
+				optionsLine: []string{
+					arg1,
+					invalidArg,
+					arg2,
+				},
 			},
 			want:               nil,
 			wantErr:            ErrParamFormat,
@@ -73,7 +94,11 @@ func TestProvide(t *testing.T) {
 		{
 			name: "invalid format in middle position 2",
 			args: args{
-				optionsLine: []string{"--arg1=value1", "--asd-_asd=failure", "--arg2=value2"},
+				optionsLine: []string{
+					arg1,
+					"--asd-_asd=failure",
+					arg2,
+				},
 			},
 			want:               nil,
 			wantErr:            ErrParamFormat,
@@ -82,7 +107,7 @@ func TestProvide(t *testing.T) {
 		{
 			name: "success single command line option",
 			args: args{
-				optionsLine: []string{"--arg1=value1"},
+				optionsLine: []string{arg1},
 			},
 			want: &EntriesProvider{
 				values: sbased.Entries{
@@ -97,8 +122,8 @@ func TestProvide(t *testing.T) {
 			name: "success multiple command line options",
 			args: args{
 				optionsLine: []string{
-					"--arg1=value1",
-					"--arg2=value2",
+					arg1,
+					arg2,
 				},
 			},
 			want: &EntriesProvider{
@@ -118,9 +143,9 @@ func TestProvide(t *testing.T) {
 			name: "duplicate params",
 			args: args{
 				optionsLine: []string{
-					"--arg1=value1",
+					arg1,
 					"--arg1=value1x",
-					"--arg2=value2",
+					arg2,
 				},
 			},
 			want:    nil,
@@ -130,8 +155,8 @@ func TestProvide(t *testing.T) {
 			name: "with valid option",
 			args: args{
 				optionsLine: []string{
-					"--arg1=value1",
-					"--arg2=value2",
+					arg1,
+					arg2,
 				},
 			},
 			want: &EntriesProvider{
@@ -152,6 +177,7 @@ func TestProvide(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
+				t.Parallel()
 				got, err := NewEntriesProvider(tt.args.optionsLine)
 
 				require.ErrorIsf(t, err, tt.wantErr, "NewEntriesProvider() error = %v, wantErr %v", err, tt.wantErr)
@@ -180,6 +206,7 @@ func TestProvide(t *testing.T) {
 }
 
 func TestProvider_GetEntries(t *testing.T) {
+	t.Parallel()
 	entries := sbased.Entries{
 		"a1": &sbased.Entry{
 			ExternalKey: "a",
@@ -199,5 +226,62 @@ func TestProvider_GetEntries(t *testing.T) {
 }
 
 func TestProvider_GetOrigin(t *testing.T) {
+	t.Parallel()
 	require.Equal(t, dsco.Origin("cmdline"), (&EntriesProvider{}).GetOrigin())
+}
+
+func TestNewEntriesProvider(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		commandLine []string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *EntriesProvider
+		wantErr bool
+	}{
+		{
+			name: "nil option param list",
+			args: args{
+				commandLine: nil,
+			},
+			want:    &EntriesProvider{},
+			wantErr: false,
+		},
+		{
+			name: "empty option param list",
+			args: args{
+				commandLine: []string{},
+			},
+			want:    &EntriesProvider{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
+				got, err := NewEntriesProvider(tt.args.commandLine)
+				if (err != nil) != tt.wantErr {
+					t.Errorf(
+						"NewEntriesProvider() error = %v, wantErr %v",
+						err,
+						tt.wantErr,
+					)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf(
+						"NewEntriesProvider() got = %v, want %v",
+						got,
+						tt.want,
+					)
+				}
+			},
+		)
+	}
 }

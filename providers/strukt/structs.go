@@ -132,6 +132,7 @@ func (b *Binder) buildEntries(
 
 		if (fieldType.Type.Kind() != reflect.Ptr) &&
 			(fieldType.Type.Kind() != reflect.Slice) {
+
 			return fmt.Errorf("A %s/%v: %w", key, fieldType.Type.String(), ErrUnsupportedType)
 		}
 

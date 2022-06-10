@@ -8,23 +8,25 @@ import (
 	"github.com/byte4ever/dsco/providers/sbased"
 )
 
-const id = dsco.Origin("cmdline")
-
-var re = regexp.MustCompile(`^--([a-z][a-z\d]*(?:[-_][a-z][a-z\d]*)*)=(.+)$`)
-
 // EntriesProvider is an entries' provider that extract entries from
 // command line.
 type EntriesProvider struct {
 	values sbased.Entries
 }
 
+const id = dsco.Origin("cmdline")
+
+var re = regexp.MustCompile(
+	`^--([a-z][a-z\d]*(?:[-_][a-z][a-z\d]*)*)=(.+)$`,
+)
+
 // GetEntries implements sbased.EntriesProvider interface.
-func (ks *EntriesProvider) GetEntries() sbased.Entries {
-	return ks.values
+func (ep *EntriesProvider) GetEntries() sbased.Entries {
+	return ep.values
 }
 
 // GetOrigin implements sbased.EntriesProvider interface.
-func (ks *EntriesProvider) GetOrigin() dsco.Origin {
+func (*EntriesProvider) GetOrigin() dsco.Origin {
 	return id
 }
 
@@ -46,11 +48,17 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 
 	keys := make(sbased.Entries, lo)
 
+	expectedGroups := re.NumSubexp() + 1
 	for idx, arg := range commandLine {
 		m := re.FindStringSubmatch(arg)
 
-		if 3 != len(m) { //nolint:gomnd // ok
-			return nil, fmt.Errorf("arg #%d - (%s): %w", idx, arg, ErrParamFormat)
+		if len(m) != expectedGroups {
+			return nil, fmt.Errorf(
+				"arg #%d - (%s): %w",
+				idx,
+				arg,
+				ErrParamFormat,
+			)
 		}
 
 		_, found := keys[m[1]]

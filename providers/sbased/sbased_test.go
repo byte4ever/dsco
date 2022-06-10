@@ -434,9 +434,7 @@ func TestBinder_GetErrors(t *testing.T) {
 	mockedOrigin := dsco.Origin(mockedOriginName)
 
 	type fields struct {
-		internalOpts internalOpts
-		entries      entries
-		provider     EntriesProvider
+		entries entries
 	}
 
 	tests := []struct {

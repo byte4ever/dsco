@@ -8,23 +8,21 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-var (
-	// ErrNotPointerOnStruct represents an error where the interface to fill
-	// is not a pointer to struct.
-	ErrNotPointerOnStruct = errors.New("not pointer on struct")
+// ErrNotPointerOnStruct represents an error where the interface to fill
+// is not a pointer to struct.
+var ErrNotPointerOnStruct = errors.New("not pointer on struct")
 
-	// ErrUnsupportedType represents an error where the interface to fill
-	// contains some unsupported types.
-	ErrUnsupportedType = errors.New("unsupported type")
+// ErrUnsupportedType represents an error where the interface to fill
+// contains some unsupported types.
+var ErrUnsupportedType = errors.New("unsupported type")
 
-	// ErrRecursiveStruct represents an error where the interface to fill
-	// is recursive. So it cannot be allocated by the filler.
-	ErrRecursiveStruct = errors.New("recursive struct")
+// ErrRecursiveStruct represents an error where the interface to fill
+// is recursive. So it cannot be allocated by the filler.
+var ErrRecursiveStruct = errors.New("recursive struct")
 
-	// ErrRequireEmptyStruct represents an error where the interface to fill
-	// is not empty (nil pointers for every field).
-	ErrRequireEmptyStruct = errors.New("require empty struct")
-)
+// ErrRequireEmptyStruct represents an error where the interface to fill
+// is not empty (nil pointers for every field).
+var ErrRequireEmptyStruct = errors.New("require empty struct")
 
 func checkStruct(i interface{}) error {
 	iType := reflect.TypeOf(i)
@@ -57,8 +55,7 @@ func checkStructRec(
 		}
 
 		switch ft.Type.String() {
-		case
-			"*time.Time":
+		case "*time.Time":
 			continue
 		}
 
