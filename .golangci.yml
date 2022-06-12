@@ -265,11 +265,11 @@ linters-settings:
   exhaustive:
     # Check switch statements in generated files also.
     # Default: false
-    check-generated: true
+    check-generated: false
     # Presence of "default" case in switch statements satisfies exhaustiveness,
     # even if all enum members are not listed.
     # Default: false
-    default-signifies-exhaustive: true
+    default-signifies-exhaustive: false
     # Enum members matching the supplied regex do not have to be listed in
     # switch statements to satisfy exhaustiveness.
     # Default: ""
@@ -1642,17 +1642,17 @@ linters:
     - errname
     - goerr113
     - gofmt
-    ## ----- REMAIN --------
-    - asciicheck
-    - bidichk
+    - prealloc
     - containedctx
+    - varnamelen
+    - gosec
+    ## ----- REMAIN --------
     - decorder
     - depguard
     - dogsled
     - dupl
     - durationcheck
-    - errchkjson
-    - execinquery
+    #    - errchkjson
     - exhaustive
     - exhaustruct
     - exportloopref
@@ -1668,7 +1668,6 @@ linters:
     - gomoddirectives
     - gomodguard
     - goprintffuncname
-    - gosec
     - ifshort
     - importas
     - ireturn
@@ -1679,14 +1678,15 @@ linters:
     - nolintlint
     - nosprintfhostport
     - paralleltest
-    - prealloc
     - predeclared
     - staticcheck
     - stylecheck
     - tenv
     - thelper
-    - unconvert
-    - varnamelen
+  #    - unconvert
+  #    - execinquery
+  #    - asciicheck
+  #    - bidichk
   #    - errorlint
   #    - promlinter
   #    - lll
