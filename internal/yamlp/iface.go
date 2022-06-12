@@ -1,4 +1,4 @@
-package yaml_provider
+package yamlp
 
 import (
 	"io"

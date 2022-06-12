@@ -6,6 +6,8 @@ import (
 )
 
 func Test_getKeyName(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		rootKey   string
 		fieldType reflect.StructField
@@ -13,8 +15,8 @@ func Test_getKeyName(t *testing.T) {
 
 	tests := []struct {
 		name string
-		args args
 		want string
+		args args
 	}{
 		{
 			name: "not yaml",
@@ -73,9 +75,15 @@ func Test_getKeyName(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			tt.name, func(t *testing.T) {
-				if got := GetKeyName(tt.args.rootKey, tt.args.fieldType); got != tt.want {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
+				if got := GetKeyName(
+					tt.args.rootKey, tt.args.fieldType,
+				); got != tt.want {
 					t.Errorf("GetKeyName() = %v, want %v", got, tt.want)
 				}
 			},

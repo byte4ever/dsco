@@ -1,4 +1,4 @@
-package yaml_provider
+package yamlp
 
 import (
 	"fmt"
@@ -19,7 +19,8 @@ func (p *Provider) GetInterface() (interface{}, error) {
 	return p.i, nil
 }
 
-// New creates an interface provider based on the given model and read performer.
+// New creates an interface provider based on the given model and read
+// performer.
 //
 // First parameter model MUST not be nil and MUST refer to a pointer on struct.
 //
@@ -31,7 +32,7 @@ func New(model interface{}, functor ReaderFunctor) (*Provider, error) {
 		return nil, err
 	}
 
-	k := reflect.New(reflect.TypeOf(model).Elem()).Interface()
+	newModel := reflect.New(reflect.TypeOf(model).Elem()).Interface()
 
 	if functor == nil {
 		return nil, ErrNilReaderFunctor
@@ -43,7 +44,7 @@ func New(model interface{}, functor ReaderFunctor) (*Provider, error) {
 				reader,
 			)
 
-			if err2 := dec.Decode(k); err2 != nil {
+			if err2 := dec.Decode(newModel); err2 != nil {
 				return fmt.Errorf("while parsing yaml buffer: %w", err2)
 			}
 
@@ -52,11 +53,14 @@ func New(model interface{}, functor ReaderFunctor) (*Provider, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"when creating yaml entry provider: %w",
+			err,
+		)
 	}
 
 	return &Provider{
-		i: k,
+		i: newModel,
 	}, nil
 }
 

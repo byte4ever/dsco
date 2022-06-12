@@ -5,7 +5,8 @@ import (
 )
 
 func TestToSnakeCase(t *testing.T) {
-	// t.SkipNow()
+	t.Parallel()
+
 	type args struct {
 		str string
 	}
@@ -39,8 +40,12 @@ func TestToSnakeCase(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			tt.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
 				if got := toSnakeCase(tt.args.str); got != tt.want {
 					t.Errorf("toSnakeCase() = %v, want %v", got, tt.want)
 				}

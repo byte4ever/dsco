@@ -11,8 +11,10 @@ var (
 )
 
 func toSnakeCase(str string) string {
-	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	const snakePattern = "${1}_${2}"
+
+	snake := matchFirstCap.ReplaceAllString(str, snakePattern)
+	snake = matchAllCap.ReplaceAllString(snake, snakePattern)
 
 	return strings.ToLower(snake)
 }

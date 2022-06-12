@@ -19,6 +19,7 @@ type Binder struct {
 var _ dsco.Binder = &Binder{}
 
 // Bind implements the dscoBinder interface.
+//nolint:revive // refacto soon
 func (s *Binder) Bind(
 	key string,
 	set bool,
@@ -30,10 +31,12 @@ func (s *Binder) Bind(
 	outVal reflect.Value,
 	err error,
 ) {
+	const errFmt = "%s/%s: %w"
+
 	origin = s.provider.GetOrigin()
 
 	if _, found := s.aliases[key]; found {
-		err = fmt.Errorf("%s/%s: %w", origin, key, ErrAliasCollision)
+		err = fmt.Errorf(errFmt, origin, key, ErrAliasCollision)
 		return
 	}
 
@@ -52,8 +55,10 @@ func (s *Binder) Bind(
 	case reflect.Pointer:
 		tp = reflect.New(dType.Elem())
 
-		if err = yaml.Unmarshal([]byte(entry.Value), tp.Interface()); err != nil {
-			err = fmt.Errorf("%s/%s: %w", origin, entry.ExternalKey, ErrParse)
+		if err = yaml.Unmarshal(
+			[]byte(entry.Value), tp.Interface(),
+		); err != nil {
+			err = fmt.Errorf(errFmt, origin, entry.ExternalKey, ErrParse)
 			return
 		}
 
@@ -68,8 +73,10 @@ func (s *Binder) Bind(
 	case reflect.Slice:
 		tp = reflect.New(dType)
 
-		if err = yaml.Unmarshal([]byte(entry.Value), tp.Interface()); err != nil {
-			err = fmt.Errorf("%s/%s: %w", origin, entry.ExternalKey, ErrParse)
+		if err = yaml.Unmarshal(
+			[]byte(entry.Value), tp.Interface(),
+		); err != nil {
+			err = fmt.Errorf(errFmt, origin, entry.ExternalKey, ErrParse)
 			return
 		}
 
@@ -88,33 +95,33 @@ func (s *Binder) Bind(
 
 // NewBinder creates a new string based binder.
 func NewBinder(
-	p EntriesProvider,
+	provider EntriesProvider,
 	options ...Option,
 ) (
 	*Binder,
 	error,
 ) {
-	o := internalOpts{}
+	internalOptions := internalOpts{}
 
-	if err := o.applyOptions(options); err != nil {
+	if err := internalOptions.applyOptions(options); err != nil {
 		return nil, err
 	}
 
-	strEntries := p.GetEntries()
+	strEntries := provider.GetEntries()
 
 	var es entries
 
 	if le := len(strEntries); le > 0 {
 		es = make(entries, le)
 
-		for k, v := range strEntries {
-			actualKey, found := o.aliases[k]
+		for key, strEntry := range strEntries {
+			actualKey, found := internalOptions.aliases[key]
 			if !found {
-				actualKey = k
+				actualKey = key
 			}
 
 			es[actualKey] = &entry{
-				Entry:   *v,
+				Entry:   *strEntry,
 				bounded: false,
 				used:    false,
 			}
@@ -122,28 +129,49 @@ func NewBinder(
 	}
 
 	return &Binder{
-		internalOpts: o,
+		internalOpts: internalOptions,
 		entries:      es,
-		provider:     p,
+		provider:     provider,
 	}, nil
 }
 
 // GetPostProcessErrors returns all errors encountered during processing of the
 // layer.
-func (s *Binder) GetPostProcessErrors() (errs []error) {
-	o := s.provider.GetOrigin()
+func (s *Binder) GetPostProcessErrors() []error {
+	var errs []error
 
-	for _, e := range s.entries {
-		if !e.bounded {
-			errs = append(errs, fmt.Errorf("%s/%s: %w", o, e.ExternalKey, ErrUnboundKey))
+	const errFormat = "%s/%s: %w"
+
+	origin := s.provider.GetOrigin()
+
+	for _, entry := range s.entries {
+		if !entry.bounded {
+			errs = append(
+				errs, fmt.Errorf(
+					errFormat,
+					origin,
+					entry.ExternalKey,
+					ErrUnboundKey,
+				),
+			)
+
 			continue
 		}
 
-		if !e.used {
-			errs = append(errs, fmt.Errorf("%s/%s: %w", o, e.ExternalKey, ErrOverriddenKey))
+		if !entry.used {
+			errs = append(
+				errs,
+				fmt.Errorf(
+					errFormat,
+					origin,
+					entry.ExternalKey,
+					ErrOverriddenKey,
+				),
+			)
+
 			continue
 		}
 	}
 
-	return
+	return errs
 }

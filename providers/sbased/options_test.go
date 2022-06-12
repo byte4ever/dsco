@@ -7,7 +7,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errFailApply = errors.New("")
+
+type validOption struct{}
+
+type failOption struct{}
+
+func (validOption) apply(*internalOpts) error {
+	return nil
+}
+
 func TestWithAliases(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		mapping map[string]string
 	}
@@ -34,18 +46,29 @@ func TestWithAliases(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			tt.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
 				got := WithAliases(tt.args.mapping)
-				require.Equalf(t, tt.want, got, "WithAliases() = %v, want %v", got, tt.want)
+				require.Equalf(
+					t, tt.want, got, "WithAliases() = %v, want %v", got,
+					tt.want,
+				)
 			},
 		)
 	}
 }
 
 func TestAliasesOption_apply(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"nil alias", func(t *testing.T) {
+		"nil alias",
+		func(t *testing.T) {
+			t.Parallel()
+
 			var ao AliasesOption
 
 			o := &internalOpts{}
@@ -56,40 +79,35 @@ func TestAliasesOption_apply(t *testing.T) {
 	)
 
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
 			ao := AliasesOption{
 				"a": "b",
 				"c": "d",
 			}
 
-			o := &internalOpts{}
+			options := &internalOpts{}
 
-			require.NoError(t, ao.apply(o))
+			require.NoError(t, ao.apply(options))
 			require.Equal(
 				t, map[string]string{
 					"a": "b",
 					"c": "d",
-				}, o.aliases,
+				}, options.aliases,
 			)
 		},
 	)
 }
 
-type validOption struct{}
-
-func (v validOption) apply(*internalOpts) error {
-	return nil
-}
-
-type failOption struct{}
-
-var errFailApply = errors.New("")
-
-func (v failOption) apply(*internalOpts) error {
+func (failOption) apply(*internalOpts) error {
 	return errFailApply
 }
 
 func Test_internalOpts_applyOptions(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		aliases map[string]string
 	}
@@ -150,7 +168,9 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 				aliases: nil,
 			},
 			args: args{
-				os: []Option{validOption{}, validOption{}, failOption{}, validOption{}},
+				os: []Option{
+					validOption{}, validOption{}, failOption{}, validOption{},
+				},
 			},
 			wantErr: errFailApply,
 		},
@@ -160,14 +180,21 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 				aliases: nil,
 			},
 			args: args{
-				os: []Option{validOption{}, validOption{}, failOption{}, validOption{}},
+				os: []Option{
+					validOption{}, validOption{}, failOption{}, validOption{},
+				},
 			},
 			wantErr: errFailApply,
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			tt.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
 				o := &internalOpts{
 					aliases: tt.fields.aliases,
 				}

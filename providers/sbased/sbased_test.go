@@ -12,6 +12,58 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
+var errMocked = errors.New("mocked error")
+
+type errT struct {
+	err    error
+	extKey string
+}
+
+func getBinder() *Binder {
+	return &Binder{
+		internalOpts: internalOpts{
+			aliases: map[string]string{
+				"alias1": "k1_int",
+				"alias3": "k3_float64",
+			},
+		},
+		entries: entries{
+			"k1_int": &entry{
+				Entry: Entry{
+					ExternalKey: "extK1Aliased",
+					Value:       "1234",
+				},
+				bounded: false,
+				used:    false,
+			},
+			"k2_string": &entry{
+				Entry: Entry{
+					ExternalKey: "extK2",
+					Value:       "val2",
+				},
+				bounded: false,
+				used:    false,
+			},
+			"k3_float64": &entry{
+				Entry: Entry{
+					ExternalKey: "extK3Aliased",
+					Value:       "val3",
+				},
+				bounded: false,
+				used:    false,
+			},
+			"k4_slice_int": &entry{
+				Entry: Entry{
+					ExternalKey: "extK4",
+					Value:       `[1,2,3,4,5]`,
+				},
+				bounded: false,
+				used:    false,
+			},
+		},
+	}
+}
+
 func TestProvide(t *testing.T) {
 	t.Run(
 		"success",
@@ -145,6 +197,8 @@ func TestProvide(t *testing.T) {
 	t.Run(
 		"success with alias",
 		func(t *testing.T) {
+			t.Parallel()
+
 			option := NewMockOption(t)
 			option.On("apply", mock.Anything).Once().
 				Return(errMocked)
@@ -159,69 +213,28 @@ func TestProvide(t *testing.T) {
 	)
 }
 
-var errMocked = errors.New("mocked error")
-
-func getBinder() *Binder {
-	return &Binder{
-		internalOpts: internalOpts{
-			aliases: map[string]string{
-				"alias1": "k1_int",
-				"alias3": "k3_float64",
-			},
-		},
-		entries: entries{
-			"k1_int": &entry{
-				Entry: Entry{
-					ExternalKey: "extK1Aliased",
-					Value:       "1234",
-				},
-				bounded: false,
-				used:    false,
-			},
-			"k2_string": &entry{
-				Entry: Entry{
-					ExternalKey: "extK2",
-					Value:       "val2",
-				},
-				bounded: false,
-				used:    false,
-			},
-			"k3_float64": &entry{
-				Entry: Entry{
-					ExternalKey: "extK3Aliased",
-					Value:       "val3",
-				},
-				bounded: false,
-				used:    false,
-			},
-			"k4_slice_int": &entry{
-				Entry: Entry{
-					ExternalKey: "extK4",
-					Value:       `[1,2,3,4,5]`,
-				},
-				bounded: false,
-				used:    false,
-			},
-		},
-	}
-}
-
 func TestBinder_Bind(t *testing.T) {
+	t.Parallel()
+
 	mockedOriginName := "mocked"
 	mockedOrigin := dsco.Origin(mockedOriginName)
 
 	t.Run(
 		"success and set",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs *int
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, outVal, err := b.Bind("k1_int", true, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				"k1_int", true, dstValue,
+			)
 			require.NoError(t, err)
 			require.True(t, succeed)
 			require.Equal(t, "extK1Aliased", keyOut)
@@ -229,48 +242,61 @@ func TestBinder_Bind(t *testing.T) {
 
 			di := outVal.Interface()
 			require.IsType(t, rs, di)
-			require.Equal(t, 1234, *(di.(*int)))
-			require.True(t, b.entries["k1_int"].bounded)
-			require.True(t, b.entries["k1_int"].used)
+
+			actualPtr, ok := di.(*int)
+			require.True(t, ok)
+			require.NotNil(t, actualPtr)
+
+			require.Equal(t, 1234, *actualPtr, ok)
+			require.True(t, binder.entries["k1_int"].bounded)
+			require.True(t, binder.entries["k1_int"].used)
 		},
 	)
 
 	t.Run(
 		"success and don't set",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs *int
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, outVal, err := b.Bind("k1_int", false, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				"k1_int", false, dstValue,
+			)
 			require.NoError(t, err)
 			require.False(t, succeed)
 			require.Equal(t, "extK1Aliased", keyOut)
 			require.Equal(t, mockedOrigin, origin)
 
 			require.Equal(t, reflect.Value{}, outVal)
-			require.True(t, b.entries["k1_int"].bounded)
-			require.False(t, b.entries["k1_int"].used)
+			require.True(t, binder.entries["k1_int"].bounded)
+			require.False(t, binder.entries["k1_int"].used)
 		},
 	)
 
 	t.Run(
 		"parse error",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs *int
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k2_string"
-			origin, keyOut, succeed, outVal, err := b.Bind(key, true, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				key, true, dstValue,
+			)
 			require.ErrorIs(t, err, ErrParse)
 			require.Equal(t, reflect.Value{}, outVal)
 			require.Equal(t, mockedOrigin, origin)
@@ -278,23 +304,28 @@ func TestBinder_Bind(t *testing.T) {
 			require.Equal(t, "extK2", keyOut)
 			require.ErrorContains(t, err, mockedOriginName)
 			require.ErrorContains(t, err, "extK2")
-			require.True(t, b.entries[key].bounded)
-			require.False(t, b.entries[key].used)
+			require.True(t, binder.entries[key].bounded)
+			require.False(t, binder.entries[key].used)
 		},
 	)
+
 	t.Run(
 		"alias collision",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs *int
 			dstValue := reflect.ValueOf(rs)
 
 			key := "alias1"
-			origin, keyOut, succeed, outVal, err := b.Bind(key, true, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				key, true, dstValue,
+			)
 			require.ErrorIs(t, err, ErrAliasCollision)
 			require.Equal(t, reflect.Value{}, outVal)
 			require.Equal(t, mockedOrigin, origin)
@@ -308,6 +339,8 @@ func TestBinder_Bind(t *testing.T) {
 	t.Run(
 		"key not found",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -316,7 +349,9 @@ func TestBinder_Bind(t *testing.T) {
 			var rs *int
 			dstValue := reflect.ValueOf(rs)
 
-			origin, keyOut, succeed, outVal, err := b.Bind("not_found", true, dstValue)
+			origin, keyOut, succeed, outVal, err := b.Bind(
+				"not_found", true, dstValue,
+			)
 			require.NoError(t, err)
 			require.Equal(t, reflect.Value{}, outVal)
 			require.False(t, succeed)
@@ -330,16 +365,20 @@ func TestBinder_Bind(t *testing.T) {
 	t.Run(
 		"slice success and set",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs []int
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k4_slice_int"
-			origin, keyOut, succeed, outVal, err := b.Bind(key, true, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				key, true, dstValue,
+			)
 			require.NoError(t, err)
 			require.True(t, succeed)
 			require.Equal(t, "extK4", keyOut)
@@ -348,24 +387,28 @@ func TestBinder_Bind(t *testing.T) {
 			di := outVal.Interface()
 			require.IsType(t, rs, di)
 			require.Equal(t, []int{1, 2, 3, 4, 5}, di.([]int))
-			require.True(t, b.entries[key].bounded)
-			require.True(t, b.entries[key].used)
+			require.True(t, binder.entries[key].bounded)
+			require.True(t, binder.entries[key].used)
 		},
 	)
 
 	t.Run(
 		"slice success and don't set",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs []int
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k4_slice_int"
-			origin, keyOut, succeed, outVal, err := b.Bind(key, false, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				key, false, dstValue,
+			)
 			require.NoError(t, err)
 			require.False(t, succeed)
 			require.Equal(t, "extK4", keyOut)
@@ -373,24 +416,28 @@ func TestBinder_Bind(t *testing.T) {
 
 			require.Equal(t, reflect.Value{}, outVal)
 
-			require.True(t, b.entries[key].bounded)
-			require.False(t, b.entries[key].used)
+			require.True(t, binder.entries[key].bounded)
+			require.False(t, binder.entries[key].used)
 		},
 	)
 
 	t.Run(
 		"slice parse error",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs []int
 			dstValue := reflect.ValueOf(rs)
 
 			key := "k2_string"
-			origin, keyOut, succeed, outVal, err := b.Bind(key, false, dstValue)
+			origin, keyOut, succeed, outVal, err := binder.Bind(
+				key, false, dstValue,
+			)
 			require.ErrorIs(t, err, ErrParse)
 			require.Equal(t, reflect.Value{}, outVal)
 			require.Equal(t, mockedOrigin, origin)
@@ -398,18 +445,20 @@ func TestBinder_Bind(t *testing.T) {
 			require.Equal(t, "extK2", keyOut)
 			require.ErrorContains(t, err, mockedOriginName)
 			require.ErrorContains(t, err, "extK2")
-			require.True(t, b.entries[key].bounded)
-			require.False(t, b.entries[key].used)
+			require.True(t, binder.entries[key].bounded)
+			require.False(t, binder.entries[key].used)
 		},
 	)
 
 	t.Run(
 		"panic when binding invalid type",
 		func(t *testing.T) {
+			t.Parallel()
+
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
-			b := getBinder()
-			b.provider = pr
+			binder := getBinder()
+			binder.provider = pr
 
 			var rs int
 			dstValue := reflect.ValueOf(rs)
@@ -417,19 +466,16 @@ func TestBinder_Bind(t *testing.T) {
 			key := "k1_int"
 			require.Panics(
 				t, func() {
-					_, _, _, _, _ = b.Bind(key, false, dstValue)
+					_, _, _, _, _ = binder.Bind(key, false, dstValue)
 				},
 			)
 		},
 	)
 }
 
-type errT struct {
-	err    error
-	extKey string
-}
+func convertToErrors(origin string, el []*errT) []error {
+	var errs []error
 
-func convertToErrors(origin string, el []errT) (errs []error) {
 	for _, err := range el {
 		errs = append(
 			errs,
@@ -442,10 +488,12 @@ func convertToErrors(origin string, el []errT) (errs []error) {
 		)
 	}
 
-	return
+	return errs
 }
 
 func TestBinder_GetErrors(t *testing.T) {
+	t.Parallel()
+
 	mockedOriginName := "mocked"
 	mockedOrigin := dsco.Origin(mockedOriginName)
 
@@ -558,7 +606,7 @@ func TestBinder_GetErrors(t *testing.T) {
 			},
 			wantErrs: convertToErrors(
 				mockedOriginName,
-				[]errT{
+				[]*errT{
 					{
 						err:    ErrUnboundKey,
 						extKey: "k2aExt",
@@ -581,9 +629,12 @@ func TestBinder_GetErrors(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
 			tt.name,
 			func(t *testing.T) {
+				t.Parallel()
+
 				pr := NewMockStrEntriesProvider(t)
 				pr.On("GetOrigin").Return(mockedOrigin).Once()
 

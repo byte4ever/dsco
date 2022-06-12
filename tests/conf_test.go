@@ -28,11 +28,13 @@ type Root struct {
 	B    *float64
 	T    *time.Time
 	Z    *Zonk
-	L    []string
 	NaNa *int
+	L    []string
 }
 
 func Test(t *testing.T) {
+	t.Parallel()
+
 	c1 := &Root{
 		L: []string{"A", "B", "C"},
 		// A: gc.R(12),

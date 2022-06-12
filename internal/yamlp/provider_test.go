@@ -1,4 +1,4 @@
-package yaml_provider
+package yamlp
 
 import (
 	"bytes"
@@ -12,28 +12,33 @@ import (
 
 var errMocked = errors.New("mocked error")
 
-type failReaderCloser struct{}
-
-func (f *failReaderCloser) Apply(func(r io.Reader) error) error {
-	return errMocked
+type T1Root struct {
+	A int
+	B float64
 }
+
+type failReaderCloser struct{}
 
 type bufferReaderCloser struct {
 	buf []byte
+}
+
+func (*failReaderCloser) Apply(func(r io.Reader) error) error {
+	return errMocked
 }
 
 func (b *bufferReaderCloser) Apply(f func(r io.Reader) error) error {
 	return f(bytes.NewReader(b.buf))
 }
 
-type T1Root struct {
-	A int
-	B float64
-}
-
 func TestProvide(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"error when model interface is nil", func(t *testing.T) {
+		"error when model interface is nil",
+		func(t *testing.T) {
+			t.Parallel()
+
 			provider, err := New(nil, nil)
 			require.ErrorIs(t, err, ErrInvalidModel)
 			require.ErrorContains(t, err, "nil")
@@ -42,7 +47,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"error when model interface not a pointer", func(t *testing.T) {
+		"error when model interface not a pointer",
+		func(t *testing.T) {
+			t.Parallel()
+
 			provider, err := New(123, nil)
 			require.ErrorIs(t, err, ErrInvalidModel)
 			require.ErrorContains(t, err, "pointer")
@@ -51,7 +59,11 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"error when model interface not a pointer on struct", func(t *testing.T) {
+		"error when model interface not a pointer on struct",
+
+		func(t *testing.T) {
+			t.Parallel()
+
 			v := 5
 			provider, err := New(&v, nil)
 			require.ErrorIs(t, err, ErrInvalidModel)
@@ -61,7 +73,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"error when performer is nil", func(t *testing.T) {
+		"error when performer is nil",
+		func(t *testing.T) {
+			t.Parallel()
+
 			k := &struct{}{}
 			provider, err := New(k, nil)
 			require.ErrorIs(t, err, ErrNilReaderFunctor)
@@ -71,7 +86,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"reader provider internal failure", func(t *testing.T) {
+		"reader provider internal failure",
+		func(t *testing.T) {
+			t.Parallel()
+
 			k := &struct{}{}
 			mrc := &failReaderCloser{}
 			provider, err := New(k, mrc)
@@ -81,7 +99,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"invalid yaml content", func(t *testing.T) {
+		"invalid yaml content",
+		func(t *testing.T) {
+			t.Parallel()
+
 			mrc := &bufferReaderCloser{
 				buf: []byte("invalid yaml content"),
 			}
@@ -96,7 +117,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
 			mrc := &bufferReaderCloser{
 				buf: []byte(`
 a: 123
