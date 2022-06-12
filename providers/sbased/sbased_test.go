@@ -14,7 +14,10 @@ import (
 
 func TestProvide(t *testing.T) {
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
 			sep := NewMockStrEntriesProvider(t)
 			sep.On("GetEntries").Once().
 				Return(
@@ -64,7 +67,10 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"success with alias", func(t *testing.T) {
+		"success with alias",
+		func(t *testing.T) {
+			t.Parallel()
+
 			sep := NewMockStrEntriesProvider(t)
 			sep.On("GetEntries").Once().
 				Return(
@@ -84,7 +90,7 @@ func TestProvide(t *testing.T) {
 					},
 				)
 
-			p, err := NewBinder(
+			binder, err := NewBinder(
 				sep,
 				WithAliases(
 					map[string]string{
@@ -94,10 +100,10 @@ func TestProvide(t *testing.T) {
 				),
 			)
 			require.NoError(t, err)
-			require.NotNil(t, p)
+			require.NotNil(t, binder)
 
 			require.Equal(
-				t, p, &Binder{
+				t, binder, &Binder{
 					internalOpts: internalOpts{
 						aliases: map[string]string{
 							"alias1": "k1",
@@ -137,7 +143,8 @@ func TestProvide(t *testing.T) {
 	)
 
 	t.Run(
-		"success with alias", func(t *testing.T) {
+		"success with alias",
+		func(t *testing.T) {
 			option := NewMockOption(t)
 			option.On("apply", mock.Anything).Once().
 				Return(mockedError)
@@ -204,7 +211,8 @@ func TestBinder_Bind(t *testing.T) {
 	mockedOrigin := dsco.Origin(mockedOriginName)
 
 	t.Run(
-		"success and set", func(t *testing.T) {
+		"success and set",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -228,7 +236,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"success and don't set", func(t *testing.T) {
+		"success and don't set",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -250,7 +259,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"parse error", func(t *testing.T) {
+		"parse error",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -273,7 +283,8 @@ func TestBinder_Bind(t *testing.T) {
 		},
 	)
 	t.Run(
-		"alias collision", func(t *testing.T) {
+		"alias collision",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -295,7 +306,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"key not found", func(t *testing.T) {
+		"key not found",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -316,7 +328,8 @@ func TestBinder_Bind(t *testing.T) {
 	// ///////////////////////////////////////////////////////////
 
 	t.Run(
-		"slice success and set", func(t *testing.T) {
+		"slice success and set",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -341,7 +354,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"slice success and don't set", func(t *testing.T) {
+		"slice success and don't set",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -365,7 +379,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"slice parse error", func(t *testing.T) {
+		"slice parse error",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -389,7 +404,8 @@ func TestBinder_Bind(t *testing.T) {
 	)
 
 	t.Run(
-		"panic when binding invalid type", func(t *testing.T) {
+		"panic when binding invalid type",
+		func(t *testing.T) {
 			pr := NewMockStrEntriesProvider(t)
 			pr.On("GetOrigin").Return(mockedOrigin).Once()
 			b := getBinder()
@@ -566,7 +582,8 @@ func TestBinder_GetErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(
-			tt.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
 				pr := NewMockStrEntriesProvider(t)
 				pr.On("GetOrigin").Return(mockedOrigin).Once()
 
