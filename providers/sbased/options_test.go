@@ -83,10 +83,10 @@ func (v validOption) apply(*internalOpts) error {
 
 type failOption struct{}
 
-var failApplyError = errors.New("")
+var errFailApply = errors.New("")
 
 func (v failOption) apply(*internalOpts) error {
-	return failApplyError
+	return errFailApply
 }
 
 func Test_internalOpts_applyOptions(t *testing.T) {
@@ -142,7 +142,7 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 			args: args{
 				os: []Option{failOption{}, validOption{}, validOption{}},
 			},
-			wantErr: failApplyError,
+			wantErr: errFailApply,
 		},
 		{
 			name: "error in middle",
@@ -152,7 +152,7 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 			args: args{
 				os: []Option{validOption{}, validOption{}, failOption{}, validOption{}},
 			},
-			wantErr: failApplyError,
+			wantErr: errFailApply,
 		},
 		{
 			name: "error at last position",
@@ -162,7 +162,7 @@ func Test_internalOpts_applyOptions(t *testing.T) {
 			args: args{
 				os: []Option{validOption{}, validOption{}, failOption{}, validOption{}},
 			},
-			wantErr: failApplyError,
+			wantErr: errFailApply,
 		},
 	}
 	for _, tt := range tests {

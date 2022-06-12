@@ -14,8 +14,8 @@ type ReportEntry struct {
 	Value       reflect.Value
 	Key         string
 	ExternalKey string
-	Idx         int
 	Errors      []error
+	Idx         int
 }
 
 // Report is a binding report.

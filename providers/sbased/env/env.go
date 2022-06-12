@@ -31,7 +31,13 @@ func getRePrefixed(prefix string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^%s([^=]+)=(.*)$", prefix))
 }
 
-func newEntriesProvider(prefix string, environ []string) (*EntriesProvider, []error) {
+func newProvider(
+	prefix string,
+	environ []string,
+) (
+	*EntriesProvider,
+	[]error,
+) {
 	// ensure prefix is uppercase
 	if !rePrefix.MatchString(prefix) {
 		return nil, []error{fmt.Errorf("%q : %w", prefix, ErrInvalidPrefix)}
@@ -40,44 +46,51 @@ func newEntriesProvider(prefix string, environ []string) (*EntriesProvider, []er
 	res := &EntriesProvider{
 		prefix: prefix,
 	}
-	r, errs := extractEntries(environ, prefix)
+
+	entries, errs := extractEntries(environ, prefix)
 
 	if len(errs) > 0 {
 		return nil, errs
 	}
 
-	if len(r) > 0 {
-		res.entries = r
+	if len(entries) > 0 {
+		res.entries = entries
 	}
 
 	return res, nil
 }
 
-// NewEntriesProvider creates an entries provider based on environment variable scanning.
-// It's sensitive to a prefix that *MUST* match this regexp '^[A-Z][A-Z\d]*$'.
+// NewEntriesProvider creates an entries provider based on environment variable
+// scanning. It's sensitive to a prefix that *MUST* match this regexp
+// '^[A-Z][A-Z\d]*$'.
 func NewEntriesProvider(prefix string) (*EntriesProvider, []error) {
-	return newEntriesProvider(prefix, os.Environ())
+	return newProvider(prefix, os.Environ())
 }
 
 func extractEntries(env []string, prefix string) (sbased.Entries, []error) {
 	var errs []error
 
-	r := make(sbased.Entries, len(env))
+	entries := make(sbased.Entries, len(env))
 
 	sort.Strings(env)
 
 	rePrefixed := getRePrefixed(prefix)
 	for _, s := range env {
-		m := rePrefixed.FindStringSubmatch(s)
+		groups := rePrefixed.FindStringSubmatch(s)
 
-		if len(m) == 3 { //nolint:gomnd // this is expected
-			if reSubKey.MatchString(m[1]) {
-				r[strings.ToLower(m[1][1:])] = &sbased.Entry{
-					ExternalKey: fmt.Sprintf("%s%s", prefix, m[1]),
-					Value:       m[2],
+		if len(groups) == rePrefixed.NumSubexp()+1 {
+			if reSubKey.MatchString(groups[1]) {
+				entries[strings.ToLower(groups[1][1:])] = &sbased.Entry{
+					ExternalKey: fmt.Sprintf("%s%s", prefix, groups[1]),
+					Value:       groups[2],
 				}
 			} else {
-				errs = append(errs, fmt.Errorf("env var %s%s: %w", prefix, m[1], ErrInvalidKeyFormat))
+				errs = append(
+					errs, fmt.Errorf(
+						"env var %s%s: %w", prefix, groups[1],
+						ErrInvalidKeyFormat,
+					),
+				)
 			}
 		}
 	}
@@ -86,7 +99,7 @@ func extractEntries(env []string, prefix string) (sbased.Entries, []error) {
 		return nil, errs
 	}
 
-	return r, nil
+	return entries, nil
 }
 
 // GetEntries implements sbased.EntriesProvider interface.
@@ -95,6 +108,6 @@ func (ks *EntriesProvider) GetEntries() sbased.Entries {
 }
 
 // GetOrigin implements sbased.EntriesProvider interface.
-func (ks *EntriesProvider) GetOrigin() dsco.Origin {
+func (*EntriesProvider) GetOrigin() dsco.Origin {
 	return id
 }

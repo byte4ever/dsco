@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,14 +12,15 @@ import (
 
 func setEnv(t *testing.T, env map[string]string) {
 	t.Helper()
-	os.Clearenv()
 
 	for k, v := range env {
-		require.NoError(t, os.Setenv(k, v))
+		t.Setenv(k, v)
 	}
 }
 
 func TestRegexpPrefix(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		str     string
@@ -55,13 +55,17 @@ func TestRegexpPrefix(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			test.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
 				require.Equal(
 					t,
-					test.matches,
-					getRePrefixed(test.prefix).FindStringSubmatch(test.str),
+					tt.matches,
+					getRePrefixed(tt.prefix).FindStringSubmatch(tt.str),
 				)
 			},
 		)
@@ -69,6 +73,8 @@ func TestRegexpPrefix(t *testing.T) {
 }
 
 func TestRegexpKey(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		str     string
@@ -101,16 +107,23 @@ func TestRegexpKey(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tt := range tests {
+		tt := tt
+
 		t.Run(
-			test.name, func(t *testing.T) {
-				require.Equal(t, test.matches, reSubKey.MatchString(test.str))
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
+				require.Equal(t, tt.matches, reSubKey.MatchString(tt.str))
 			},
 		)
 	}
 }
 
 func Test_RegexpPrefix(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		str   string
@@ -149,16 +162,20 @@ func Test_RegexpPrefix(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			test.name, func(t *testing.T) {
-				require.Equal(t, test.match, rePrefix.MatchString(test.str))
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
+				require.Equal(t, tt.match, rePrefix.MatchString(tt.str))
 			},
 		)
 	}
 }
 
-func TestProvide(t *testing.T) {
+func TestProvide(t *testing.T) { //nolint:paralleltest // using env variable
 	type args struct {
 		env    map[string]string
 		prefix string
@@ -225,7 +242,7 @@ func TestProvide(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range tests { //nolint:paralleltest // using setenv
 		t.Run(
 			tt.name, func(t *testing.T) {
 				setEnv(t, tt.args.env)
@@ -239,13 +256,20 @@ func TestProvide(t *testing.T) {
 }
 
 func TestProvide_InvalidPrefix(t *testing.T) {
+	t.Parallel()
+
+	//nolint:paralleltest // paralleltest bug
 	for _, prefix := range []string{
 		"A A",
 		"ad",
 		"1A",
 	} {
+		prefix := prefix
 		t.Run(
-			fmt.Sprintf("invalid prefix %s", prefix), func(t *testing.T) {
+			fmt.Sprintf("invalid prefix %s", prefix),
+			func(t *testing.T) {
+				t.Parallel()
+
 				p, errs := NewEntriesProvider(prefix)
 				require.Len(t, errs, 1)
 				require.ErrorIs(t, errs[0], ErrInvalidPrefix)
@@ -257,6 +281,8 @@ func TestProvide_InvalidPrefix(t *testing.T) {
 }
 
 func TestProvider_GetEntries(t *testing.T) {
+	t.Parallel()
+
 	entries := sbased.Entries{
 		"a1": &sbased.Entry{
 			ExternalKey: "a",
@@ -276,12 +302,17 @@ func TestProvider_GetEntries(t *testing.T) {
 }
 
 func TestProvider_GetOrigin(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, dsco.Origin("env"), (&EntriesProvider{}).GetOrigin())
 }
 
 func TestProvideKeySyntaxError(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"", func(t *testing.T) {
+		"",
+		func(t *testing.T) {
 			keys := []string{
 				"PREFIX-1A-B",
 				"PREFIX-A-1B",

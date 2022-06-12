@@ -8,6 +8,8 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
+const errFmt = "key %s is defined: %w"
+
 // ErrNotPointerOnStruct represents an error where the interface to fill
 // is not a pointer to struct.
 var ErrNotPointerOnStruct = errors.New("not pointer on struct")
@@ -62,8 +64,8 @@ func checkStructRec(
 			)
 		}
 
-		switch fieldTyp.Type.String() {
-		case "*time.Time":
+		switch fieldTyp.Type.String() { //nolint:revive // will be removed soon
+		case "*time.Time": //nolint:goconst // will be removed soon
 			continue
 		}
 
@@ -86,7 +88,7 @@ func checkStructRec(
 
 			if !fieldVal.IsNil() {
 				return fmt.Errorf(
-					"key %s is defined: %w",
+					errFmt,
 					key,
 					ErrRequireEmptyStruct,
 				)
@@ -104,7 +106,7 @@ func checkStructRec(
 
 		if !fieldVal.IsNil() {
 			return fmt.Errorf(
-				"key %s is defined: %w",
+				errFmt,
 				key,
 				ErrRequireEmptyStruct,
 			)

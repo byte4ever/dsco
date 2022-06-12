@@ -17,7 +17,7 @@ func FuzzNewEntriesProvider(f *testing.F) {
 	f.Fuzz(
 		func(t *testing.T, prefix string, key string, value string) {
 			envKeyVar := fmt.Sprintf("%s=%s", key, value)
-			p, errs := newEntriesProvider(prefix, []string{envKeyVar})
+			p, errs := newProvider(prefix, []string{envKeyVar})
 			if p != nil && errs != nil {
 				t.Errorf("%v %v", p, errs)
 			}

@@ -13,7 +13,14 @@ import (
 
 var errMocked = errors.New("mocked error")
 
-func buildTestFile(t *testing.T, fileName string, fileContent []byte) (string, string, string, string) {
+func buildTestFile(
+	t *testing.T,
+	fileName string,
+	fileContent []byte,
+) (
+	[]string,
+	string,
+) {
 	t.Helper()
 
 	rootName := t.TempDir()
@@ -32,15 +39,14 @@ func buildTestFile(t *testing.T, fileName string, fileContent []byte) (string, s
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
-	return p1, p2, p3, pf
+	return []string{p1, p2, p3}, pf
 }
 
+//nolint:paralleltest // using local files
 func Test_NewSearchPath(t *testing.T) {
 	t.Run(
 		"success", func(t *testing.T) {
-			p1, p2, p3, pf := buildTestFile(t, "f", []byte("content"))
-
-			paths := []string{p1, p2, p3}
+			paths, pf := buildTestFile(t, "f", []byte("content"))
 
 			for i := 0; i < 3; i++ {
 				of, err := searchFile(paths, "f")
@@ -72,9 +78,7 @@ func Test_NewSearchPath(t *testing.T) {
 
 	t.Run(
 		"file not found", func(t *testing.T) {
-			p1, p2, p3, _ := buildTestFile(t, "f", []byte("content"))
-
-			paths := []string{p1, p2, p3}
+			paths, _ := buildTestFile(t, "f", []byte("content"))
 
 			s, err := NewMultiPath(paths, "not-present-file")
 			require.ErrorIs(t, err, ErrConfNotFound)
@@ -83,13 +87,13 @@ func Test_NewSearchPath(t *testing.T) {
 	)
 }
 
+//nolint:paralleltest // using local files
 func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 	t.Run(
 		"success", func(t *testing.T) {
 			expectedContent := []byte("content")
-			p1, p2, p3, _ := buildTestFile(t, "f", expectedContent)
+			paths, _ := buildTestFile(t, "f", expectedContent)
 
-			paths := []string{p1, p2, p3}
 			s, err := NewMultiPath(paths, "f")
 			require.NoError(t, err)
 			require.NoError(
@@ -98,6 +102,7 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 						content, err := ioutil.ReadAll(reader)
 						require.NoError(t, err)
 						require.Equal(t, expectedContent, content)
+
 						return nil
 					},
 				),
@@ -109,9 +114,8 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 		"perform error", func(t *testing.T) {
 			expectedContent := []byte("content")
 
-			p1, p2, p3, _ := buildTestFile(t, "f", expectedContent)
+			paths, _ := buildTestFile(t, "f", expectedContent)
 
-			paths := []string{p1, p2, p3}
 			s, err := NewMultiPath(paths, "f")
 			require.NoError(t, err)
 			require.ErrorIs(
@@ -129,17 +133,16 @@ func TestMultiPathFileSearcher_ReadClose(t *testing.T) {
 	t.Run(
 		"handle close error", func(t *testing.T) {
 			expectedContent := []byte("content")
-			p1, p2, p3, _ := buildTestFile(t, "f", expectedContent)
+			paths, _ := buildTestFile(t, "f", expectedContent)
 
-			paths := []string{p1, p2, p3}
-			s, err := NewMultiPath(paths, "f")
+			searcher, err := NewMultiPath(paths, "f")
 			require.NoError(t, err)
 
-			require.NoError(t, s.file.Close())
+			require.NoError(t, searcher.file.Close())
 
 			require.ErrorIs(
 				t,
-				s.Apply(
+				searcher.Apply(
 					func(reader io.Reader) error {
 						return nil
 					},

@@ -227,6 +227,7 @@ linters-settings:
       - io.Copy(*bytes.Buffer)
       - io.Copy(os.Stdout)
       - (*strings.Builder).WriteString(string)
+      - (*strings.Builder).WriteRune(rune)
 
   errchkjson:
     # With check-error-free-encoding set to true, errchkjson does warn about errors
@@ -542,7 +543,7 @@ linters-settings:
     # Default: false
     extra-rules: true
 
-  goheader: {}
+  #  goheader: {}
 #    # Supports two types 'const` and `regexp`.
 #    # Values can be used recursively.
 #    values:
@@ -1606,20 +1607,26 @@ linters:
 #    - contextcheck
 #    - nilerr
 #    - noctx
-#    - rowserrcheck
-#    - sqlclosecheck
-#    - structcheck
-#    - tparallel
-#    - unparam
-#    - wastedassign
+    #    - rowserrcheck
+    #    - sqlclosecheck
+    #    - structcheck
+    #    - tparallel
+    #    - unparam
+    #    - wastedassign
     ####  Removed
-#    - grouper
-#    - goheader
-#    - gci
+    #    - grouper
+    #    - goheader
+    #    - gci
+    ## Complexity
+    #    - cyclop
+    #    - gocyclo
+    #    - gocognit
+    #    - funlen
+    ## style
+    #    - gofumpt
     - asciicheck
     - bidichk
     - containedctx
-#    - cyclop
     - deadcode
     - decorder
     - depguard
@@ -1636,17 +1643,13 @@ linters:
     - exportloopref
     - forbidigo
     - forcetypeassert
-    - funlen
     - gochecknoglobals
     - gochecknoinits
-    - gocognit
     - goconst
     - gocritic
-    - gocyclo
     - godot
     - godox
     - goerr113
-#    - gofumpt
     - goimports
     - gomnd
     - gomoddirectives
@@ -1663,7 +1666,7 @@ linters:
     - lll
     - maintidx
     - makezero
-    - misspell
+    #    - misspell
     - nakedret
 #    - nestif
     - nilnil

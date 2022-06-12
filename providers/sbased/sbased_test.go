@@ -147,19 +147,19 @@ func TestProvide(t *testing.T) {
 		func(t *testing.T) {
 			option := NewMockOption(t)
 			option.On("apply", mock.Anything).Once().
-				Return(mockedError)
+				Return(errMocked)
 
 			p, err := NewBinder(
 				nil,
 				option,
 			)
-			require.ErrorIs(t, err, mockedError)
+			require.ErrorIs(t, err, errMocked)
 			require.Nil(t, p)
 		},
 	)
 }
 
-var mockedError = errors.New("mocked error")
+var errMocked = errors.New("mocked error")
 
 func getBinder() *Binder {
 	return &Binder{

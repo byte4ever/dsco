@@ -108,6 +108,7 @@ func (filler *Filler) fillStruct(rootKey string, v reflect.Value) {
 
 		key := utils.GetKeyName(rootKey, fieldTyp)
 
+		//nolint:revive // will be removed soon
 		switch fieldTyp.Type.String() {
 		case "*time.Time":
 			re := filler.layers.bind(key, field)

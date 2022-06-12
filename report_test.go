@@ -8,8 +8,13 @@ import (
 )
 
 func TestReport_addEntry(t *testing.T) {
+	t.Parallel()
+
 	t.Run(
-		"nil case", func(t *testing.T) {
+		"nil case",
+		func(t *testing.T) {
+			t.Parallel()
+
 			var report Report
 
 			report.addEntry(
@@ -28,7 +33,10 @@ func TestReport_addEntry(t *testing.T) {
 		},
 	)
 	t.Run(
-		"empty case", func(t *testing.T) {
+		"empty case",
+		func(t *testing.T) {
+			t.Parallel()
+
 			report := Report{}
 
 			report.addEntry(
@@ -47,7 +55,10 @@ func TestReport_addEntry(t *testing.T) {
 		},
 	)
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
 			report := Report{
 				ReportEntry{
 					Key: "k1",
@@ -76,7 +87,10 @@ func TestReport_addEntry(t *testing.T) {
 
 func TestReport_perEntryReport(t *testing.T) {
 	t.Run(
-		"", func(t *testing.T) {
+		"",
+		func(t *testing.T) {
+			t.Parallel()
+
 			report := Report{
 				ReportEntry{
 					Idx: 5,
@@ -113,12 +127,14 @@ func TestReport_perEntryReport(t *testing.T) {
 }
 
 func TestReportEntry_isFound(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Value       reflect.Value
 		Key         string
 		ExternalKey string
-		Idx         int
 		Errors      []error
+		Idx         int
 	}
 
 	tests := []struct {
@@ -150,8 +166,12 @@ func TestReportEntry_isFound(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(
-			tt.name, func(t *testing.T) {
+			tt.name,
+			func(t *testing.T) {
+				t.Parallel()
+
 				re := &ReportEntry{
 					Value:       tt.fields.Value,
 					Key:         tt.fields.Key,

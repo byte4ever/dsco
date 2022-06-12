@@ -48,10 +48,10 @@ func Example_newEntriesProvider_2() {
 		panic(err)
 	}
 
-	// Note the provider will only grab the environment variables that starts with
-	// the given prefix.
+	// N.B the provider will only grab the environment variables that starts
+	// with the provided prefix.
 
-	p, errs := NewEntriesProvider("API")
+	provider, errs := NewEntriesProvider("API")
 
 	if errs != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func Example_newEntriesProvider_2() {
 
 	fmt.Println("\nHere are the entries")
 
-	entries := p.GetEntries()
+	entries := provider.GetEntries()
 
 	sortedKeys := make([]string, 0, len(entries))
 
@@ -109,7 +109,8 @@ func Example_newEntriesProvider_3() {
 		panic(err)
 	}
 
-	// that key will match perfectly, but malformed keys will abort the creation.
+	// that key will match perfectly, but malformed keys will abort the
+	// creation.
 	err = os.Setenv("API-SOME-KEY4", "value3")
 	if err != nil {
 		panic(err)

@@ -30,7 +30,13 @@ func searchFile(paths []string, fileName string) (*os.File, error) {
 }
 
 // NewMultiPath creates a configuration searcher.
-func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, error) {
+func NewMultiPath(
+	paths []string,
+	fileName string,
+) (
+	*MultiPathFileSearcher,
+	error,
+) {
 	f, err := searchFile(paths, fileName)
 	if err != nil {
 		return nil, err
@@ -43,7 +49,9 @@ func NewMultiPath(paths []string, fileName string) (*MultiPathFileSearcher, erro
 }
 
 // Apply applies action using the reader.
-func (m *MultiPathFileSearcher) Apply(action func(r io.Reader) error) (err error) {
+func (m *MultiPathFileSearcher) Apply(
+	action func(r io.Reader) error,
+) (err error) {
 	defer func() {
 		errClose := m.file.Close()
 		if errClose != nil && err == nil {
