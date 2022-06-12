@@ -1129,7 +1129,7 @@ linters-settings:
         severity: warning
         disabled: false
         arguments:
-          - ["call-chain", "loop"]
+          - ["call-chain", "loop", "method-call", "recover", "return"]
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
       - name: dot-imports
         severity: warning
@@ -1153,7 +1153,7 @@ linters-settings:
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#error-naming
       - name: error-naming
         severity: warning
-        disabled: false
+        disabled: true
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#error-return
       - name: error-return
         severity: warning
@@ -1590,9 +1590,9 @@ linters-settings:
 #      description: This is an example usage of a plugin linter.
       # Intended to point to the repo location of the linter.
       # Optional.
+
+
 #      original-url: github.com/golangci/example-linter
-
-
 linters:
   disable-all: true
   enable:
@@ -1624,19 +1624,34 @@ linters:
     #    - funlen
     ## style
     #    - gofumpt
+    ## in default
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - typecheck
+    - unused
+    - varcheck
+    ## ---- VALIDATED ------
+    - revive
+    - wsl
+    - maintidx
+    - gocritic
+    - wrapcheck
+    - errname
+    - goerr113
+    - gofmt
+    ## ----- REMAIN --------
     - asciicheck
     - bidichk
     - containedctx
-    - deadcode
     - decorder
     - depguard
     - dogsled
     - dupl
     - durationcheck
-    - errcheck
     - errchkjson
-    - errname
-    - errorlint
     - execinquery
     - exhaustive
     - exhaustruct
@@ -1646,62 +1661,50 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - goconst
-    - gocritic
     - godot
     - godox
-    - goerr113
     - goimports
     - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
-    - govet
-    - gofmt
     - ifshort
     - importas
-    - ineffassign
     - ireturn
-    - lll
-    - maintidx
     - makezero
-    #    - misspell
     - nakedret
-#    - nestif
     - nilnil
     - nlreturn
     - nolintlint
-#    - nonamedreturns
     - nosprintfhostport
     - paralleltest
     - prealloc
     - predeclared
-    - promlinter
-    - revive
     - staticcheck
     - stylecheck
-#    - tagliatelle
     - tenv
-#    - testpackage
     - thelper
-    - typecheck
     - unconvert
-    - unused
-    - varcheck
     - varnamelen
-#    - whitespace
-    - wrapcheck
-    - wsl
-
+  #    - errorlint
+  #    - promlinter
+  #    - lll
+  #    - misspell
+  #    - nestif
+  #    - nonamedreturns
+  #    - tagliatelle
+  #    - testpackage
+  #    - whitespace
   # Enable presets.
+
   # https://golangci-lint.run/usage/linters
-#  presets:
-#    - bugs
-#    - comment
-#    - complexity
-#    - error
-#    - format
+  #  presets:
+  #    - bugs
+  #    - comment
+  #    - complexity
+  #    - error
+  #    - format
 #    - import
 #    - metalinter
 #    - module
@@ -1710,8 +1713,8 @@ linters:
 #    - style
 #    - test
 #    - unused
-
   # Run only fast linters from enabled linters set (first run won't be fast)
+
   # Default: false
   fast: false
 
