@@ -1,16 +1,12 @@
 package sbased2
 
-type StringValue struct {
-	Key      string
-	Location string
-	Value    string
+// Binder is a string based binder
+type Binder struct {
+	internalOpts
+	values stringValues
 }
 
-type StringValues []StringValue
-
-type StringValuesProvider interface {
-	GetStringValues() StringValues
-}
+type stringValues map[string]*stringValue
 
 type stringValue struct {
 	location string
@@ -19,8 +15,8 @@ type stringValue struct {
 	used     bool
 }
 
-func newStringValue(value StringValue) stringValue {
-	return stringValue{
+func newStringValue(value *StringValue) *stringValue {
+	return &stringValue{
 		location: value.Location,
 		value:    value.Value,
 		bounded:  false,
@@ -28,33 +24,35 @@ func newStringValue(value StringValue) stringValue {
 	}
 }
 
-type stringValues map[string]stringValue
-
 func newStringValues(
-	values StringValues,
+	strValues StringValues,
 	aliases map[string]string,
 ) stringValues {
-	r := make(stringValues, len(values))
+	if len(strValues) == 0 {
+		return nil
+	}
 
-	for _, value := range values {
+	values := make(stringValues, len(strValues))
+
+	for _, value := range strValues {
 		actualKey, found := aliases[value.Key]
 
 		if !found {
 			actualKey = value.Key
 		}
 
-		r[actualKey] = newStringValue(value)
+		values[actualKey] = newStringValue(value)
 	}
 
-	return r
+	return values
 }
 
-type Binder struct {
-	internalOpts
-	values stringValues
-}
-
+// New creates a new string based binder
 func New(provider StringValuesProvider, options ...Option) (*Binder, error) {
+	if provider == nil {
+		return nil, ErrNilProvider
+	}
+
 	internalOptions := internalOpts{}
 
 	if err := internalOptions.applyOptions(options); err != nil {

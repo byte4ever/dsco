@@ -1,8 +1,13 @@
 package sbased2
 
 import (
+	"errors"
 	"fmt"
 )
+
+// ErrNoAliasesProvided represent an error where no aliases map was
+// provided with option.
+var ErrNoAliasesProvided = errors.New("no aliases provided")
 
 // Option is processing option for string based binder.
 type Option interface {
@@ -31,15 +36,15 @@ func (o *internalOpts) applyOptions(options []Option) error {
 }
 
 func (a AliasesOption) apply(opts *internalOpts) error {
-	opts.aliases = a
-	return nil
+	if len(a) > 0 {
+		opts.aliases = a
+		return nil
+	}
+
+	return ErrNoAliasesProvided
 }
 
 // WithAliases returns a keys aliasing option.
 func WithAliases(mapping map[string]string) AliasesOption {
-	if lm := len(mapping); lm == 0 {
-		return nil
-	}
-
 	return mapping
 }

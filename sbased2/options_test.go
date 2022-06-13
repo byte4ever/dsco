@@ -34,7 +34,7 @@ func TestWithAliases(t *testing.T) {
 			args: args{
 				mapping: make(map[string]string),
 			},
-			want: nil,
+			want: AliasesOption{},
 		},
 		{
 			name: "success",
@@ -73,7 +73,7 @@ func TestAliasesOption_apply(t *testing.T) {
 
 			o := &internalOpts{}
 
-			require.NoError(t, ao.apply(o))
+			require.ErrorIs(t, ao.apply(o), ErrNoAliasesProvided)
 			require.Nil(t, o.aliases)
 		},
 	)

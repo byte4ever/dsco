@@ -5,86 +5,58 @@ import (
 	"reflect"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/byte4ever/dsco"
 )
 
-type Value struct {
-	Succeed  bool
-	Location string
-	Value    reflect.Value
-	Error    error
-}
-
 // Bind implements the dscoBinder interface.
-//nolint:revive // refacto soon
 func (s *Binder) Bind(
 	key string,
 	dstType reflect.Type,
-) Value { // origin dsco.Origin,
-	// keyOut string,
-	// succeed bool,
-	// outVal reflect.Value,
-	// err error,
-
-	const errFmt = "%s/%s: %w"
-
+	markUsed bool,
+) dsco.BoundingAttempt {
+	// check for alias collisions
 	if _, found := s.aliases[key]; found {
-		return Value{
-			Succeed:  false,
-			Location: key,
-			Value:    reflect.Value{},
-			Error:    nil,
+		return dsco.BoundingAttempt{
+			Error: ErrAliasCollision,
 		}
 	}
 
-	entry, found := s.entries[key]
+	entry, found := s.values[key]
 	if !found {
-		return
+		return dsco.BoundingAttempt{}
 	}
 
 	entry.bounded = true
-	keyOut = entry.ExternalKey
 
 	var tp reflect.Value
 
-	dType := (dstValue).Type()
-	switch dType.Kind() { //nolint:exhaustive // it's expected
+	switch dstType.Kind() { //nolint:exhaustive // it's expected
 	case reflect.Pointer:
-		tp = reflect.New(dType.Elem())
-
-		if err = yaml.Unmarshal(
-			[]byte(entry.Value), tp.Interface(),
-		); err != nil {
-			err = fmt.Errorf(errFmt, origin, entry.ExternalKey, ErrParse)
-			return
-		}
-
-		if set {
-			entry.used = true
-			succeed = true
-			outVal = tp
-		}
-
-		return
-
+		tp = reflect.New(dstType.Elem())
 	case reflect.Slice:
-		tp = reflect.New(dType)
-
-		if err = yaml.Unmarshal(
-			[]byte(entry.Value), tp.Interface(),
-		); err != nil {
-			err = fmt.Errorf(errFmt, origin, entry.ExternalKey, ErrParse)
-			return
-		}
-
-		if set {
-			entry.used = true
-			succeed = true
-			outVal = tp.Elem()
-		}
-
-		return
-
+		tp = reflect.New(dstType)
 	default:
 		panic("should never happen")
+	}
+
+	if err := yaml.Unmarshal(
+		[]byte(entry.value), tp.Interface(),
+	); err != nil {
+		return dsco.BoundingAttempt{
+			Location: entry.location,
+			Error: fmt.Errorf(
+				"%s: %w",
+				entry.location,
+				ErrParse,
+			),
+		}
+	}
+
+	entry.used = markUsed
+
+	return dsco.BoundingAttempt{
+		Location: entry.location,
+		Value:    tp,
 	}
 }

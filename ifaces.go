@@ -36,3 +36,23 @@ type reportInterface interface {
 	perEntryReport() (errs []error)
 	addEntry(e ReportEntry)
 }
+
+// BoundingAttempt is a bounded value.
+type BoundingAttempt struct {
+	Error    error
+	Value    reflect.Value
+	Location string
+}
+
+// Binder2 defines the ability to bind/create a value based on a given key. When
+// set is true the value is actually created otherwise it will only perform all
+// checks and value is not created.
+type Binder2 interface {
+	Bind(
+		key string,
+		dstType reflect.Type,
+		markUsed bool,
+	) BoundingAttempt
+
+	Errors() []error
+}
