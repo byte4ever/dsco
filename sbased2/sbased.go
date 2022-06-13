@@ -1,5 +1,13 @@
 package sbased2
 
+type bindState uint8
+
+const (
+	unbounded bindState = iota
+	unused
+	used
+)
+
 // Binder is a string based binder
 type Binder struct {
 	internalOpts
@@ -11,16 +19,14 @@ type stringValues map[string]*stringValue
 type stringValue struct {
 	location string
 	value    string
-	bounded  bool
-	used     bool
+	state    bindState
 }
 
 func newStringValue(value *StringValue) *stringValue {
 	return &stringValue{
 		location: value.Location,
 		value:    value.Value,
-		bounded:  false,
-		used:     false,
+		state:    unbounded,
 	}
 }
 

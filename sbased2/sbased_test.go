@@ -10,23 +10,27 @@ func nilProviderBuilder(*testing.T) StringValuesProvider {
 	return nil
 }
 
-func valuesProviderBuilder(
+func valuesProviderBuilderWithCall(
 	values StringValues,
-	call bool,
 ) func(t *testing.T) StringValuesProvider {
 	return func(t *testing.T) StringValuesProvider {
 		t.Helper()
 
 		mockedProvider := NewMockStringValuesProvider(t)
 
-		if call {
-			mockedProvider.
-				On("GetStringValues").
-				Return(values).
-				Once()
-		}
+		mockedProvider.
+			On("GetStringValues").
+			Return(values).
+			Once()
 
 		return mockedProvider
+	}
+}
+
+func valuesProviderBuilder() func(t *testing.T) StringValuesProvider {
+	return func(t *testing.T) StringValuesProvider {
+		t.Helper()
+		return NewMockStringValuesProvider(t)
 	}
 }
 
@@ -48,7 +52,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "success",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
+				providerBuilder: valuesProviderBuilderWithCall(
 					StringValues{
 						{
 							Key:      "key1",
@@ -65,7 +69,7 @@ func TestNew(t *testing.T) {
 							Location: "loc-key3",
 							Value:    "val3",
 						},
-					}, true,
+					},
 				),
 				options: nil,
 			},
@@ -89,10 +93,8 @@ func TestNew(t *testing.T) {
 		{
 			name: "success no keys",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
-					StringValues{}, true,
-				),
-				options: nil,
+				providerBuilder: valuesProviderBuilderWithCall(StringValues{}),
+				options:         nil,
 			},
 			expectedState: &Binder{
 				values: stringValues(nil),
@@ -101,8 +103,8 @@ func TestNew(t *testing.T) {
 		{
 			name: "success nil keys",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
-					StringValues(nil), true,
+				providerBuilder: valuesProviderBuilderWithCall(
+					StringValues(nil),
 				),
 				options: nil,
 			},
@@ -113,7 +115,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "with aliases",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
+				providerBuilder: valuesProviderBuilderWithCall(
 					StringValues{
 						{
 							Key:      "alias1",
@@ -130,7 +132,7 @@ func TestNew(t *testing.T) {
 							Location: "loc-key3",
 							Value:    "val3",
 						},
-					}, true,
+					},
 				),
 				options: []Option{
 					WithAliases(
@@ -167,9 +169,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "with no aliases provided",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
-					StringValues{}, false,
-				),
+				providerBuilder: valuesProviderBuilder(),
 				options: []Option{
 					WithAliases(
 						map[string]string{},
@@ -182,9 +182,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "with nil aliases provided",
 			args: argsT{
-				providerBuilder: valuesProviderBuilder(
-					StringValues{}, false,
-				),
+				providerBuilder: valuesProviderBuilder(),
 				options: []Option{
 					WithAliases(nil),
 				},

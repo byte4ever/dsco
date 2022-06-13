@@ -44,15 +44,25 @@ type BoundingAttempt struct {
 	Location string
 }
 
-// Binder2 defines the ability to bind/create a value based on a given key. When
-// set is true the value is actually created otherwise it will only perform all
-// checks and value is not created.
+// Binder2 defines new binder behaviour (simpler).
 type Binder2 interface {
 	Bind(
 		key string,
 		dstType reflect.Type,
-		markUsed bool,
 	) BoundingAttempt
+
+	Use(
+		key string,
+	) error
 
 	Errors() []error
 }
+
+// HasValue returns true when bounding attempts value is avaibble.
+func (ba *BoundingAttempt) HasValue() bool {
+	return ba.Value.IsValid()
+}
+
+// Binder2 defines the ability to bind/create a value based on a given key. When
+// set is true the value is actually created otherwise it will only perform all
+// checks and value is not created.

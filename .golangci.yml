@@ -1674,7 +1674,6 @@ linters:
     - makezero
     - nakedret
     - nilnil
-    - nlreturn
     - nolintlint
     - nosprintfhostport
     - paralleltest
@@ -1682,6 +1681,7 @@ linters:
     - staticcheck
     - stylecheck
     - thelper
+#    - nlreturn
 #    - tenv
   #    - unconvert
   #    - execinquery

@@ -53,7 +53,7 @@ func TestWithAliases(t *testing.T) {
 				t.Parallel()
 				got := WithAliases(tt.args.mapping)
 				require.Equalf(
-					t, tt.want, got, "WithAliases() = %v, want %v", got,
+					t, tt.want, got, "WithAliases() = %v, wantErrorIs %v", got,
 					tt.want,
 				)
 			},
