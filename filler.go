@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/byte4ever/dsco/utils"
 )
@@ -40,49 +39,17 @@ func checkLayers(layers []Binder) error {
 	case 1:
 		return fmt.Errorf(
 			"layer %s is nil: %w",
-			formatIndexSequence(nilIndexes),
+			utils.FormatIndexSequence(nilIndexes),
 			ErrInvalidLayers,
 		)
 
 	default:
 		return fmt.Errorf(
 			"layers %s are nil: %w",
-			formatIndexSequence(nilIndexes),
+			utils.FormatIndexSequence(nilIndexes),
 			ErrInvalidLayers,
 		)
 	}
-}
-
-func formatIndexSequence(indexes []int) string {
-	const (
-		single     = "#%d"
-		comaSingle = ", " + single
-		andSingle  = " and " + single
-	)
-
-	indexesLen := len(indexes)
-
-	if indexesLen == 0 {
-		panic("no sequence to format")
-	}
-
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf(single, indexes[0]))
-
-	if indexesLen == 1 {
-		return sb.String()
-	}
-
-	if indexesLen > 2 {
-		for _, idx := range indexes[1 : indexesLen-1] {
-			sb.WriteString(fmt.Sprintf(comaSingle, idx))
-		}
-	}
-
-	sb.WriteString(fmt.Sprintf(andSingle, indexes[indexesLen-1]))
-
-	return sb.String()
 }
 
 // NewFiller creates a new filler using layers.

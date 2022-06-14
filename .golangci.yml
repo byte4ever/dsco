@@ -1227,7 +1227,7 @@ linters-settings:
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#line-length-limit
       - name: line-length-limit
         severity: warning
-        disabled: false
+        disabled: true
         arguments: [80]
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#max-public-structs
       - name: max-public-structs
@@ -1681,6 +1681,7 @@ linters:
     - staticcheck
     - stylecheck
     - thelper
+    - lll
 #    - nlreturn
 #    - tenv
   #    - unconvert
@@ -1689,7 +1690,6 @@ linters:
   #    - bidichk
   #    - errorlint
   #    - promlinter
-  #    - lll
   #    - misspell
   #    - nestif
   #    - nonamedreturns
