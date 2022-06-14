@@ -19,7 +19,7 @@ type Binder struct {
 var _ dsco.Binder = &Binder{}
 
 // Bind implements the dscoBinder interface.
-//nolint:revive // refacto soon
+//nolint:revive // refactoring code soon
 func (s *Binder) Bind(
 	key string,
 	set bool,

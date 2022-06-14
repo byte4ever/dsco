@@ -58,7 +58,7 @@ type Binder2 interface {
 	Errors() []error
 }
 
-// HasValue returns true when bounding attempts value is avaibble.
+// HasValue returns true when bounding attempts value is available.
 func (ba *BindingAttempt) HasValue() bool {
 	return ba.Value.IsValid()
 }
