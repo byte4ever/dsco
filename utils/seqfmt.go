@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// FormatIndexSequence formats nicely sequences of indexes.
 func FormatIndexSequence(indexes []int) string {
 	const (
 		single     = "#%d"

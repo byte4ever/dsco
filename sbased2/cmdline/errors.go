@@ -16,6 +16,8 @@ var ErrParamFormat = errors.New("options param not in --xxx=val format")
 // duplicated options in the command line.
 var ErrDuplicateParam = errors.New("duplicate param")
 
+// ParamError represents an error when creating the provider with invalid
+// parameters.
 type ParamError struct {
 	Positions []int
 	Errs      []error
@@ -51,6 +53,7 @@ func (e *ParamError) Error() string {
 		if i != 0 {
 			sb.WriteString(" / ")
 		}
+
 		sb.WriteString(err.Error())
 	}
 

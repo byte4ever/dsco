@@ -21,8 +21,8 @@ func TestParamError_Error(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		fields fields
 		want   string
+		fields fields
 	}{
 		{
 			name: "multiple errors",
