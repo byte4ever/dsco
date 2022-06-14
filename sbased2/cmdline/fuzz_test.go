@@ -2,15 +2,33 @@ package cmdline
 
 import (
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func FuzzNewEntriesProvider(f *testing.F) {
-	f.Add("--arg1=asdasd", "--arg1=asdasd1")
-	f.Add("--arg1_-asd=asdasd", "--arg2=asdasd1")
-	f.Add("--arg1-asd", "--arg2=asdasd1")
+	testsParams := [][]string{
+		{},
+		{"--arg1=asdasd", "--arg1=asdasd1", "--arg3=asdasd", "--arg4=asdasd1"},
+		{"--arg1=asdasd"},
+		{"--arg1_-asd=asdasd", "--arg2=asdasd1"},
+		{"--arg1_-asd=asdasd", "--arg2=asdasd1"},
+	}
+
+	for _, param := range testsParams {
+		data, _ := yaml.Marshal(param)
+		f.Add(data)
+	}
+
 	f.Fuzz(
-		func(t *testing.T, param1 string, param2 string) {
-			p, err := NewEntriesProvider([]string{param1, param1})
+		func(t *testing.T, data []byte) {
+			var vr []string
+
+			if err := yaml.Unmarshal(data, &vr); err != nil {
+				t.Skip()
+			}
+			t.Log(vr)
+			p, err := NewEntriesProvider(vr)
 			if p != nil && err != nil {
 				t.Errorf("%v %v", p, err)
 			}
