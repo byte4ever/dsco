@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBoundingAttempt_HasValue(t *testing.T) {
+func TestBindingAttempt_HasValue(t *testing.T) {
 	t.Parallel()
 
 	t.Run(
@@ -15,7 +15,7 @@ func TestBoundingAttempt_HasValue(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			attempt := BoundingAttempt{}
+			attempt := BindingAttempt{}
 
 			require.False(t, attempt.HasValue())
 		},
@@ -26,7 +26,7 @@ func TestBoundingAttempt_HasValue(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			attempt := BoundingAttempt{
+			attempt := BindingAttempt{
 				Value: reflect.ValueOf(10),
 			}
 

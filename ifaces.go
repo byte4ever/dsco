@@ -37,8 +37,8 @@ type reportInterface interface {
 	addEntry(e ReportEntry)
 }
 
-// BoundingAttempt is a bounded value.
-type BoundingAttempt struct {
+// BindingAttempt is a bounded value.
+type BindingAttempt struct {
 	Error    error
 	Value    reflect.Value
 	Location string
@@ -49,7 +49,7 @@ type Binder2 interface {
 	Bind(
 		key string,
 		dstType reflect.Type,
-	) BoundingAttempt
+	) BindingAttempt
 
 	Use(
 		key string,
@@ -59,7 +59,7 @@ type Binder2 interface {
 }
 
 // HasValue returns true when bounding attempts value is avaibble.
-func (ba *BoundingAttempt) HasValue() bool {
+func (ba *BindingAttempt) HasValue() bool {
 	return ba.Value.IsValid()
 }
 

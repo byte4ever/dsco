@@ -23,19 +23,19 @@ var ErrInvalidType = errors.New("invalid type")
 func (s *Binder) Bind(
 	key string,
 	dstType reflect.Type,
-) dsco.BoundingAttempt {
+) dsco.BindingAttempt {
 	const errFmt = "%s: %w"
 
 	// check for alias collisions
 	if _, found := s.aliases[key]; found {
-		return dsco.BoundingAttempt{
+		return dsco.BindingAttempt{
 			Error: fmt.Errorf(errFmt, key, ErrAliasCollision),
 		}
 	}
 
 	entry, found := s.values[key]
 	if !found {
-		return dsco.BoundingAttempt{}
+		return dsco.BindingAttempt{}
 	}
 
 	var tp reflect.Value
@@ -47,7 +47,7 @@ func (s *Binder) Bind(
 		if err := yaml.Unmarshal(
 			[]byte(entry.value), tp.Interface(),
 		); err != nil {
-			return dsco.BoundingAttempt{
+			return dsco.BindingAttempt{
 				Location: entry.location,
 				Error: fmt.Errorf(
 					errFmt,
@@ -59,7 +59,7 @@ func (s *Binder) Bind(
 
 		entry.state = unused
 
-		return dsco.BoundingAttempt{
+		return dsco.BindingAttempt{
 			Location: entry.location,
 			Value:    tp,
 		}
@@ -69,7 +69,7 @@ func (s *Binder) Bind(
 		if err := yaml.Unmarshal(
 			[]byte(entry.value), tp.Interface(),
 		); err != nil {
-			return dsco.BoundingAttempt{
+			return dsco.BindingAttempt{
 				Location: entry.location,
 				Error: fmt.Errorf(
 					errFmt,
@@ -81,13 +81,13 @@ func (s *Binder) Bind(
 
 		entry.state = unused
 
-		return dsco.BoundingAttempt{
+		return dsco.BindingAttempt{
 			Location: entry.location,
 			Value:    tp.Elem(),
 		}
 
 	default:
-		return dsco.BoundingAttempt{
+		return dsco.BindingAttempt{
 			Location: entry.location,
 			Error: fmt.Errorf(
 				errFmt,
