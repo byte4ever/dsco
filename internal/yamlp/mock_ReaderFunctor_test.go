@@ -13,13 +13,13 @@ type MockReaderFunctor struct {
 	mock.Mock
 }
 
-// Apply provides a mock function with given fields: perform
-func (_m *MockReaderFunctor) Apply(perform func(io.Reader) error) error {
-	ret := _m.Called(perform)
+// Apply provides a mock function with given fields: action
+func (_m *MockReaderFunctor) Apply(action func(io.Reader) error) error {
+	ret := _m.Called(action)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(func(io.Reader) error) error); ok {
-		r0 = rf(perform)
+		r0 = rf(action)
 	} else {
 		r0 = ret.Error(0)
 	}

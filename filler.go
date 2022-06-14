@@ -18,7 +18,7 @@ type Filler struct {
 // creation time.
 var ErrInvalidLayers = errors.New("invalid layers")
 
-func checkLayers(layers []Binder) error {
+func checkLayers(layers []Binder2) error {
 	layersLength := len(layers)
 	if layersLength < 1 {
 		return fmt.Errorf("no layers: %w", ErrInvalidLayers)
@@ -53,7 +53,7 @@ func checkLayers(layers []Binder) error {
 }
 
 // NewFiller creates a new filler using layers.
-func NewFiller(l ...Binder) (*Filler, error) {
+func NewFiller(l ...Binder2) (*Filler, error) {
 	if err := checkLayers(l); err != nil {
 		return nil, err
 	}

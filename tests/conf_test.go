@@ -9,10 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 
 	gc "github.com/byte4ever/dsco"
-	"github.com/byte4ever/dsco/providers/sbased"
-	"github.com/byte4ever/dsco/providers/sbased/cmdline"
-	"github.com/byte4ever/dsco/providers/sbased/env"
-	"github.com/byte4ever/dsco/providers/strukt"
+	"github.com/byte4ever/dsco/sbased2"
+	"github.com/byte4ever/dsco/sbased2/cmdline"
+	"github.com/byte4ever/dsco/sbased2/env"
+	"github.com/byte4ever/dsco/strukt"
 )
 
 type Zonk struct {
@@ -85,25 +85,25 @@ func Test(t *testing.T) {
 		},
 	}
 
-	provideC1, err := strukt.NewBinder(c1)
+	provideC1, err := strukt.NewBinder("l1", c1)
 	require.NoError(t, err)
 
-	provideC2, err := strukt.NewBinder(c2)
+	provideC2, err := strukt.NewBinder("l2", c2)
 	require.NoError(t, err)
 
-	provideC4, err := strukt.NewBinder(c4)
+	provideC4, err := strukt.NewBinder("l3", c4)
 	require.NoError(t, err)
 
 	require.NoError(t, os.Setenv("SRV-VERBOSITY", `yes`))
 	require.NoError(t, os.Setenv("SRV-L", `[q, w, e]`))
 	require.NoError(t, os.Setenv("SRV-NA_NA", `111`))
 
-	provideC3p, errs := env.NewEntriesProvider("SRV")
-	require.Nil(t, errs)
+	provideC3p, err := env.NewEntriesProvider("SRV")
+	require.NoError(t, err)
 
-	provideC3, err := sbased.NewBinder(
+	provideC3, err := sbased2.New(
 		provideC3p,
-		sbased.WithAliases(
+		sbased2.WithAliases(
 			map[string]string{
 				"verbosity": "z-b",
 			},
@@ -121,9 +121,9 @@ func Test(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	provideC5, err := sbased.NewBinder(
+	provideC5, err := sbased2.New(
 		provideC5p,
-		sbased.WithAliases(
+		sbased2.WithAliases(
 			map[string]string{
 				"last_name": "z-last_name",
 				"shitty":    "should-not-scan",
@@ -142,7 +142,7 @@ func Test(t *testing.T) {
 	require.NoError(t, err)
 
 	var cc Root
-	errs = cf.Fill(&cc)
+	errs := cf.Fill(&cc)
 	require.Empty(t, errs)
 
 	ll, err := yaml.Marshal(cc)

@@ -56,8 +56,8 @@ func (b *Binder) Bind(key string, dstType reflect.Type) dsco.BindingAttempt {
 			Location: keyLocation,
 			Error: fmt.Errorf(
 				"cannot bind type %v to type %v: %w",
-				entryValTyp,
-				dstType,
+				entryValTyp.String(),
+				dstType.String(),
 				ErrTypeMismatch,
 			),
 		}

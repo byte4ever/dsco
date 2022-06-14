@@ -40,7 +40,7 @@ func TestNewFiller(t *testing.T) {
 	t.Run(
 		"no layers provided empty case", func(t *testing.T) {
 			t.Parallel()
-			b, err := NewFiller([]Binder{}...)
+			b, err := NewFiller([]Binder2{}...)
 			require.Nil(t, b)
 			require.ErrorIs(t, err, ErrInvalidLayers)
 		},
@@ -49,10 +49,10 @@ func TestNewFiller(t *testing.T) {
 	t.Run(
 		"success", func(t *testing.T) {
 			t.Parallel()
-			b1 := NewMockBinder(t)
-			b2 := NewMockBinder(t)
-			b3 := NewMockBinder(t)
-			l := []Binder{b1, b2, b3}
+			b1 := NewMockBinder2(t)
+			b2 := NewMockBinder2(t)
+			b3 := NewMockBinder2(t)
+			l := []Binder2{b1, b2, b3}
 			b, err := NewFiller(l...)
 			require.NotNil(t, b)
 			require.NoError(t, err)
@@ -423,7 +423,7 @@ func TestNewFiller_checkLayers(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		l []Binder
+		l []Binder2
 	}
 
 	tests := []struct {
@@ -445,7 +445,7 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "empty case",
 			args: args{
-				l: []Binder{},
+				l: []Binder2{},
 			},
 			want:              nil,
 			wantErr:           ErrInvalidLayers,
@@ -454,7 +454,7 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "single nil binder",
 			args: args{
-				l: []Binder{nil},
+				l: []Binder2{nil},
 			},
 			want:              nil,
 			wantErr:           ErrInvalidLayers,
@@ -463,7 +463,7 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "second binder is nil",
 			args: args{
-				l: []Binder{NewMockBinder(t), nil},
+				l: []Binder2{NewMockBinder2(t), nil},
 			},
 			want:              nil,
 			wantErr:           ErrInvalidLayers,
@@ -472,10 +472,10 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "second binder is nil (middle)",
 			args: args{
-				l: []Binder{
-					NewMockBinder(t),
+				l: []Binder2{
+					NewMockBinder2(t),
 					nil,
-					NewMockBinder(t),
+					NewMockBinder2(t),
 				},
 			},
 			want:              nil,
@@ -485,10 +485,10 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "last binder is nil",
 			args: args{
-				l: []Binder{
-					NewMockBinder(t),
-					NewMockBinder(t),
-					NewMockBinder(t),
+				l: []Binder2{
+					NewMockBinder2(t),
+					NewMockBinder2(t),
+					NewMockBinder2(t),
 					nil,
 				},
 			},
@@ -499,16 +499,16 @@ func TestNewFiller_checkLayers(t *testing.T) {
 		{
 			name: "multiple binder are nil",
 			args: args{
-				l: []Binder{
-					NewMockBinder(t),
+				l: []Binder2{
+					NewMockBinder2(t),
 					nil, // #1
-					NewMockBinder(t),
-					NewMockBinder(t),
+					NewMockBinder2(t),
+					NewMockBinder2(t),
 					nil, // #4
 					nil, // #5
-					NewMockBinder(t),
-					NewMockBinder(t),
-					NewMockBinder(t),
+					NewMockBinder2(t),
+					NewMockBinder2(t),
+					NewMockBinder2(t),
 					nil, // #9
 					nil, // #10
 					nil, // #11

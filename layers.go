@@ -6,7 +6,7 @@ import (
 
 var _ layersIFace = layers{}
 
-type layers []Binder
+type layers []Binder2
 
 func (l layers) bind(
 	key string,
@@ -18,19 +18,25 @@ func (l layers) bind(
 		outVal           reflect.Value
 	)
 
+	dstValType := dstValue.Type()
+
 	errs := make([]error, 0, len(l))
 
 	for idx, binder := range l {
-		// todo :- lmartin 6/5/22 -: to many results here, should be simplified
-		_, keyOut, success, v, err := binder.Bind(key, idxFound == -1, dstValue)
-
-		if err == nil && idxFound == -1 && success {
+		bindingAttempt := binder.Bind(key, dstValType)
+		if bindingAttempt.Error == nil &&
+			idxFound == -1 &&
+			bindingAttempt.HasValue() {
 			idxFound = idx
-			externalKeyFound = keyOut
-			outVal = v
+			externalKeyFound = bindingAttempt.Location
+			outVal = bindingAttempt.Value
+
+			if err := binder.Use(key); err != nil {
+				panic(err)
+			}
 		}
 
-		errs = append(errs, err)
+		errs = append(errs, bindingAttempt.Error)
 	}
 
 	return ReportEntry{
@@ -46,7 +52,7 @@ func (l layers) getPostProcessErrors() []error {
 	var errs []error
 
 	for _, layer := range l {
-		if e := layer.GetPostProcessErrors(); len(e) > 0 {
+		if e := layer.Errors(); len(e) > 0 {
 			errs = append(errs, e...)
 		}
 	}
