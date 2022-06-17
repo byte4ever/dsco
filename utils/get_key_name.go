@@ -10,7 +10,7 @@ func GetKeyName(prefix string, fieldType reflect.StructField) (keyName string) {
 	fn := fieldName(fieldType)
 
 	if fn == "" {
-		fn = toSnakeCase(fieldType.Name)
+		fn = ToSnakeCase(fieldType.Name)
 	}
 
 	if prefix == "" {

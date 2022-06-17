@@ -10,7 +10,7 @@ var (
 	matchAllCap   = regexp.MustCompile(`([a-z\\d])([A-Z])`)
 )
 
-func toSnakeCase(str string) string {
+func ToSnakeCase(str string) string {
 	const snakePattern = "${1}_${2}"
 
 	snake := matchFirstCap.ReplaceAllString(str, snakePattern)
@@ -18,9 +18,3 @@ func toSnakeCase(str string) string {
 
 	return strings.ToLower(snake)
 }
-
-// Shitty stuff
-//
-// func pipo() {
-// 	fmt.Println("zob")
-// }
