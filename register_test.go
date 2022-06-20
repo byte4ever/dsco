@@ -111,7 +111,7 @@ func Test_longTypeName(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				require.Equal(t, tt.want, longTypeName(tt.args.t))
+				require.Equal(t, tt.want, LongTypeName(tt.args.t))
 			},
 		)
 	}
@@ -223,7 +223,7 @@ func Test_typeIsRegistered(t *testing.T) {
 		{
 			name: "time.Time",
 			args: args{
-				v: R(&time.Time{}),
+				v: &time.Time{},
 			},
 			want: true,
 		},

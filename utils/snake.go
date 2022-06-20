@@ -10,10 +10,11 @@ var (
 	matchAllCap   = regexp.MustCompile(`([a-z\\d])([A-Z])`)
 )
 
-func ToSnakeCase(str string) string {
+// ToSnakeCase converts s to snake case.
+func ToSnakeCase(s string) string {
 	const snakePattern = "${1}_${2}"
 
-	snake := matchFirstCap.ReplaceAllString(str, snakePattern)
+	snake := matchFirstCap.ReplaceAllString(s, snakePattern)
 	snake = matchAllCap.ReplaceAllString(snake, snakePattern)
 
 	return strings.ToLower(snake)

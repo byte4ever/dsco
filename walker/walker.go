@@ -22,7 +22,11 @@ type stack []*elem
 
 type elems []*elem
 
-type WalkFunc func(path string, value *reflect.Value) error
+type WalkFunc func(
+	order int,
+	path string,
+	value *reflect.Value,
+) error
 
 type walker struct {
 	walkFunc WalkFunc
@@ -39,14 +43,6 @@ func (e elems) Less(i, j int) bool {
 
 func (e elems) Swap(i, j int) {
 	e[i], e[j] = e[j], e[i]
-}
-
-func newStack(count int) stack {
-	if count == 0 {
-		return stack{}
-	}
-
-	return make(stack, count)
 }
 
 func (s *stack) push(e *elem) {
@@ -105,7 +101,7 @@ func pushToStack(
 	}
 }
 
-func (w *walker) walk(curPath string, value reflect.Value) error {
+func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 	t := value.Type()
 
 	if t.Kind() != reflect.Pointer {
@@ -117,7 +113,9 @@ func (w *walker) walk(curPath string, value reflect.Value) error {
 		return errors.New("expect pointer on struct")
 	}
 
-	st := newStack(0)
+	var st stack
+	{
+	}
 
 	pushToStack(0, "", &st, value.Elem())
 
@@ -187,11 +185,11 @@ func (w *walker) walk(curPath string, value reflect.Value) error {
 
 			if w.scanMode {
 				if !e.value.IsNil() {
-					if err := w.walkFunc(ck, &e.value); err != nil {
+					if err := w.walkFunc(*id, ck, &e.value); err != nil {
 						return err
 					}
 				}
-
+				*id++
 				continue
 			}
 
@@ -205,17 +203,18 @@ func (w *walker) walk(curPath string, value reflect.Value) error {
 			}
 
 			if err := w.walkFunc(
-				ck, &e.value,
+				*id, ck, &e.value,
 			); err != nil {
 				return err
 			}
+
+			*id++
 
 			continue
 		}
 
 		if e.value.Kind() == reflect.Pointer &&
 			e.value.Type().Elem().Kind() == reflect.Struct {
-
 			ck := concatKey(
 				curPath,
 				e.field.Name,
@@ -224,6 +223,7 @@ func (w *walker) walk(curPath string, value reflect.Value) error {
 			if w.scanMode {
 				if !e.value.IsNil() {
 					if err := w.walk(
+						id,
 						ck,
 						e.value,
 					); err != nil {
@@ -247,6 +247,7 @@ func (w *walker) walk(curPath string, value reflect.Value) error {
 			e.value.Set(n)
 
 			if err := w.walk(
+				id,
 				ck,
 				n,
 			); err != nil {

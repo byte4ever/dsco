@@ -31,6 +31,8 @@ func registerDefaultTypes() {
 	Register(R(float32(0)))
 	Register(R(float64(0)))
 
+	Register(R(true))
+
 	Register(R(""))
 
 	Register(&time.Time{})
@@ -38,7 +40,8 @@ func registerDefaultTypes() {
 
 }
 
-func longTypeName(_type reflect.Type) string {
+// LongTypeName returns long name for a type.
+func LongTypeName(_type reflect.Type) string {
 	var sb strings.Builder
 
 	tp := _type
@@ -59,6 +62,7 @@ func longTypeName(_type reflect.Type) string {
 	return sb.String()
 }
 
+// Register registers the type of the value.
 func Register(value any) {
 	t := reflect.TypeOf(value)
 
@@ -66,7 +70,7 @@ func Register(value any) {
 		panic("register requires pointer")
 	}
 
-	longName := longTypeName(t)
+	longName := LongTypeName(t)
 
 	if _, dup := nameToType.LoadOrStore(longName, t); dup {
 		panic(
@@ -78,12 +82,13 @@ func Register(value any) {
 	}
 }
 
+// TypeIsRegistered returns true when type t is registered.
 func TypeIsRegistered(t reflect.Type) bool {
 	if t.Kind() != reflect.Pointer {
 		panic("dsco: check if type is registered requires pointers")
 	}
 
-	_, found := nameToType.Load(longTypeName(t))
+	_, found := nameToType.Load(LongTypeName(t))
 
 	return found
 }
