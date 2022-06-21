@@ -140,7 +140,7 @@ func (s *StringBasedBuilder) GetBaseFor(
 	result := make(Base)
 
 	wlkr := walker{
-		walkFunc: func(
+		fieldAction: func(
 			id int,
 			path string,
 			value *reflect.Value,
@@ -240,7 +240,7 @@ func (s *StringBasedBuilder) GetBaseFor(
 		},
 	}
 
-	err := wlkr.walk(
+	err := wlkr.walkRec(
 		&maxId,
 		"",
 		model,

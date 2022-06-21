@@ -84,9 +84,9 @@ func Register(value any) {
 
 // TypeIsRegistered returns true when type t is registered.
 func TypeIsRegistered(t reflect.Type) bool {
-	if t.Kind() != reflect.Pointer {
-		panic("dsco: check if type is registered requires pointers")
-	}
+	// if t.Kind() != reflect.Pointer {
+	// 	panic("dsco: check if type is registered requires pointers")
+	// }
 
 	_, found := nameToType.Load(LongTypeName(t))
 

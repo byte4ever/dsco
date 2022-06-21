@@ -114,7 +114,7 @@ func fill(
 	reportLoc := make(map[int]string)
 
 	w := walker{
-		walkFunc: func(id int, path string, value *reflect.Value) error {
+		fieldAction: func(id int, path string, value *reflect.Value) error {
 			for _, basis := range bases {
 				v, location := basis.Get(id)
 				if v != nil {
@@ -140,7 +140,7 @@ func fill(
 		},
 	}
 
-	if err := w.walk(
+	if err := w.walkRec(
 		&maxId,
 		"",
 		reflect.ValueOf(inputModel),

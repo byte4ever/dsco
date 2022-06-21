@@ -22,15 +22,28 @@ type stack []*elem
 
 type elems []*elem
 
-type WalkFunc func(
+type actionFunc func(
 	order int,
 	path string,
 	value *reflect.Value,
 ) error
 
 type walker struct {
-	walkFunc WalkFunc
-	scanMode bool
+	fieldAction actionFunc
+	isGetter    bool
+}
+
+func newSetter(action actionFunc) *walker {
+	return &walker{
+		fieldAction: action,
+	}
+}
+
+func newGetter(action actionFunc) *walker {
+	return &walker{
+		fieldAction: action,
+		isGetter:    true,
+	}
 }
 
 // Len implement sort.Interface.
@@ -77,16 +90,19 @@ func concatKey(currentPath string, fieldName string) string {
 	return sb.String()
 }
 
+// ErrEmbeddedPointer represent an error where ....
+var ErrEmbeddedPointer = errors.New("embedded pointer")
+
 func pushToStack(
 	depth int,
 	path string,
 	curStack *stack,
 	value reflect.Value,
-) {
+) error {
 	t := value.Type()
 
 	if t.Kind() != reflect.Struct {
-		panic(fmt.Sprintf("expect struct got %s", t.Kind().String()))
+		return ErrEmbeddedPointer
 	}
 
 	for i := t.NumField() - 1; i >= 0; i-- {
@@ -102,6 +118,8 @@ func pushToStack(
 			},
 		)
 	}
+
+	return nil
 }
 
 // ErrExpectPointerOnStruct represent an error where ....
@@ -113,7 +131,42 @@ var ErrFieldNameCollision = errors.New("field name collision")
 // ErrNotNilValue represent an error where ....
 var ErrNotNilValue = errors.New("not nil value")
 
-func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
+// ErrNilInterface represent an error where ....
+var ErrNilInterface = errors.New("nil interface")
+
+func setStruct(toSet any, action actionFunc) error {
+	var maxId int
+
+	if toSet == nil {
+		return ErrNilInterface
+	}
+
+	return newSetter(action).walkRec(
+		&maxId,
+		"",
+		reflect.ValueOf(toSet),
+	)
+}
+
+func getStruct(toGet any, action actionFunc) error {
+	var maxId int
+
+	if toGet == nil {
+		return ErrNilInterface
+	}
+
+	return newGetter(action).walkRec(
+		&maxId,
+		"",
+		reflect.ValueOf(toGet),
+	)
+}
+
+func (w *walker) walkRec(
+	id *int, curPath string,
+	value reflect.Value,
+) error {
+	// checking value
 	t := value.Type()
 
 	if t.Kind() != reflect.Pointer {
@@ -125,9 +178,11 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 		return ErrExpectPointerOnStruct
 	}
 
+	// flatten all fields to get field visiblity when struct are embedded and
+	// to check field name collisions
 	var st stack
 
-	pushToStack(0, "", &st, value.Elem())
+	_ = pushToStack(0, "", &st, value.Elem())
 
 	var (
 		order     int
@@ -144,19 +199,29 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 			break
 		}
 
+		// don't process unexported fields
 		if !toProcess.field.IsExported() {
 			continue
 		}
 
+		localFieldName := concatKey(
+			toProcess.path,
+			toProcess.field.Name,
+		)
+
+		// deal with embedded structs
 		if toProcess.field.Anonymous {
-			pushToStack(
+			// pay attention to error to detect embedded pointer structs
+			err := pushToStack(
 				toProcess.depth+1,
-				concatKey(
-					toProcess.path, toProcess.field.Name,
-				),
+				localFieldName,
 				&st,
 				toProcess.value,
 			)
+
+			if err != nil {
+				return fmt.Errorf("%s.%s: %w", curPath, localFieldName, err)
+			}
 
 			continue
 		}
@@ -164,14 +229,24 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 		toProcess.order = order
 		order++
 
+		// filter field visiblity
 		prevDecl, found := processed[toProcess.field.Name]
 		if (found && prevDecl.depth >= toProcess.depth) || !found {
 			// detecting field collision
 			if found {
 				return fmt.Errorf(
 					"%q %q: %w",
-					concatKey(toProcess.path, toProcess.field.Name),
-					concatKey(prevDecl.path, prevDecl.field.Name),
+					concatKey(
+						curPath,
+						localFieldName,
+					),
+					concatKey(
+						curPath,
+						concatKey(
+							prevDecl.path,
+							prevDecl.field.Name,
+						),
+					),
 					ErrFieldNameCollision,
 				)
 			}
@@ -180,6 +255,7 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 		}
 	}
 
+	// reorder processed fields
 	fieldValues := make(elems, 0, len(processed))
 	for _, e := range processed {
 		fieldValues = append(fieldValues, e)
@@ -187,54 +263,21 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 
 	sort.Sort(fieldValues)
 
+	// now we can continue the walk on visible fields.
 	for _, fieldValue := range fieldValues {
-		if fieldValue.value.Kind() == reflect.Slice ||
-			dsco.TypeIsRegistered(fieldValue.value.Type()) {
-			ck := concatKey(curPath, fieldValue.field.Name)
+		ck := concatKey(
+			curPath,
+			fieldValue.field.Name,
+		)
 
-			if w.scanMode {
-				if !fieldValue.value.IsNil() {
-					if err := w.walkFunc(
-						*id, ck, &fieldValue.value,
-					); err != nil {
-						return err
-					}
-				}
-
-				*id++
-
-				continue
-			}
-
-			if !fieldValue.value.IsNil() {
-				return fmt.Errorf(
-					"%q: %w",
-					ck,
-					ErrNotNilValue,
-				)
-			}
-
-			if err := w.walkFunc(
-				*id, ck, &fieldValue.value,
-			); err != nil {
-				return err
-			}
-
-			*id++
-
-			continue
-		}
-
+		// manage pointer on struct case
 		if fieldValue.value.Kind() == reflect.Pointer &&
 			fieldValue.value.Type().Elem().Kind() == reflect.Struct {
-			ck := concatKey(
-				curPath,
-				fieldValue.field.Name,
-			)
 
-			if w.scanMode {
+			// getter behaviour
+			if w.isGetter {
 				if !fieldValue.value.IsNil() {
-					if err := w.walk(
+					if err := w.walkRec(
 						id,
 						ck,
 						fieldValue.value,
@@ -246,9 +289,10 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 				continue
 			}
 
+			// setter behaviour
 			if !fieldValue.value.IsNil() {
 				return fmt.Errorf(
-					"%q: %w",
+					"%s: %w",
 					ck,
 					ErrNotNilValue,
 				)
@@ -257,15 +301,67 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 			n := reflect.New(fieldValue.value.Type().Elem())
 			fieldValue.value.Set(n)
 
-			if err := w.walk(
+			if err := w.walkRec(
 				id,
 				ck,
 				n,
 			); err != nil {
 				return err
 			}
+
+			continue
 		}
+
+		// manage slice case and registered types
+		if dsco.TypeIsRegistered(fieldValue.value.Type()) || fieldValue.value.
+			Kind() == reflect.Slice {
+
+			// getter behaviour
+			if w.isGetter {
+				if !fieldValue.value.IsNil() {
+					if err := w.fieldAction(
+						*id, ck, &fieldValue.value,
+					); err != nil {
+						return err
+					}
+				}
+
+				*id++
+
+				continue
+			}
+
+			// setter behaviour
+			if !fieldValue.value.IsNil() {
+				return fmt.Errorf(
+					"%s: %w",
+					ck,
+					ErrNotNilValue,
+				)
+			}
+
+			if err := w.fieldAction(
+				*id, ck, &fieldValue.value,
+			); err != nil {
+				return err
+			}
+
+			*id++
+
+			continue
+		}
+
+		// type is not supported
+		return fmt.Errorf(
+			"%s-<%s>: %w",
+			ck,
+			fieldValue.value.Type().String(),
+			ErrUnsupportedType,
+		)
 	}
 
 	return nil
 }
+
+// ErrUnsupportedType represent an error where ....
+var ErrUnsupportedType = errors.New("unsupported type")

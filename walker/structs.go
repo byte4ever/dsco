@@ -19,7 +19,7 @@ func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
 	base := make(Base)
 
 	wlkr := walker{
-		walkFunc: func(order int, path string, value *reflect.Value) error {
+		fieldAction: func(order int, path string, value *reflect.Value) error {
 			base[order] = assignedValue{
 				path:     path,
 				location: fmt.Sprintf("struct(%s)[%s]", id, path),
@@ -27,10 +27,10 @@ func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
 			}
 			return nil
 		},
-		scanMode: true,
+		isGetter: true,
 	}
 
-	err := wlkr.walk(&maxId, "", reflect.ValueOf(inputStruct))
+	err := wlkr.walkRec(&maxId, "", reflect.ValueOf(inputStruct))
 	if err != nil {
 		return nil, err
 	}
