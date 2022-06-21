@@ -41,7 +41,6 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 	t.Setenv("TST-B", "123.1234")
 	// t.Setenv("API-Z-FIRST_NAME", "Laurent")
 
-	pp := &Root{}
 	input1 := &Root{
 		A: dsco.R(120),
 		B: dsco.R(2333.32),
@@ -66,8 +65,9 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 		},
 	}
 
+	var pp *Root
 	fillReport, err := walker.Fill(
-		pp,
+		&pp,
 		walker.WithEnvLayer("API"),
 		walker.WithEnvLayer("TST"),
 		walker.WithStrictCmdlineLayer(),

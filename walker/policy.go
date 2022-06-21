@@ -2,13 +2,15 @@ package walker
 
 // TODO :- lmartin 6/21/22 -: don't use internal states
 
+type constraintLayerPolicies []constraintLayerPolicy
+
 type constraintLayerPolicy interface {
-	BaseGetter
+	FieldValuesGetter
 	isStrict() bool
 }
 
 type constraintLayer struct {
-	BaseGetter
+	FieldValuesGetter
 	strictMode bool
 }
 
@@ -16,15 +18,15 @@ func (p *constraintLayer) isStrict() bool {
 	return p.strictMode
 }
 
-func strictLayer(bg BaseGetter) *constraintLayer {
+func strictLayer(bg FieldValuesGetter) *constraintLayer {
 	return &constraintLayer{
-		BaseGetter: bg,
-		strictMode: true,
+		FieldValuesGetter: bg,
+		strictMode:        true,
 	}
 }
 
-func normalLayer(bg BaseGetter) *constraintLayer {
+func normalLayer(bg FieldValuesGetter) *constraintLayer {
 	return &constraintLayer{
-		BaseGetter: bg,
+		FieldValuesGetter: bg,
 	}
 }

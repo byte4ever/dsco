@@ -29,6 +29,22 @@ type layerBuilder struct {
 	builders []constraintLayerPolicy
 }
 
+type Layers []Layer
+
+func (layers Layers) GetPolicies(fillReporter FillReporter) constraintLayerPolicies {
+	bo := newLayerBuilder()
+
+	for _, layer := range layers {
+		err := layer.register(bo)
+		if err != nil {
+			fillReporter.ReportError(err)
+			return nil //nolint:wrapcheck // error is clear enough
+		}
+	}
+
+	return bo.builders
+}
+
 // Layer defines a configuration layer.
 type Layer interface {
 	register(to *layerBuilder) error
@@ -123,7 +139,7 @@ func (o *layerBuilder) dedupId(id string) *int {
 
 func wrapCmdlineBuild(
 	to *layerBuilder,
-	wrap func(BaseGetter) *constraintLayer,
+	wrap func(FieldValuesGetter) *constraintLayer,
 	options []Option,
 ) error {
 	if idx := to.dedupId("cmdLine"); idx != nil {
@@ -172,7 +188,7 @@ func WithCmdlineLayer(options ...Option) *CmdlineLayer {
 
 func wrapEnvBuild(
 	to *layerBuilder,
-	wrap func(BaseGetter) *constraintLayer,
+	wrap func(FieldValuesGetter) *constraintLayer,
 	prefix string,
 	options []Option,
 ) error {
@@ -226,7 +242,7 @@ func WithEnvLayer(prefix string, options ...Option) *EnvLayer {
 
 func wrapStructBuild(
 	to *layerBuilder,
-	wrap func(BaseGetter) *constraintLayer,
+	wrap func(FieldValuesGetter) *constraintLayer,
 	input any,
 	id string,
 ) error {

@@ -32,18 +32,7 @@ var ErrOverriddenKey = errors.New("overridden key")
 // ErrNilProvider is shitty...
 var ErrNilProvider = errors.New("nil provider")
 
-type assignedValue struct {
-	value    *reflect.Value
-	path     string
-	location string
-}
-
-// TODO :- lmartin 6/21/22 -: should use a pointer here
-
-// Base is a set of values
-type Base map[int]assignedValue
-
-// StringBasedBuilder is a value base builder depending on text values.
+// StringBasedBuilder is a value bases builder depending on text values.
 type StringBasedBuilder struct {
 	internalOpts
 	values svalues.StringValues
@@ -93,7 +82,7 @@ func WithAliases(mapping map[string]string) AliasesOption {
 	return mapping
 }
 
-// NewStringBasedBuilder creates a base builder for the provided path/text
+// NewStringBasedBuilder creates a bases builder for the provided path/text
 // value set.
 func NewStringBasedBuilder(
 	provider svalues.StringValuesProvider,
@@ -118,132 +107,95 @@ func NewStringBasedBuilder(
 	}, nil
 }
 
-// GetBaseFor creates the base.
-func (s *StringBasedBuilder) GetBaseFor(
-	inputModel any,
-) (Base, []error) {
+func (s *StringBasedBuilder) Get(
+	path string, _type reflect.Type,
+) (fieldValue *FieldValue, err error) {
 	const (
 		errFmt  = "%s: %w"
 		errFmt2 = "%s [%s]: %w"
 	)
 
-	var (
-		errs  []error
-		maxId int
-	)
+	convertedPath := convert(path)
 
-	model := reflect.New(reflect.ValueOf(inputModel).Type().Elem())
-	result := make(Base)
-
-	wlkr := walker{
-		fieldAction: func(
-			id int,
-			path string,
-			value *reflect.Value,
-		) error {
-			convertedPath := convert(path)
-
-			// check for alias collisions
-			if _, found := s.internalOpts.aliases[convertedPath]; found {
-				errs = append(
-					errs,
-					fmt.Errorf(errFmt, path, ErrAliasCollision),
-				)
-				return nil
-			}
-
-			entry, found := s.values[convertedPath]
-			if !found {
-				return nil
-			}
-
-			var tp reflect.Value
-
-			dstType := value.Type()
-
-			switch dstType.Kind() { //nolint:exhaustive // it's expected
-			case reflect.Pointer:
-				tp = reflect.New(dstType.Elem())
-
-				if err := yaml.Unmarshal(
-					[]byte(entry.Value), tp.Interface(),
-				); err != nil {
-					errs = append(
-						errs,
-						fmt.Errorf(
-							"%s-<%s> %s: %w",
-							path,
-							dsco.LongTypeName(dstType),
-							entry.Location,
-							ErrParse,
-						),
-					)
-
-					return nil
-				}
-
-				delete(s.values, convertedPath)
-
-				result[id] = assignedValue{
-					path:     path,
-					location: entry.Location,
-					value:    &tp,
-				}
-
-			case reflect.Slice:
-				tp = reflect.New(dstType)
-
-				if err := yaml.Unmarshal(
-					[]byte(entry.Value), tp.Interface(),
-				); err != nil {
-					errs = append(
-						errs,
-						fmt.Errorf(
-							errFmt2,
-							path,
-							entry.Location,
-							ErrParse,
-						),
-					)
-
-					return nil
-				}
-
-				delete(s.values, convertedPath)
-
-				te := tp.Elem()
-				result[id] = assignedValue{
-					path:     path,
-					location: entry.Location,
-					value:    &te,
-				}
-
-			default:
-
-				errs = append(
-					errs,
-					fmt.Errorf(
-						errFmt,
-						path,
-						ErrInvalidType,
-					),
-				)
-
-				return nil
-			}
-
-			return nil
-		},
+	// check for alias collisions
+	if _, found := s.internalOpts.aliases[convertedPath]; found {
+		return nil, fmt.Errorf(
+			errFmt,
+			path,
+			ErrAliasCollision,
+		)
 	}
 
-	err := wlkr.walkRec(
-		&maxId,
-		"",
-		model,
-	)
+	entry, found := s.values[convertedPath]
+	if !found {
+		return nil, nil
+	}
 
-	if err != nil {
-		errs = append(errs, err)
+	switch _type.Kind() { //nolint:exhaustive // it's expected
+	case reflect.Pointer:
+		tp := reflect.New(_type.Elem())
+
+		if err := yaml.Unmarshal(
+			[]byte(entry.Value), tp.Interface(),
+		); err != nil {
+			return nil, fmt.Errorf(
+				"%s-<%s> %s: %w",
+				path,
+				dsco.LongTypeName(_type),
+				entry.Location,
+				ErrParse,
+			)
+		}
+
+		delete(s.values, convertedPath)
+
+		return &FieldValue{
+			value:    tp,
+			location: entry.Location,
+		}, nil
+
+	case reflect.Slice:
+		tp := reflect.New(_type)
+
+		if err := yaml.Unmarshal(
+			[]byte(entry.Value), tp.Interface(),
+		); err != nil {
+
+			return nil, fmt.Errorf(
+				errFmt2,
+				path,
+				entry.Location,
+				ErrParse,
+			)
+		}
+
+		delete(s.values, convertedPath)
+
+		return &FieldValue{
+			value:    tp.Elem(),
+			location: entry.Location,
+		}, nil
+
+	default:
+		return nil, fmt.Errorf(
+			errFmt,
+			path,
+			ErrInvalidType,
+		)
+	}
+}
+
+// GetBaseFor creates the bases.
+func (s *StringBasedBuilder) GetFieldValues(
+	model *Model,
+) (FieldValues, []error) {
+	const errFmt = "%s: %w"
+	var errs []error
+
+	result, e := model.ApplyOn(s)
+
+	if len(e) > 0 {
+		errs = append(errs, e...)
 	}
 
 	for _, v := range s.values {

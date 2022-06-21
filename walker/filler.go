@@ -58,120 +58,115 @@ func (f FillReport) Dump(writer io.Writer) {
 	_ = tabWriter.Flush()
 }
 
-// Fill fills the structure using the layers.
-func Fill(
-	inputModel any,
-	layers ...Layer,
-) (
-	FillReport, error,
-) {
-	bo := newLayerBuilder()
+type dscoContext struct {
+	inputModelRef any
+	reporter      FillReporter
+	layers        Layers
 
-	for _, layer := range layers {
-		err := layer.register(bo)
-		if err != nil {
-			return nil, err //nolint:wrapcheck // error is clear enough
-		}
-	}
-
-	return fillHelper(inputModel, bo.builders...)
+	// ----
+	model            *Model
+	builders         constraintLayerPolicies
+	layerFieldValues []FieldValues
+	mustBeUsed       []int
 }
 
-// fillHelper files the structure.
-func fillHelper(
-	inputModel any,
-	baseProvider ...constraintLayerPolicy,
-) (
-	FillReport, error,
-) {
-	var (
-		fillReport   FillReport
-		fillErrors   FillErrors
-		maxId        int
-		bases        []Base
-		mustBeUseIdx []int
-	)
+func newDSCOContext(
+	inputModelRef any,
+	reporter FillReporter,
+	layers Layers,
+) *dscoContext {
+	return &dscoContext{
+		inputModelRef: inputModelRef,
+		reporter:      reporter,
+		layers:        layers,
+	}
+}
 
-	for idx, builder := range baseProvider {
-		base, errs := builder.GetBaseFor(inputModel)
+func (c *dscoContext) generateModel() {
+	if !c.reporter.Failed() {
+		model, errs := NewModel(reflect.TypeOf(c.inputModelRef).Elem())
+
 		if len(errs) > 0 {
 			for _, err := range errs {
-				fillErrors = append(
-					fillErrors,
-					fmt.Errorf("layer #%d: %wlkr", idx, err),
-				)
+				c.reporter.ReportError(err)
 			}
 
-			continue
+			return
 		}
 
-		if builder.isStrict() {
-			mustBeUseIdx = append(mustBeUseIdx, len(bases))
-		}
-
-		bases = append(bases, base)
+		c.model = model
 	}
+}
 
-	if len(fillErrors) > 0 {
-		return nil, fillErrors
+func (c *dscoContext) generateBuilders() {
+	if !c.reporter.Failed() {
+		c.builders = c.layers.GetPolicies(c.reporter)
 	}
+}
 
-	reportLoc := make(map[int]string)
-
-	wlkr := walker{
-		fieldAction: func(id int, path string, value *reflect.Value) error {
-			for _, basis := range bases {
-				v, location := basis.Get(id)
-				if v != nil {
-					value.Set(*v)
-					reportLoc[id] = location
-					fillReport = append(
-						fillReport,
-						FillReportEntry{
-							path:     path,
-							location: location,
-						},
+func (c *dscoContext) generateFieldValues() {
+	if !c.reporter.Failed() {
+		for idx, builder := range c.builders {
+			base, errs2 := builder.GetFieldValues(c.model)
+			if len(errs2) > 0 {
+				for _, err2 := range errs2 {
+					c.reporter.ReportError(
+						fmt.Errorf(
+							"layer #%d: %wlkr",
+							idx,
+							err2,
+						),
 					)
-					return nil
+				}
+
+				continue
+			}
+
+			if builder.isStrict() {
+				c.mustBeUsed = append(c.mustBeUsed, len(c.layerFieldValues))
+			}
+
+			c.layerFieldValues = append(c.layerFieldValues, base)
+		}
+	}
+}
+
+func (c *dscoContext) fillIt() {
+	if !c.reporter.Failed() {
+		v := reflect.ValueOf(c.inputModelRef).Elem()
+
+		c.model.Fill(c.reporter, v, c.layerFieldValues)
+	}
+}
+
+func (c *dscoContext) checkUnused() {
+	if !c.reporter.Failed() {
+		if len(c.mustBeUsed) > 0 {
+			for _, idx := range c.mustBeUsed {
+				for valUID, e := range c.layerFieldValues[idx] {
+					c.reporter.ReportOverride(valUID, e.location)
 				}
 			}
-
-			fillErrors = append(
-				fillErrors,
-				fmt.Errorf("%s: %wlkr", path, ErrUninitializedKey),
-			)
-
-			return nil
-		},
-	}
-
-	if err := wlkr.walkRec(
-		&maxId,
-		"",
-		reflect.ValueOf(inputModel),
-	); err != nil {
-		return nil, FillErrors{err}
-	}
-
-	if len(mustBeUseIdx) > 0 {
-		for _, idx := range mustBeUseIdx {
-			//nolint:gocritic // don't care
-			for valId, e := range bases[idx] {
-				fillErrors = append(
-					fillErrors, fmt.Errorf(
-						"%s overrided by %s: %wlkr",
-						e.location,
-						reportLoc[valId],
-						ErrOverriddenKey,
-					),
-				)
-			}
 		}
 	}
+}
 
-	if len(fillErrors) > 0 {
-		return nil, fillErrors
-	}
+// Fill fills the structure using the layers.
+func Fill(
+	inputModelRef any,
+	layers ...Layer,
+) (
+	FillReport,
+	error,
+) {
+	fillReporter := NewFillReporterImpl()
 
-	return fillReport, nil
+	c := newDSCOContext(inputModelRef, fillReporter, layers)
+
+	c.generateModel()
+	c.generateBuilders()
+	c.generateFieldValues()
+	c.fillIt()
+	c.checkUnused()
+	return c.reporter.Result() //nolint:wrapcheck
 }
