@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -81,12 +80,12 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 	)
 
 	if err != nil {
-		fmt.Println(err)
+		t.Log(err)
 	} else {
 		bb, err := yaml.Marshal(pp)
 		require.NoError(t, err)
 
-		fmt.Println(string(bb))
+		t.Log(string(bb))
 
 		fillReport.Dump(os.Stdout)
 	}
