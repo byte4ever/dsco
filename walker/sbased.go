@@ -11,12 +11,6 @@ import (
 	"github.com/byte4ever/dsco/walker/svalues"
 )
 
-// ErrKeyNotFound represent an error where ....
-// var ErrKeyNotFound = errors.New("key not found")
-
-// ErrNotUnused represent an error where ....
-// var ErrNotUnused = errors.New("not unused")
-
 // ErrInvalidType represent an error where ....
 var ErrInvalidType = errors.New("invalid type")
 
@@ -39,10 +33,12 @@ var ErrOverriddenKey = errors.New("overridden key")
 var ErrNilProvider = errors.New("nil provider")
 
 type assignedValue struct {
+	value    *reflect.Value
 	path     string
 	location string
-	value    *reflect.Value
 }
+
+// TODO :- lmartin 6/21/22 -: should use a pointer here
 
 // Base is a set of values
 type Base map[int]assignedValue

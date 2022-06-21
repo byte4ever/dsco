@@ -30,11 +30,6 @@ type Root struct {
 	L    []string
 }
 
-type Molo struct {
-	A *int
-	B *float64
-}
-
 func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 	os.Args = []string{
 		"appName",

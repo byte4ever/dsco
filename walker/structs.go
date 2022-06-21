@@ -8,11 +8,17 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
+// ErrStructTypeDiffer represent an error where cannot produce a valid value
+// base because struct source type and struct type to fillHelper differs.
+var ErrStructTypeDiffer = errors.New("struct type differ")
+
+// StructBuilder is a structure layer builder.
 type StructBuilder struct {
-	inputTypeName string
 	base          Base
+	inputTypeName string
 }
 
+// NewStructBuilder creates a new structure layer builder.
 func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
 	var maxId int
 
@@ -41,10 +47,7 @@ func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
 	}, nil
 }
 
-// ErrStructTypeDiffer represent an error where cannot produce a valid value
-// base because struct source type and struct type to fill differs.
-var ErrStructTypeDiffer = errors.New("struct type differ")
-
+// GetBaseFor implements BaseGetter interface.
 func (s *StructBuilder) GetBaseFor(inputModel any) (Base, []error) {
 	modelTypeName := dsco.LongTypeName(
 		reflect.TypeOf(inputModel),

@@ -10,6 +10,26 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
+const errFmt = "%s: %w"
+
+// ErrUnsupportedType represent an error where ....
+var ErrUnsupportedType = errors.New("unsupported type")
+
+// ErrEmbeddedPointer represent an error where ....
+var ErrEmbeddedPointer = errors.New("embedded pointer")
+
+// ErrExpectPointerOnStruct represent an error where ....
+var ErrExpectPointerOnStruct = errors.New("expect pointer on struct")
+
+// ErrFieldNameCollision represent an error where ....
+var ErrFieldNameCollision = errors.New("field name collision")
+
+// ErrNotNilValue represent an error where ....
+var ErrNotNilValue = errors.New("not nil value")
+
+// ErrNilInterface represent an error where ....
+var ErrNilInterface = errors.New("nil interface")
+
 type elem struct {
 	value reflect.Value
 	path  string
@@ -39,12 +59,14 @@ func newSetter(action actionFunc) *walker {
 	}
 }
 
+/* WIP
 func newGetter(action actionFunc) *walker {
 	return &walker{
 		fieldAction: action,
 		isGetter:    true,
 	}
 }
+*/
 
 // Len implement sort.Interface.
 func (e elems) Len() int {
@@ -90,23 +112,20 @@ func concatKey(currentPath string, fieldName string) string {
 	return sb.String()
 }
 
-// ErrEmbeddedPointer represent an error where ....
-var ErrEmbeddedPointer = errors.New("embedded pointer")
-
 func pushToStack(
 	depth int,
 	path string,
 	curStack *stack,
 	value reflect.Value,
 ) error {
-	t := value.Type()
+	valueType := value.Type()
 
-	if t.Kind() != reflect.Struct {
+	if valueType.Kind() != reflect.Struct {
 		return ErrEmbeddedPointer
 	}
 
-	for i := t.NumField() - 1; i >= 0; i-- {
-		field := t.Field(i)
+	for i := valueType.NumField() - 1; i >= 0; i-- {
+		field := valueType.Field(i)
 		vv := value.Field(i)
 
 		curStack.push(
@@ -122,18 +141,6 @@ func pushToStack(
 	return nil
 }
 
-// ErrExpectPointerOnStruct represent an error where ....
-var ErrExpectPointerOnStruct = errors.New("expect pointer on struct")
-
-// ErrFieldNameCollision represent an error where ....
-var ErrFieldNameCollision = errors.New("field name collision")
-
-// ErrNotNilValue represent an error where ....
-var ErrNotNilValue = errors.New("not nil value")
-
-// ErrNilInterface represent an error where ....
-var ErrNilInterface = errors.New("nil interface")
-
 func setStruct(toSet any, action actionFunc) error {
 	var maxId int
 
@@ -148,6 +155,7 @@ func setStruct(toSet any, action actionFunc) error {
 	)
 }
 
+/* WIP
 func getStruct(toGet any, action actionFunc) error {
 	var maxId int
 
@@ -161,6 +169,7 @@ func getStruct(toGet any, action actionFunc) error {
 		reflect.ValueOf(toGet),
 	)
 }
+*/
 
 func (w *walker) walkRec(
 	id *int, curPath string,
@@ -273,7 +282,6 @@ func (w *walker) walkRec(
 		// manage pointer on struct case
 		if fieldValue.value.Kind() == reflect.Pointer &&
 			fieldValue.value.Type().Elem().Kind() == reflect.Struct {
-
 			// getter behaviour
 			if w.isGetter {
 				if !fieldValue.value.IsNil() {
@@ -292,7 +300,7 @@ func (w *walker) walkRec(
 			// setter behaviour
 			if !fieldValue.value.IsNil() {
 				return fmt.Errorf(
-					"%s: %w",
+					errFmt,
 					ck,
 					ErrNotNilValue,
 				)
@@ -315,7 +323,6 @@ func (w *walker) walkRec(
 		// manage slice case and registered types
 		if dsco.TypeIsRegistered(fieldValue.value.Type()) || fieldValue.value.
 			Kind() == reflect.Slice {
-
 			// getter behaviour
 			if w.isGetter {
 				if !fieldValue.value.IsNil() {
@@ -334,7 +341,7 @@ func (w *walker) walkRec(
 			// setter behaviour
 			if !fieldValue.value.IsNil() {
 				return fmt.Errorf(
-					"%s: %w",
+					errFmt,
 					ck,
 					ErrNotNilValue,
 				)
@@ -362,6 +369,3 @@ func (w *walker) walkRec(
 
 	return nil
 }
-
-// ErrUnsupportedType represent an error where ....
-var ErrUnsupportedType = errors.New("unsupported type")

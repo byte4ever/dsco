@@ -13,6 +13,7 @@ func convert(s string) string {
 		if i != 0 {
 			sb.WriteRune('-')
 		}
+
 		sb.WriteString(utils.ToSnakeCase(s2))
 	}
 

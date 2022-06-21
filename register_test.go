@@ -284,11 +284,7 @@ func TestRegister(t *testing.T) {
 		"",
 		func(t *testing.T) {
 			t.Parallel()
-			require.Panics(
-				t, func() {
-					TypeIsRegistered(reflect.TypeOf(0))
-				},
-			)
+			require.False(t, TypeIsRegistered(reflect.TypeOf(0)))
 		},
 	)
 

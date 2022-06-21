@@ -19,12 +19,12 @@ func TestBase_Get(t *testing.T) {
 	val2 := reflect.ValueOf(2)
 
 	tests := []struct {
-		name         string
 		b            Base
-		args         args
 		wantValue    *reflect.Value
-		wantLocation string
 		wantState    Base
+		name         string
+		wantLocation string
+		args         args
 	}{
 		{
 			name: "success",

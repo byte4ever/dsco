@@ -1,28 +1,30 @@
 package walker
 
-type ConstraintLayerPolicy interface {
+// TODO :- lmartin 6/21/22 -: don't use internal states
+
+type constraintLayerPolicy interface {
 	BaseGetter
-	IsStrict() bool
+	isStrict() bool
 }
 
-type ConstraintLayer struct {
+type constraintLayer struct {
 	BaseGetter
-	isStrict bool
+	strictMode bool
 }
 
-func (p *ConstraintLayer) IsStrict() bool {
-	return p.isStrict
+func (p *constraintLayer) isStrict() bool {
+	return p.strictMode
 }
 
-func StrictLayer(bg BaseGetter) *ConstraintLayer {
-	return &ConstraintLayer{
+func strictLayer(bg BaseGetter) *constraintLayer {
+	return &constraintLayer{
 		BaseGetter: bg,
-		isStrict:   true,
+		strictMode: true,
 	}
 }
 
-func NormalLayer(bg BaseGetter) *ConstraintLayer {
-	return &ConstraintLayer{
+func normalLayer(bg BaseGetter) *constraintLayer {
+	return &constraintLayer{
 		BaseGetter: bg,
 	}
 }

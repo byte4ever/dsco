@@ -9,11 +9,23 @@ import (
 	"text/tabwriter"
 )
 
-// FillError represents the list of errors that occur when filling the
-// structure.
-type FillError []error
+// ErrUninitializedKey represent an error where ....
+var ErrUninitializedKey = errors.New("uninitialized key")
 
-func (f FillError) Error() string {
+// FillReport contains all fillHelper location for every key path.
+type FillReport []FillReportEntry
+
+// FillErrors represents the list of errors that occur when filling the
+// structure.
+type FillErrors []error
+
+// FillReportEntry is the fillHelper report for a value.
+type FillReportEntry struct {
+	path     string // is the key path.
+	location string // is the location of the value.
+}
+
+func (f FillErrors) Error() string {
 	var sb strings.Builder
 	for _, err := range f {
 		sb.WriteString(err.Error())
@@ -23,15 +35,9 @@ func (f FillError) Error() string {
 	return sb.String()
 }
 
-// ErrUninitializedKey represent an error where ....
-var ErrUninitializedKey = errors.New("uninitialized key")
-
-// FillReport contains all fill location for every key path.
-type FillReport []FillReportEntry
-
-// Dump writes fill report.
+// Dump writes fillHelper report.
 func (f FillReport) Dump(writer io.Writer) {
-	w := tabwriter.NewWriter(
+	tabWriter := tabwriter.NewWriter(
 		writer,
 		0,
 		0,
@@ -39,20 +45,17 @@ func (f FillReport) Dump(writer io.Writer) {
 		' ',
 		tabwriter.Debug,
 	)
-	_, _ = fmt.Fprintln(w, "  path\t  location")
-	_, _ = fmt.Fprintln(w, "  ----\t  --------")
+	_, _ = fmt.Fprintln(tabWriter, "  path\t  location")
+	_, _ = fmt.Fprintln(tabWriter, "  ----\t  --------")
 
+	//nolint:gocritic // don't care it is error processing
 	for _, entry := range f {
-		_, _ = fmt.Fprintf(w, "  %s\t  %s\n", entry.path, entry.location)
+		_, _ = fmt.Fprintf(
+			tabWriter, "  %s\t  %s\n", entry.path, entry.location,
+		)
 	}
 
-	_ = w.Flush()
-}
-
-// FillReportEntry is the fill report for a value.
-type FillReportEntry struct {
-	path     string // is the key path.
-	location string // is the location of the value.
+	_ = tabWriter.Flush()
 }
 
 // Fill fills the structure using the layers.
@@ -67,44 +70,46 @@ func Fill(
 	for _, layer := range layers {
 		err := layer.register(bo)
 		if err != nil {
-			return nil, err
+			return nil, err //nolint:wrapcheck // error is clear enough
 		}
 	}
-	return fill(inputModel, bo.builders...)
+
+	return fillHelper(inputModel, bo.builders...)
 }
 
-// fill files the structure.
-func fill(
+// fillHelper files the structure.
+func fillHelper(
 	inputModel any,
-	baseProvider ...ConstraintLayerPolicy,
+	baseProvider ...constraintLayerPolicy,
 ) (
 	FillReport, error,
 ) {
 	var (
 		fillReport   FillReport
-		fillErrors   FillError
+		fillErrors   FillErrors
 		maxId        int
 		bases        []Base
 		mustBeUseIdx []int
 	)
 
 	for idx, builder := range baseProvider {
-		b, e := builder.GetBaseFor(inputModel)
-		if len(e) > 0 {
-			for _, err := range e {
+		base, errs := builder.GetBaseFor(inputModel)
+		if len(errs) > 0 {
+			for _, err := range errs {
 				fillErrors = append(
 					fillErrors,
-					fmt.Errorf("layer #%d: %w", idx, err),
+					fmt.Errorf("layer #%d: %wlkr", idx, err),
 				)
 			}
+
 			continue
 		}
 
-		if builder.IsStrict() {
+		if builder.isStrict() {
 			mustBeUseIdx = append(mustBeUseIdx, len(bases))
 		}
 
-		bases = append(bases, b)
+		bases = append(bases, base)
 	}
 
 	if len(fillErrors) > 0 {
@@ -113,7 +118,7 @@ func fill(
 
 	reportLoc := make(map[int]string)
 
-	w := walker{
+	wlkr := walker{
 		fieldAction: func(id int, path string, value *reflect.Value) error {
 			for _, basis := range bases {
 				v, location := basis.Get(id)
@@ -133,27 +138,28 @@ func fill(
 
 			fillErrors = append(
 				fillErrors,
-				fmt.Errorf("%s: %w", path, ErrUninitializedKey),
+				fmt.Errorf("%s: %wlkr", path, ErrUninitializedKey),
 			)
 
 			return nil
 		},
 	}
 
-	if err := w.walkRec(
+	if err := wlkr.walkRec(
 		&maxId,
 		"",
 		reflect.ValueOf(inputModel),
 	); err != nil {
-		return nil, FillError{err}
+		return nil, FillErrors{err}
 	}
 
 	if len(mustBeUseIdx) > 0 {
 		for _, idx := range mustBeUseIdx {
+			//nolint:gocritic // don't care
 			for valId, e := range bases[idx] {
 				fillErrors = append(
 					fillErrors, fmt.Errorf(
-						"%s overrided by %s: %w",
+						"%s overrided by %s: %wlkr",
 						e.location,
 						reportLoc[valId],
 						ErrOverriddenKey,
