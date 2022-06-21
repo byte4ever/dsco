@@ -33,14 +33,17 @@ type walker struct {
 	scanMode bool
 }
 
+// Len implement sort.Interface.
 func (e elems) Len() int {
 	return len(e)
 }
 
+// Less implements sort.Interface.
 func (e elems) Less(i, j int) bool {
 	return e[i].order < e[j].order
 }
 
+// Swap implements sort.Interface.
 func (e elems) Swap(i, j int) {
 	e[i], e[j] = e[j], e[i]
 }
@@ -101,21 +104,28 @@ func pushToStack(
 	}
 }
 
+// ErrExpectPointerOnStruct represent an error where ....
+var ErrExpectPointerOnStruct = errors.New("expect pointer on struct")
+
+// ErrFieldNameCollision represent an error where ....
+var ErrFieldNameCollision = errors.New("field name collision")
+
+// ErrNotNilValue represent an error where ....
+var ErrNotNilValue = errors.New("not nil value")
+
 func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 	t := value.Type()
 
 	if t.Kind() != reflect.Pointer {
-		return errors.New("expect pointer")
+		return ErrExpectPointerOnStruct
 	}
 
 	te := t.Elem()
 	if te.Kind() != reflect.Struct {
-		return errors.New("expect pointer on struct")
+		return ErrExpectPointerOnStruct
 	}
 
 	var st stack
-	{
-	}
 
 	pushToStack(0, "", &st, value.Elem())
 
@@ -158,12 +168,11 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 		if (found && prevDecl.depth >= toProcess.depth) || !found {
 			// detecting field collision
 			if found {
-				return errors.New(
-					fmt.Sprintf(
-						"colision %q %q",
-						concatKey(toProcess.path, toProcess.field.Name),
-						concatKey(prevDecl.path, prevDecl.field.Name),
-					),
+				return fmt.Errorf(
+					"%q %q: %w",
+					concatKey(toProcess.path, toProcess.field.Name),
+					concatKey(prevDecl.path, prevDecl.field.Name),
+					ErrFieldNameCollision,
 				)
 			}
 
@@ -171,39 +180,42 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 		}
 	}
 
-	ll := make(elems, 0, len(processed))
+	fieldValues := make(elems, 0, len(processed))
 	for _, e := range processed {
-		ll = append(ll, e)
+		fieldValues = append(fieldValues, e)
 	}
 
-	sort.Sort(ll)
+	sort.Sort(fieldValues)
 
-	for _, e := range ll {
-		if e.value.Kind() == reflect.Slice ||
-			dsco.TypeIsRegistered(e.value.Type()) {
-			ck := concatKey(curPath, e.field.Name)
+	for _, fieldValue := range fieldValues {
+		if fieldValue.value.Kind() == reflect.Slice ||
+			dsco.TypeIsRegistered(fieldValue.value.Type()) {
+			ck := concatKey(curPath, fieldValue.field.Name)
 
 			if w.scanMode {
-				if !e.value.IsNil() {
-					if err := w.walkFunc(*id, ck, &e.value); err != nil {
+				if !fieldValue.value.IsNil() {
+					if err := w.walkFunc(
+						*id, ck, &fieldValue.value,
+					); err != nil {
 						return err
 					}
 				}
+
 				*id++
+
 				continue
 			}
 
-			if !e.value.IsNil() {
-				return errors.New(
-					fmt.Sprintf(
-						"detecting non nil values %q",
-						ck,
-					),
+			if !fieldValue.value.IsNil() {
+				return fmt.Errorf(
+					"%q: %w",
+					ck,
+					ErrNotNilValue,
 				)
 			}
 
 			if err := w.walkFunc(
-				*id, ck, &e.value,
+				*id, ck, &fieldValue.value,
 			); err != nil {
 				return err
 			}
@@ -213,19 +225,19 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 			continue
 		}
 
-		if e.value.Kind() == reflect.Pointer &&
-			e.value.Type().Elem().Kind() == reflect.Struct {
+		if fieldValue.value.Kind() == reflect.Pointer &&
+			fieldValue.value.Type().Elem().Kind() == reflect.Struct {
 			ck := concatKey(
 				curPath,
-				e.field.Name,
+				fieldValue.field.Name,
 			)
 
 			if w.scanMode {
-				if !e.value.IsNil() {
+				if !fieldValue.value.IsNil() {
 					if err := w.walk(
 						id,
 						ck,
-						e.value,
+						fieldValue.value,
 					); err != nil {
 						return err
 					}
@@ -234,17 +246,16 @@ func (w *walker) walk(id *int, curPath string, value reflect.Value) error {
 				continue
 			}
 
-			if !e.value.IsNil() {
-				return errors.New(
-					fmt.Sprintf(
-						"detecting non nil values %q",
-						ck,
-					),
+			if !fieldValue.value.IsNil() {
+				return fmt.Errorf(
+					"%q: %w",
+					ck,
+					ErrNotNilValue,
 				)
 			}
 
-			n := reflect.New(e.value.Type().Elem())
-			e.value.Set(n)
+			n := reflect.New(fieldValue.value.Type().Elem())
+			fieldValue.value.Set(n)
 
 			if err := w.walk(
 				id,
