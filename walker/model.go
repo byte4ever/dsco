@@ -14,6 +14,10 @@ type Model struct {
 	getList     GetList
 }
 
+func (m *Model) TypeName() string {
+	return m.typeName
+}
+
 func NewModel(inputModelType reflect.Type) (*Model, []error) {
 	var maxUID uint
 
@@ -108,17 +112,20 @@ func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
 func (s *stackEmbed) pushToStack(
 	index []int, depth int, path string, _type reflect.Type,
 ) error {
-
 	if _type.Kind() != reflect.Struct {
-		return ErrInvalidEmbedded
+		return fmt.Errorf("%s: %w", path, ErrInvalidEmbedded)
 	}
 
 	for i := _type.NumField() - 1; i >= 0; i-- {
 		field := _type.Field(i)
 
+		ni := make([]int, len(index)+1)
+		copy(ni, index)
+		ni[len(index)] = i
+
 		s.push(
 			&elemEmbedded{
-				index: append(index, i),
+				index: ni,
 				depth: depth,
 				field: field,
 				path:  path,

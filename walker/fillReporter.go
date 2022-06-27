@@ -2,6 +2,7 @@ package walker
 
 import (
 	"fmt"
+	"strings"
 )
 
 type FillReporterImpl struct {
@@ -23,8 +24,8 @@ func (f *FillReporterImpl) ReportOverride(
 	location string,
 ) {
 	if prevLocation, found := f.locations[uid]; found {
-		f.errors = append(
-			f.errors, fmt.Errorf(
+		f.ReportError(
+			fmt.Errorf(
 				"%s overrided by %s: %w",
 				location,
 				prevLocation,
@@ -63,11 +64,25 @@ func (f *FillReporterImpl) ReportUse(
 }
 
 func (f *FillReporterImpl) ReportUnused(path string) {
-	f.errors = append(
-		f.errors, fmt.Errorf(
+	f.ReportError(
+		fmt.Errorf(
 			"%s: %w",
 			path,
 			ErrUninitializedKey,
 		),
 	)
+}
+
+// FillErrors represents the list of errors that occur when filling the
+// structure.
+type FillErrors []error
+
+func (f FillErrors) Error() string {
+	var sb strings.Builder
+	for _, err := range f {
+		sb.WriteString(err.Error())
+		sb.WriteRune('\n')
+	}
+
+	return sb.String()
 }

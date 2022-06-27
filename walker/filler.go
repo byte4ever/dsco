@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 	"text/tabwriter"
 )
 
@@ -15,24 +14,10 @@ var ErrUninitializedKey = errors.New("uninitialized key")
 // FillReport contains all fillHelper location for every key path.
 type FillReport []FillReportEntry
 
-// FillErrors represents the list of errors that occur when filling the
-// structure.
-type FillErrors []error
-
 // FillReportEntry is the fillHelper report for a value.
 type FillReportEntry struct {
 	path     string // is the key path.
 	location string // is the location of the value.
-}
-
-func (f FillErrors) Error() string {
-	var sb strings.Builder
-	for _, err := range f {
-		sb.WriteString(err.Error())
-		sb.WriteRune('\n')
-	}
-
-	return sb.String()
 }
 
 // Dump writes fillHelper report.
@@ -64,7 +49,7 @@ type dscoContext struct {
 	layers        Layers
 
 	// ----
-	model            *Model
+	model            ModelInterface
 	builders         constraintLayerPolicies
 	layerFieldValues []FieldValues
 	mustBeUsed       []int

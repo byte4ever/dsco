@@ -18,13 +18,15 @@ type StructBuilder struct {
 	id    string
 }
 
-func (s *StructBuilder) GetFieldValues(model *Model) (FieldValues, []error) {
+func (s *StructBuilder) GetFieldValues(model ModelInterface) (
+	FieldValues, []error,
+) {
 	ltn := dsco.LongTypeName(s.value.Type())
-	if model.typeName != ltn {
+	if model.TypeName() != ltn {
 		return nil, []error{
 			fmt.Errorf(
 				"%s != %s: %w",
-				model.typeName,
+				model.TypeName(),
 				ltn,
 				ErrStructTypeDiffer,
 			),

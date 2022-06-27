@@ -186,9 +186,9 @@ func (s *StringBasedBuilder) Get(
 }
 
 // GetBaseFor creates the bases.
-func (s *StringBasedBuilder) GetFieldValues(
-	model *Model,
-) (FieldValues, []error) {
+func (s *StringBasedBuilder) GetFieldValues(model ModelInterface) (
+	FieldValues, []error,
+) {
 	const errFmt = "%s: %w"
 	var errs []error
 

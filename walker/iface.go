@@ -6,9 +6,7 @@ import (
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).
 type FieldValuesGetter interface {
-	GetFieldValues(
-		model *Model,
-	) (FieldValues, []error)
+	GetFieldValues(model ModelInterface) (FieldValues, []error)
 }
 
 type FillReporter interface {
@@ -41,35 +39,6 @@ type FieldValue struct {
 
 type FieldValues map[uint]*FieldValue
 
-type GetList []GetOp
-
-func (s GetList) ApplyOn(g Getter) (FieldValues, []error) {
-	var errs []error
-
-	res := make(FieldValues, len(s))
-
-	for _, op := range s {
-		uid, fieldValue, err := op(g)
-
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		if fieldValue != nil {
-			res[uid] = fieldValue
-		}
-	}
-
-	return res, errs
-}
-
-func (s *GetList) Push(o GetOp) {
-	*s = append(*s, o)
-}
-
-type GetOp func(g Getter) (uid uint, fieldValue *FieldValue, err error)
-
 type Getter interface {
 	Get(
 		path string,
@@ -82,4 +51,15 @@ type Getter interface {
 
 type PoliciesGetter interface {
 	GetPolicies(fillReporter FillReporter) constraintLayerPolicies
+}
+
+type ModelInterface interface {
+	TypeName() string
+	ApplyOn(g Getter) (FieldValues, []error)
+	FeedFieldValues(id string, v reflect.Value) FieldValues
+	Fill(
+		fillReporter FillReporter,
+		inputModelValue reflect.Value,
+		layers []FieldValues,
+	)
 }
