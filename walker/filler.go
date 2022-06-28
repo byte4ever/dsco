@@ -69,18 +69,15 @@ func (c *dscoContext) generateBuilders() {
 func (c *dscoContext) generateFieldValues() {
 	if c.err.None() {
 		for idx, builder := range c.builders {
-			base, errs2 := builder.GetFieldValues(c.model)
-			if len(errs2) > 0 {
-				for _, err2 := range errs2 {
-					c.err.Add(
-						fmt.Errorf(
-							"layer #%d: %w",
-							idx,
-							err2,
-						),
-					)
-				}
-
+			base, err := builder.GetFieldValues(c.model)
+			if err != nil {
+				c.err.Add(
+					fmt.Errorf(
+						"layer #%d\n %w",
+						idx,
+						err,
+					),
+				)
 				continue
 			}
 

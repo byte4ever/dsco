@@ -49,7 +49,7 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}, nil
 }
 
-func (m *Model) ApplyOn(g Getter) (FieldValues, []error) {
+func (m *Model) ApplyOn(g Getter) (FieldValues, error) {
 	return m.getList.ApplyOn(g)
 }
 

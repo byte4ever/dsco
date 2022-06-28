@@ -6,7 +6,7 @@ import (
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).
 type FieldValuesGetter interface {
-	GetFieldValues(model ModelInterface) (FieldValues, []error)
+	GetFieldValues(model ModelInterface) (FieldValues, error)
 }
 
 type Node interface {
@@ -45,7 +45,7 @@ type PoliciesGetter interface {
 
 type ModelInterface interface {
 	TypeName() string
-	ApplyOn(g Getter) (FieldValues, []error)
+	ApplyOn(g Getter) (FieldValues, error)
 	FeedFieldValues(id string, v reflect.Value) FieldValues
 	Fill(
 		inputModelValue reflect.Value,

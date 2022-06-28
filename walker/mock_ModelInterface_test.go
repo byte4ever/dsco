@@ -14,7 +14,7 @@ type MockModelInterface struct {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockModelInterface) ApplyOn(g Getter) (FieldValues, []error) {
+func (_m *MockModelInterface) ApplyOn(g Getter) (FieldValues, error) {
 	ret := _m.Called(g)
 
 	var r0 FieldValues
@@ -26,13 +26,11 @@ func (_m *MockModelInterface) ApplyOn(g Getter) (FieldValues, []error) {
 		}
 	}
 
-	var r1 []error
-	if rf, ok := ret.Get(1).(func(Getter) []error); ok {
+	var r1 error
+	if rf, ok := ret.Get(1).(func(Getter) error); ok {
 		r1 = rf(g)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]error)
-		}
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1

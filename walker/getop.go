@@ -1,9 +1,25 @@
 package walker
 
+import (
+	"errors"
+
+	"github.com/byte4ever/dsco/merror"
+)
+
 type GetList []GetOp
 
-func (s GetList) ApplyOn(g Getter) (FieldValues, []error) {
-	var errs []error
+type ApplyError struct {
+	merror.MError
+}
+
+var ErrApply = errors.New("")
+
+func (m ApplyError) Is(err error) bool {
+	return errors.Is(err, ErrApply)
+}
+
+func (s GetList) ApplyOn(g Getter) (FieldValues, error) {
+	var errs ApplyError
 
 	res := make(FieldValues, len(s))
 
@@ -11,13 +27,17 @@ func (s GetList) ApplyOn(g Getter) (FieldValues, []error) {
 		uid, fieldValue, err := op(g)
 
 		if err != nil {
-			errs = append(errs, err)
+			errs.Add(err)
 			continue
 		}
 
 		if fieldValue != nil {
 			res[uid] = fieldValue
 		}
+	}
+
+	if errs.None() {
+		return res, nil
 	}
 
 	return res, errs

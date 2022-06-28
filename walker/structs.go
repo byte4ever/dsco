@@ -19,18 +19,18 @@ type StructBuilder struct {
 }
 
 func (s *StructBuilder) GetFieldValues(model ModelInterface) (
-	FieldValues, []error,
+	FieldValues, error,
 ) {
 	ltn := dsco.LongTypeName(s.value.Type())
 	if model.TypeName() != ltn {
-		return nil, []error{
+		return nil,
 			fmt.Errorf(
 				"%s != %s: %w",
 				model.TypeName(),
 				ltn,
 				ErrStructTypeDiffer,
-			),
-		}
+			)
+
 	}
 
 	return model.FeedFieldValues(

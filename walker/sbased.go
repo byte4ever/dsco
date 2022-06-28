@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/svalues"
 )
 
@@ -185,22 +186,32 @@ func (s *StringBasedBuilder) Get(
 	}
 }
 
+type GetError struct {
+	merror.MError
+}
+
+var ErrGet = errors.New("")
+
+func (m GetError) Is(err error) bool {
+	return errors.Is(err, ErrGet)
+}
+
 // GetBaseFor creates the bases.
 func (s *StringBasedBuilder) GetFieldValues(model ModelInterface) (
-	FieldValues, []error,
+	FieldValues, error,
 ) {
 	const errFmt = "%s: %w"
-	var errs []error
+	var errs GetError
 
 	result, e := model.ApplyOn(s)
 
-	if len(e) > 0 {
-		errs = append(errs, e...)
+	if e != nil {
+		errs.Add(e)
 	}
 
 	for _, v := range s.values {
-		errs = append(
-			errs, fmt.Errorf(
+		errs.Add(
+			fmt.Errorf(
 				errFmt,
 				v.Location,
 				ErrUnboundKey,
@@ -208,9 +219,9 @@ func (s *StringBasedBuilder) GetFieldValues(model ModelInterface) (
 		)
 	}
 
-	if len(errs) > 0 {
-		return nil, errs
+	if errs.None() {
+		return result, nil
 	}
 
-	return result, nil
+	return nil, errs
 }
