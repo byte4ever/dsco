@@ -9,6 +9,7 @@ import (
 	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/cmdline"
 	"github.com/byte4ever/dsco/walker/env"
+	"github.com/byte4ever/dsco/walker/ifaces"
 )
 
 const duplicateFmt = "layer #%d and #%d: %w"
@@ -155,7 +156,7 @@ func (o *layerBuilder) dedupId(id string) *int {
 
 func wrapCmdlineBuild(
 	to *layerBuilder,
-	wrap func(FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
 	options []Option,
 ) error {
 	if idx := to.dedupId("cmdLine"); idx != nil {
@@ -204,7 +205,7 @@ func WithCmdlineLayer(options ...Option) *CmdlineLayer {
 
 func wrapEnvBuild(
 	to *layerBuilder,
-	wrap func(FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
 	prefix string,
 	options []Option,
 ) error {
@@ -258,7 +259,7 @@ func WithEnvLayer(prefix string, options ...Option) *EnvLayer {
 
 func wrapStructBuild(
 	to *layerBuilder,
-	wrap func(FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
 	input any,
 	id string,
 ) error {

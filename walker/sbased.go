@@ -9,6 +9,8 @@ import (
 
 	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/fvalues"
+	"github.com/byte4ever/dsco/walker/ifaces"
 	"github.com/byte4ever/dsco/walker/svalues"
 )
 
@@ -110,7 +112,7 @@ func NewStringBasedBuilder(
 
 func (s *StringBasedBuilder) Get(
 	path string, _type reflect.Type,
-) (fieldValue *FieldValue, err error) {
+) (fieldValue *fvalues.FieldValue, err error) {
 	const (
 		errFmt  = "%s: %w"
 		errFmt2 = "%s [%s]: %w"
@@ -150,9 +152,9 @@ func (s *StringBasedBuilder) Get(
 			)
 		}
 
-		return &FieldValue{
-			value:    tp,
-			location: entry.Location,
+		return &fvalues.FieldValue{
+			Value:    tp,
+			Location: entry.Location,
 		}, nil
 
 	case reflect.Slice:
@@ -172,9 +174,9 @@ func (s *StringBasedBuilder) Get(
 			)
 		}
 
-		return &FieldValue{
-			value:    tp.Elem(),
-			location: entry.Location,
+		return &fvalues.FieldValue{
+			Value:    tp.Elem(),
+			Location: entry.Location,
 		}, nil
 
 	default:
@@ -197,8 +199,8 @@ func (m GetError) Is(err error) bool {
 }
 
 // GetBaseFor creates the bases.
-func (s *StringBasedBuilder) GetFieldValues(model ModelInterface) (
-	FieldValues, error,
+func (s *StringBasedBuilder) GetFieldValues(model ifaces.ModelInterface) (
+	fvalues.FieldValues, error,
 ) {
 	const errFmt = "%s: %w"
 	var errs GetError

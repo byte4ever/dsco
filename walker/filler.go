@@ -6,11 +6,11 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/fvalues"
+	"github.com/byte4ever/dsco/walker/ifaces"
+	model2 "github.com/byte4ever/dsco/walker/model"
 	"github.com/byte4ever/dsco/walker/plocation"
 )
-
-// ErrUninitializedKey represent an error where ....
-var ErrUninitializedKey = errors.New("uninitialized key")
 
 type dscoContext struct {
 	inputModelRef any
@@ -18,9 +18,9 @@ type dscoContext struct {
 	layers        Layers
 
 	// ----
-	model            ModelInterface
+	model            ifaces.ModelInterface
 	builders         constraintLayerPolicies
-	layerFieldValues []FieldValues
+	layerFieldValues []fvalues.FieldValues
 	mustBeUsed       []int
 	pathLocations    plocation.PathLocations
 }
@@ -47,7 +47,7 @@ func newDSCOContext(
 
 func (c *dscoContext) generateModel() {
 	if c.err.None() {
-		model, err := NewModel(reflect.TypeOf(c.inputModelRef).Elem())
+		model, err := model2.NewModel(reflect.TypeOf(c.inputModelRef).Elem())
 		if err != nil {
 			c.err.Add(err)
 			return
@@ -114,7 +114,7 @@ func (c *dscoContext) checkUnused() {
 						fmt.Errorf(
 							"%s %s by %s: %w",
 							c.pathLocations[valUID].Path,
-							e.location,
+							e.Location,
 							c.pathLocations[valUID].Location,
 							ErrOverriddenKey,
 						),

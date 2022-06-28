@@ -1,4 +1,4 @@
-package walker
+package model
 
 import (
 	"errors"
@@ -8,6 +8,8 @@ import (
 
 	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/fvalues"
+	"github.com/byte4ever/dsco/walker/ifaces"
 	"github.com/byte4ever/dsco/walker/plocation"
 )
 
@@ -50,12 +52,12 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}, nil
 }
 
-func (m *Model) ApplyOn(g Getter) (FieldValues, error) {
+func (m *Model) ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error) {
 	return m.getList.ApplyOn(g)
 }
 
-func (m *Model) FeedFieldValues(id string, v reflect.Value) FieldValues {
-	k := make(FieldValues, len(m.getList))
+func (m *Model) FeedFieldValues(id string, v reflect.Value) fvalues.FieldValues {
+	k := make(fvalues.FieldValues, len(m.getList))
 
 	m.accelerator.FeedFieldValues(
 		id,
@@ -67,7 +69,7 @@ func (m *Model) FeedFieldValues(id string, v reflect.Value) FieldValues {
 }
 
 func (m *Model) Fill(
-	inputModelValue reflect.Value, layers []FieldValues,
+	inputModelValue reflect.Value, layers []fvalues.FieldValues,
 ) (plocation.PathLocations, error) {
 	return m.accelerator.Fill(
 		inputModelValue,
@@ -119,7 +121,9 @@ func scan(uid *uint, path string, t reflect.Type) (Node, ModelError) {
 	default:
 		return nil, ModelError{
 			MError: []error{
-				fmt.Errorf("%s: %w", dsco.LongTypeName(t), ErrUnsupportedType),
+				fmt.Errorf("%s: %w", dsco.LongTypeName(t),
+					ErrUnsupportedType,
+				),
 			},
 		}
 	}

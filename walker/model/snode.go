@@ -1,10 +1,11 @@
-package walker
+package model
 
 import (
 	"errors"
 	"reflect"
 
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/fvalues"
 	"github.com/byte4ever/dsco/walker/plocation"
 )
 
@@ -24,7 +25,7 @@ func (e StructNodeError) Is(err error) bool {
 }
 
 func (n StructNode) Fill(
-	value reflect.Value, layers []FieldValues,
+	value reflect.Value, layers []fvalues.FieldValues,
 ) (plocation.PathLocations, error) {
 	var pl plocation.PathLocations
 	var errs StructNodeError
@@ -53,7 +54,7 @@ func (n StructNode) Fill(
 
 func (n *StructNode) FeedFieldValues(
 	srcID string,
-	fieldValues FieldValues,
+	fieldValues fvalues.FieldValues,
 	value reflect.Value,
 ) {
 	if value.IsNil() {

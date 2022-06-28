@@ -6,6 +6,8 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/walker/fvalues"
+	"github.com/byte4ever/dsco/walker/ifaces"
 )
 
 // ErrStructTypeDiffer represent an error where cannot produce a valid value
@@ -18,8 +20,8 @@ type StructBuilder struct {
 	id    string
 }
 
-func (s *StructBuilder) GetFieldValues(model ModelInterface) (
-	FieldValues, error,
+func (s *StructBuilder) GetFieldValues(model ifaces.ModelInterface) (
+	fvalues.FieldValues, error,
 ) {
 	ltn := dsco.LongTypeName(s.value.Type())
 	if model.TypeName() != ltn {

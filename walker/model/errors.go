@@ -1,4 +1,4 @@
-package walker
+package model
 
 import (
 	"errors"
@@ -12,3 +12,6 @@ var ErrUnsupportedType = errors.New("unsupported type")
 
 // ErrInvalidEmbedded represent an error where ....
 var ErrInvalidEmbedded = errors.New("invalid embedded")
+
+// ErrUninitializedKey represent an error where ....
+var ErrUninitializedKey = errors.New("uninitialized key")
