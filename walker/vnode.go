@@ -3,6 +3,8 @@ package walker
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 type ValueNode struct {
@@ -13,7 +15,7 @@ type ValueNode struct {
 
 func (n *ValueNode) Fill(
 	value reflect.Value, layers []FieldValues,
-) (PathLocations, error) {
+) (plocation.PathLocations, error) {
 	for _, layer := range layers {
 		fieldValue := layer[n.UID]
 
@@ -21,7 +23,7 @@ func (n *ValueNode) Fill(
 			delete(layer, n.UID)
 			value.Set(fieldValue.value)
 
-			var pl PathLocations
+			var pl plocation.PathLocations
 			pl.Report(n.UID, n.VisiblePath, fieldValue.location)
 			return pl, nil
 		}

@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 // ErrUninitializedKey represent an error where ....
@@ -21,7 +22,7 @@ type dscoContext struct {
 	builders         constraintLayerPolicies
 	layerFieldValues []FieldValues
 	mustBeUsed       []int
-	pathLocations    PathLocations
+	pathLocations    plocation.PathLocations
 }
 
 type FillerErrors struct {
@@ -114,7 +115,7 @@ func (c *dscoContext) checkUnused() {
 							"%s %s by %s: %w",
 							c.pathLocations[valUID].Path,
 							e.location,
-							c.pathLocations[valUID].location,
+							c.pathLocations[valUID].Location,
 							ErrOverriddenKey,
 						),
 					)
@@ -129,7 +130,7 @@ func Fill(
 	inputModelRef any,
 	layers ...Layer,
 ) (
-	PathLocations,
+	plocation.PathLocations,
 	error,
 ) {
 	c := newDSCOContext(inputModelRef, layers)

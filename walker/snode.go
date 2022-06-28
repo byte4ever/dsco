@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 type StructNode struct {
@@ -24,8 +25,8 @@ func (e StructNodeError) Is(err error) bool {
 
 func (n StructNode) Fill(
 	value reflect.Value, layers []FieldValues,
-) (PathLocations, error) {
-	var pl PathLocations
+) (plocation.PathLocations, error) {
+	var pl plocation.PathLocations
 	var errs StructNodeError
 
 	v := reflect.New(n.Type.Elem())

@@ -2,6 +2,8 @@ package walker
 
 import (
 	"reflect"
+
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).
@@ -19,7 +21,7 @@ type Node interface {
 	Fill(
 		value reflect.Value,
 		layers []FieldValues,
-	) (PathLocations, error)
+	) (plocation.PathLocations, error)
 }
 
 type FieldValue struct {
@@ -50,5 +52,5 @@ type ModelInterface interface {
 	Fill(
 		inputModelValue reflect.Value,
 		layers []FieldValues,
-	) (PathLocations, error)
+	) (plocation.PathLocations, error)
 }

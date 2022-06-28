@@ -8,6 +8,7 @@ import (
 
 	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 type Model struct {
@@ -61,12 +62,13 @@ func (m *Model) FeedFieldValues(id string, v reflect.Value) FieldValues {
 		k,
 		v,
 	)
+
 	return k
 }
 
 func (m *Model) Fill(
 	inputModelValue reflect.Value, layers []FieldValues,
-) (PathLocations, error) {
+) (plocation.PathLocations, error) {
 	return m.accelerator.Fill(
 		inputModelValue,
 		layers,
