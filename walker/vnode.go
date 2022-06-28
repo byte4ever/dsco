@@ -12,10 +12,8 @@ type ValueNode struct {
 }
 
 func (n *ValueNode) Fill(
-	fillReporter FillReporter,
-	value reflect.Value,
-	layers []FieldValues,
-) {
+	value reflect.Value, layers []FieldValues,
+) (PathLocations, error) {
 	for _, layer := range layers {
 		fieldValue := layer[n.UID]
 
@@ -23,17 +21,13 @@ func (n *ValueNode) Fill(
 			delete(layer, n.UID)
 			value.Set(fieldValue.value)
 
-			fillReporter.ReportUse(
-				n.UID,
-				n.VisiblePath,
-				fieldValue.location,
-			)
-
-			return
+			var pl PathLocations
+			pl.Report(n.UID, n.VisiblePath, fieldValue.location)
+			return pl, nil
 		}
 	}
 
-	fillReporter.ReportUnused(n.VisiblePath)
+	return nil, fmt.Errorf("%w", ErrUninitializedKey)
 }
 
 func (n *ValueNode) FeedFieldValues(

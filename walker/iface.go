@@ -9,15 +9,6 @@ type FieldValuesGetter interface {
 	GetFieldValues(model ModelInterface) (FieldValues, []error)
 }
 
-type FillReporter interface {
-	ReportUse(uid uint, path string, location string)
-	ReportUnused(path string)
-	ReportOverride(uid uint, location string)
-	Result() (FillReport, error)
-	ReportError(err error)
-	Failed() bool
-}
-
 type Node interface {
 	BuildGetList(s *GetList)
 	FeedFieldValues(
@@ -26,10 +17,9 @@ type Node interface {
 		value reflect.Value,
 	)
 	Fill(
-		fillReporter FillReporter,
 		value reflect.Value,
 		layers []FieldValues,
-	)
+	) (PathLocations, error)
 }
 
 type FieldValue struct {
@@ -50,7 +40,7 @@ type Getter interface {
 }
 
 type PoliciesGetter interface {
-	GetPolicies(fillReporter FillReporter) constraintLayerPolicies
+	GetPolicies() (constraintLayerPolicies, error)
 }
 
 type ModelInterface interface {
@@ -58,8 +48,7 @@ type ModelInterface interface {
 	ApplyOn(g Getter) (FieldValues, []error)
 	FeedFieldValues(id string, v reflect.Value) FieldValues
 	Fill(
-		fillReporter FillReporter,
 		inputModelValue reflect.Value,
 		layers []FieldValues,
-	)
+	) (PathLocations, error)
 }

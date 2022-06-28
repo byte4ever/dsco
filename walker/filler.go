@@ -3,49 +3,17 @@ package walker
 import (
 	"errors"
 	"fmt"
-	"io"
 	"reflect"
-	"text/tabwriter"
+
+	"github.com/byte4ever/dsco/merror"
 )
 
 // ErrUninitializedKey represent an error where ....
 var ErrUninitializedKey = errors.New("uninitialized key")
 
-// FillReport contains all fillHelper location for every key path.
-type FillReport []FillReportEntry
-
-// FillReportEntry is the fillHelper report for a value.
-type FillReportEntry struct {
-	path     string // is the key path.
-	location string // is the location of the value.
-}
-
-// Dump writes fillHelper report.
-func (f FillReport) Dump(writer io.Writer) {
-	tabWriter := tabwriter.NewWriter(
-		writer,
-		0,
-		0,
-		2,
-		' ',
-		tabwriter.Debug,
-	)
-	_, _ = fmt.Fprintln(tabWriter, "  path\t  location")
-	_, _ = fmt.Fprintln(tabWriter, "  ----\t  --------")
-
-	//nolint:gocritic // don't care it is error processing
-	for _, entry := range f {
-		_, _ = fmt.Fprintf(
-			tabWriter, "  %s\t  %s\n", entry.path, entry.location,
-		)
-	}
-
-	_ = tabWriter.Flush()
-}
-
 type dscoContext struct {
 	inputModelRef any
-	reporter      FillReporter
+	err           FillerErrors
 	layers        Layers
 
 	// ----
@@ -53,29 +21,34 @@ type dscoContext struct {
 	builders         constraintLayerPolicies
 	layerFieldValues []FieldValues
 	mustBeUsed       []int
+	pathLocations    PathLocations
+}
+
+type FillerErrors struct {
+	merror.MError
+}
+
+var ErrFiller = errors.New("")
+
+func (m FillerErrors) Is(err error) bool {
+	return errors.Is(err, ErrFiller)
 }
 
 func newDSCOContext(
 	inputModelRef any,
-	reporter FillReporter,
 	layers Layers,
 ) *dscoContext {
 	return &dscoContext{
 		inputModelRef: inputModelRef,
-		reporter:      reporter,
 		layers:        layers,
 	}
 }
 
 func (c *dscoContext) generateModel() {
-	if !c.reporter.Failed() {
-		model, errs := NewModel(reflect.TypeOf(c.inputModelRef).Elem())
-
-		if len(errs) > 0 {
-			for _, err := range errs {
-				c.reporter.ReportError(err)
-			}
-
+	if c.err.None() {
+		model, err := NewModel(reflect.TypeOf(c.inputModelRef).Elem())
+		if err != nil {
+			c.err.Add(err)
 			return
 		}
 
@@ -84,20 +57,24 @@ func (c *dscoContext) generateModel() {
 }
 
 func (c *dscoContext) generateBuilders() {
-	if !c.reporter.Failed() {
-		c.builders = c.layers.GetPolicies(c.reporter)
+	if c.err.None() {
+		var err error
+		c.builders, err = c.layers.GetPolicies()
+		if err != nil {
+			c.err.Add(err)
+		}
 	}
 }
 
 func (c *dscoContext) generateFieldValues() {
-	if !c.reporter.Failed() {
+	if c.err.None() {
 		for idx, builder := range c.builders {
 			base, errs2 := builder.GetFieldValues(c.model)
 			if len(errs2) > 0 {
 				for _, err2 := range errs2 {
-					c.reporter.ReportError(
+					c.err.Add(
 						fmt.Errorf(
-							"layer #%d: %wlkr",
+							"layer #%d: %w",
 							idx,
 							err2,
 						),
@@ -117,19 +94,33 @@ func (c *dscoContext) generateFieldValues() {
 }
 
 func (c *dscoContext) fillIt() {
-	if !c.reporter.Failed() {
+	if c.err.None() {
 		v := reflect.ValueOf(c.inputModelRef).Elem()
 
-		c.model.Fill(c.reporter, v, c.layerFieldValues)
+		pathLocations, err := c.model.Fill(v, c.layerFieldValues)
+		if err != nil {
+			c.err.Add(err)
+			return
+		}
+
+		c.pathLocations = pathLocations
 	}
 }
 
 func (c *dscoContext) checkUnused() {
-	if !c.reporter.Failed() {
+	if c.err.None() {
 		if len(c.mustBeUsed) > 0 {
 			for _, idx := range c.mustBeUsed {
 				for valUID, e := range c.layerFieldValues[idx] {
-					c.reporter.ReportOverride(valUID, e.location)
+					c.err.Add(
+						fmt.Errorf(
+							"%s %s by %s: %w",
+							c.pathLocations[valUID].Path,
+							e.location,
+							c.pathLocations[valUID].location,
+							ErrOverriddenKey,
+						),
+					)
 				}
 			}
 		}
@@ -141,17 +132,20 @@ func Fill(
 	inputModelRef any,
 	layers ...Layer,
 ) (
-	FillReport,
+	PathLocations,
 	error,
 ) {
-	fillReporter := NewFillReporterImpl()
-
-	c := newDSCOContext(inputModelRef, fillReporter, layers)
+	c := newDSCOContext(inputModelRef, layers)
 
 	c.generateModel()
 	c.generateBuilders()
 	c.generateFieldValues()
 	c.fillIt()
 	c.checkUnused()
-	return c.reporter.Result() //nolint:wrapcheck
+
+	if c.err.None() {
+		return c.pathLocations, nil
+	}
+
+	return c.pathLocations, c.err //nolint:wrapcheck
 }

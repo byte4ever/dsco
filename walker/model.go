@@ -1,11 +1,13 @@
 package walker
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/merror"
 )
 
 type Model struct {
@@ -18,11 +20,22 @@ func (m *Model) TypeName() string {
 	return m.typeName
 }
 
-func NewModel(inputModelType reflect.Type) (*Model, []error) {
+type ModelError struct {
+	merror.MError
+}
+
+var ErrModel = errors.New("")
+
+func (e ModelError) Is(err error) bool {
+	return errors.Is(err, ErrModel)
+}
+
+func NewModel(inputModelType reflect.Type) (*Model, error) {
 	var maxUID uint
 
 	accelerator, errs := scan(&maxUID, "", inputModelType)
-	if len(errs) > 0 {
+
+	if !errs.None() {
 		return nil, errs
 	}
 
@@ -52,19 +65,16 @@ func (m *Model) FeedFieldValues(id string, v reflect.Value) FieldValues {
 }
 
 func (m *Model) Fill(
-	fillReporter FillReporter,
-	inputModelValue reflect.Value,
-	layers []FieldValues,
-) {
-	m.accelerator.Fill(
-		fillReporter,
+	inputModelValue reflect.Value, layers []FieldValues,
+) (PathLocations, error) {
+	return m.accelerator.Fill(
 		inputModelValue,
 		layers,
 	)
 }
 
-func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
-	var errs []error
+func scan(uid *uint, path string, t reflect.Type) (Node, ModelError) {
+	var errs ModelError
 
 	switch {
 	case t.Kind() == reflect.Slice || dsco.TypeIsRegistered(t):
@@ -75,7 +85,8 @@ func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
 		}
 		*uid++
 
-		return n, nil
+		return n, errs
+
 	case t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Struct:
 		node := &StructNode{
 			Type: t,
@@ -83,7 +94,7 @@ func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
 
 		elems, lErrs := getVisibleFieldList(path, t)
 		if len(lErrs) > 0 {
-			errs = append(errs, lErrs...)
+			errs.MError = append(errs.MError, lErrs...)
 		}
 
 		for _, elem := range elems {
@@ -93,8 +104,9 @@ func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
 					elem.field.Name,
 				), elem.field.Type,
 			)
-			if len(subErrs) > 0 {
-				errs = append(errs, subErrs...)
+
+			if !subErrs.None() {
+				errs.MError = append(errs.MError, lErrs...)
 				continue
 			}
 
@@ -103,8 +115,10 @@ func scan(uid *uint, path string, t reflect.Type) (Node, []error) {
 
 		return node, errs
 	default:
-		return nil, []error{
-			fmt.Errorf("%s: %w", dsco.LongTypeName(t), ErrUnsupportedType),
+		return nil, ModelError{
+			MError: []error{
+				fmt.Errorf("%s: %w", dsco.LongTypeName(t), ErrUnsupportedType),
+			},
 		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/cmdline"
 	"github.com/byte4ever/dsco/walker/env"
 )
@@ -31,18 +32,33 @@ type layerBuilder struct {
 
 type Layers []Layer
 
-func (layers Layers) GetPolicies(fillReporter FillReporter) constraintLayerPolicies {
+type LayerErrors struct {
+	merror.MError
+}
+
+var ErrLayer = errors.New("")
+
+func (m LayerErrors) Is(err error) bool {
+	return errors.Is(err, ErrLayer)
+}
+
+func (layers Layers) GetPolicies() (constraintLayerPolicies, error) {
+	var errs LayerErrors
 	bo := newLayerBuilder()
 
 	for _, layer := range layers {
 		err := layer.register(bo)
+
 		if err != nil {
-			fillReporter.ReportError(err)
-			return nil //nolint:wrapcheck // error is clear enough
+			errs.Add(err)
 		}
 	}
 
-	return bo.builders
+	if errs.None() {
+		return bo.builders, nil
+	}
+
+	return nil, errs
 }
 
 // Layer defines a configuration layer.

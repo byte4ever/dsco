@@ -9,20 +9,27 @@ type MockPoliciesGetter struct {
 	mock.Mock
 }
 
-// GetPolicies provides a mock function with given fields: fillReporter
-func (_m *MockPoliciesGetter) GetPolicies(fillReporter FillReporter) constraintLayerPolicies {
-	ret := _m.Called(fillReporter)
+// GetPolicies provides a mock function with given fields:
+func (_m *MockPoliciesGetter) GetPolicies() (constraintLayerPolicies, error) {
+	ret := _m.Called()
 
 	var r0 constraintLayerPolicies
-	if rf, ok := ret.Get(0).(func(FillReporter) constraintLayerPolicies); ok {
-		r0 = rf(fillReporter)
+	if rf, ok := ret.Get(0).(func() constraintLayerPolicies); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(constraintLayerPolicies)
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewMockPoliciesGetter interface {

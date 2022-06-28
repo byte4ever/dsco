@@ -44,15 +44,15 @@ func (_m *MockFillReporter) ReportUse(uid uint, path string, location string) {
 }
 
 // Result provides a mock function with given fields:
-func (_m *MockFillReporter) Result() (FillReport, error) {
+func (_m *MockFillReporter) Result() (PathLocations, error) {
 	ret := _m.Called()
 
-	var r0 FillReport
-	if rf, ok := ret.Get(0).(func() FillReport); ok {
+	var r0 PathLocations
+	if rf, ok := ret.Get(0).(func() PathLocations); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(FillReport)
+			r0 = ret.Get(0).(PathLocations)
 		}
 	}
 

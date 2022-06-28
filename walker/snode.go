@@ -1,7 +1,10 @@
 package walker
 
 import (
+	"errors"
 	"reflect"
+
+	"github.com/byte4ever/dsco/merror"
 )
 
 type StructNode struct {
@@ -9,22 +12,42 @@ type StructNode struct {
 	Index IndexedSubNodes
 }
 
-func (n *StructNode) Fill(
-	fillReporter FillReporter,
-	value reflect.Value,
-	layers []FieldValues,
-) {
+type StructNodeError struct {
+	merror.MError
+}
+
+var ErrStructNode = errors.New("")
+
+func (e StructNodeError) Is(err error) bool {
+	return errors.Is(err, ErrStructNode)
+}
+
+func (n StructNode) Fill(
+	value reflect.Value, layers []FieldValues,
+) (PathLocations, error) {
+	var pl PathLocations
+	var errs StructNodeError
+
 	v := reflect.New(n.Type.Elem())
 
 	value.Set(v)
 
 	for _, index := range n.Index {
-		index.Node.Fill(
-			fillReporter,
+		pln, err := index.Node.Fill(
 			value.Elem().FieldByIndex(index.Index),
 			layers,
 		)
+		pl.ReportOther(pln)
+		if err != nil {
+			errs.Add(err)
+		}
 	}
+
+	if errs.None() {
+		return pl, nil
+	}
+
+	return pl, errs
 }
 
 func (n *StructNode) FeedFieldValues(

@@ -54,9 +54,27 @@ func (_m *MockModelInterface) FeedFieldValues(id string, v reflect.Value) FieldV
 	return r0
 }
 
-// Fill provides a mock function with given fields: fillReporter, inputModelValue, layers
-func (_m *MockModelInterface) Fill(fillReporter FillReporter, inputModelValue reflect.Value, layers []FieldValues) {
-	_m.Called(fillReporter, inputModelValue, layers)
+// Fill provides a mock function with given fields: inputModelValue, layers
+func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []FieldValues) (PathLocations, error) {
+	ret := _m.Called(inputModelValue, layers)
+
+	var r0 PathLocations
+	if rf, ok := ret.Get(0).(func(reflect.Value, []FieldValues) PathLocations); ok {
+		r0 = rf(inputModelValue, layers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(PathLocations)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(reflect.Value, []FieldValues) error); ok {
+		r1 = rf(inputModelValue, layers)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // TypeName provides a mock function with given fields:

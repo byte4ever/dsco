@@ -37,7 +37,7 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 		"--z-first_name=Laura",
 	}
 
-	// t.Setenv("TST-A", "123")
+	t.Setenv("TST-A", "123")
 	t.Setenv("TST-B", "123.1234")
 	// t.Setenv("API-Z-FIRST_NAME", "Laurent")
 

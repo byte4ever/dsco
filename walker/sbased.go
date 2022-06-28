@@ -135,6 +135,8 @@ func (s *StringBasedBuilder) Get(
 	case reflect.Pointer:
 		tp := reflect.New(_type.Elem())
 
+		delete(s.values, convertedPath)
+
 		if err := yaml.Unmarshal(
 			[]byte(entry.Value), tp.Interface(),
 		); err != nil {
@@ -147,8 +149,6 @@ func (s *StringBasedBuilder) Get(
 			)
 		}
 
-		delete(s.values, convertedPath)
-
 		return &FieldValue{
 			value:    tp,
 			location: entry.Location,
@@ -156,6 +156,8 @@ func (s *StringBasedBuilder) Get(
 
 	case reflect.Slice:
 		tp := reflect.New(_type)
+
+		delete(s.values, convertedPath)
 
 		if err := yaml.Unmarshal(
 			[]byte(entry.Value), tp.Interface(),
@@ -168,8 +170,6 @@ func (s *StringBasedBuilder) Get(
 				ErrParse,
 			)
 		}
-
-		delete(s.values, convertedPath)
 
 		return &FieldValue{
 			value:    tp.Elem(),

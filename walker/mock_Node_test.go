@@ -23,9 +23,27 @@ func (_m *MockNode) FeedFieldValues(srcID string, fieldValues FieldValues, value
 	_m.Called(srcID, fieldValues, value)
 }
 
-// Fill provides a mock function with given fields: fillReporter, value, layers
-func (_m *MockNode) Fill(fillReporter FillReporter, value reflect.Value, layers []FieldValues) {
-	_m.Called(fillReporter, value, layers)
+// Fill provides a mock function with given fields: value, layers
+func (_m *MockNode) Fill(value reflect.Value, layers []FieldValues) (PathLocations, error) {
+	ret := _m.Called(value, layers)
+
+	var r0 PathLocations
+	if rf, ok := ret.Get(0).(func(reflect.Value, []FieldValues) PathLocations); ok {
+		r0 = rf(value, layers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(PathLocations)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(reflect.Value, []FieldValues) error); ok {
+		r1 = rf(value, layers)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewMockNode interface {
