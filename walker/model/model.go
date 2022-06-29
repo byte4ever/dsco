@@ -96,17 +96,17 @@ func scan(uid *uint, path string, t reflect.Type) (Node, ModelError) {
 			Type: t,
 		}
 
-		elems, lErrs := getVisibleFieldList(path, t)
+		visibleFields, lErrs := getVisibleFieldList(path, t)
 		if len(lErrs) > 0 {
 			errs.MError = append(errs.MError, lErrs...)
 		}
 
-		for _, elem := range elems {
+		for _, field := range visibleFields {
 			subNode, subErrs := scan(
 				uid, pathTo(
 					path,
-					elem.field.Name,
-				), elem.field.Type,
+					field.field.Name,
+				), field.field.Type,
 			)
 
 			if !subErrs.None() {
@@ -114,7 +114,7 @@ func scan(uid *uint, path string, t reflect.Type) (Node, ModelError) {
 				continue
 			}
 
-			node.PushSubNodes(elem.index, subNode)
+			node.PushSubNodes(field.index, subNode)
 		}
 
 		return node, errs

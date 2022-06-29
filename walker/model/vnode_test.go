@@ -103,3 +103,126 @@ func TestValueNode_Fill(t *testing.T) {
 	)
 
 }
+
+func TestValueNode_FeedFieldValues(t *testing.T) {
+	t.Parallel()
+
+	t.Run(
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
+			n := &ValueNode{
+				VisiblePath: "the.path",
+				UID:         50,
+			}
+
+			fvs := fvalues.FieldValues{}
+
+			i := 15
+			pi := &i
+
+			vpi := reflect.ValueOf(pi)
+
+			n.FeedFieldValues(
+				"srcID",
+				fvs,
+				vpi,
+			)
+
+			require.Contains(t, fvs, uint(50))
+
+			require.Equal(
+				t, fvalues.FieldValue{
+					Value:    vpi,
+					Location: "struct[srcID]:the.path",
+				},
+				*fvs[uint(50)],
+			)
+		},
+	)
+
+	t.Run(
+		"nil pointer case",
+		func(t *testing.T) {
+			t.Parallel()
+
+			n := &ValueNode{
+				VisiblePath: "the.path",
+				UID:         50,
+			}
+
+			fvs := fvalues.FieldValues{}
+
+			pi := (*int)(nil)
+
+			vpi := reflect.ValueOf(pi)
+
+			n.FeedFieldValues(
+				"srcID",
+				fvs,
+				vpi,
+			)
+
+			require.Empty(t, fvs)
+		},
+	)
+
+}
+
+func TestValueNode_BuildGetList(t *testing.T) {
+	t.Parallel()
+
+	t.Run(
+		"",
+		func(t *testing.T) {
+			t.Parallel()
+
+			someType := reflect.TypeOf(123)
+			someValue := reflect.ValueOf(345)
+			const path = "the.path"
+			const expectedUID = uint(50)
+			const location = "some-loc"
+
+			n := &ValueNode{
+				Type:        someType,
+				VisiblePath: path,
+				UID:         expectedUID,
+			}
+
+			var gl GetList
+
+			n.BuildGetList(&gl)
+			require.Len(t, gl, 1)
+
+			g := NewMockGetter(t)
+			g.
+				On(
+					"Get",
+					path,
+					someType,
+				).
+				Return(
+					&fvalues.FieldValue{
+						Value:    someValue,
+						Location: location,
+					},
+					nil,
+				).
+				Once()
+
+			uid, fv, err := gl[0](g)
+			require.NoError(t, err)
+			require.Equal(t, expectedUID, uid)
+			require.NotNil(t, fv)
+			require.Equal(
+				t,
+				fvalues.FieldValue{
+					Value:    someValue,
+					Location: location,
+				},
+				*fv,
+			)
+		},
+	)
+}
