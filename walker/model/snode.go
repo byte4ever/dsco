@@ -27,8 +27,10 @@ func (e StructNodeError) Is(err error) bool {
 func (n StructNode) Fill(
 	value reflect.Value, layers []fvalues.FieldValues,
 ) (plocation.PathLocations, error) {
-	var pl plocation.PathLocations
-	var errs StructNodeError
+	var (
+		pl   plocation.PathLocations
+		errs StructNodeError
+	)
 
 	v := reflect.New(n.Type.Elem())
 
@@ -39,10 +41,12 @@ func (n StructNode) Fill(
 			value.Elem().FieldByIndex(index.Index),
 			layers,
 		)
-		pl.ReportOther(pln)
+
 		if err != nil {
 			errs.Add(err)
 		}
+
+		pl.ReportOther(pln)
 	}
 
 	if errs.None() {

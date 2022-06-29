@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -116,10 +115,6 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 			)
 
 			require.NoError(t, err)
-
-			for _, embedded := range s {
-				fmt.Println(*embedded)
-			}
 
 			require.Equal(
 				t, stackEmbed{
@@ -242,10 +237,6 @@ func Test_getVisibleFieldList(t *testing.T) {
 			)
 
 			require.Nil(t, errs)
-
-			for _, item := range items[:] {
-				fmt.Println(*item)
-			}
 
 			require.Equal(
 				t, elems{
