@@ -475,3 +475,14 @@ func Test_getVisibleFieldList(t *testing.T) {
 		},
 	)
 }
+
+func TestModel_TypeName(t *testing.T) {
+	m := &Model{
+		typeName: "type-name",
+	}
+	require.Equal(t, "type-name", m.TypeName())
+}
+
+func TestModel_ApplyOn(t *testing.T) {
+
+}

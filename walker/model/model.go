@@ -43,6 +43,7 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}
 
 	var getList GetList
+
 	accelerator.BuildGetList(&getList)
 
 	return &Model{
