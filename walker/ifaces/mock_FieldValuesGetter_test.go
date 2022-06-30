@@ -12,7 +12,7 @@ type MockFieldValuesGetter struct {
 	mock.Mock
 }
 
-// GetFieldValues provides a mock function with given fields: model
+// GetFieldValuesFrom provides a mock function with given fields: model
 func (_m *MockFieldValuesGetter) GetFieldValuesFrom(model ModelInterface) (fvalues.FieldValues, error) {
 	ret := _m.Called(model)
 

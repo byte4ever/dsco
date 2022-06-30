@@ -10,6 +10,10 @@ import (
 
 type GetList []GetOp
 
+func (s *GetList) Count() int {
+	return len(*s)
+}
+
 type ApplyError struct {
 	merror.MError
 }

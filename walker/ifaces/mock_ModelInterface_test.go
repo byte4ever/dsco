@@ -39,22 +39,6 @@ func (_m *MockModelInterface) ApplyOn(g Getter) (fvalues.FieldValues, error) {
 	return r0, r1
 }
 
-// FeedFieldValues provides a mock function with given fields: id, v
-func (_m *MockModelInterface) FeedFieldValues(id string, v reflect.Value) fvalues.FieldValues {
-	ret := _m.Called(id, v)
-
-	var r0 fvalues.FieldValues
-	if rf, ok := ret.Get(0).(func(string, reflect.Value) fvalues.FieldValues); ok {
-		r0 = rf(id, v)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(fvalues.FieldValues)
-		}
-	}
-
-	return r0
-}
-
 // Fill provides a mock function with given fields: inputModelValue, layers
 func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []fvalues.FieldValues) (plocation.PathLocations, error) {
 	ret := _m.Called(inputModelValue, layers)
@@ -76,6 +60,22 @@ func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []fvalu
 	}
 
 	return r0, r1
+}
+
+// GetFieldValuesFor provides a mock function with given fields: id, v
+func (_m *MockModelInterface) GetFieldValuesFor(id string, v reflect.Value) fvalues.FieldValues {
+	ret := _m.Called(id, v)
+
+	var r0 fvalues.FieldValues
+	if rf, ok := ret.Get(0).(func(string, reflect.Value) fvalues.FieldValues); ok {
+		r0 = rf(id, v)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(fvalues.FieldValues)
+		}
+	}
+
+	return r0
 }
 
 // TypeName provides a mock function with given fields:

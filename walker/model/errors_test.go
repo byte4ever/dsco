@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -40,4 +41,26 @@ func checkAsMockedError2(
 
 	var me MockedError2
 	require.ErrorAs(t, err, &me)
+}
+
+func TestFieldNameCollisionError_Error(t *testing.T) {
+	require.Equal(
+		t,
+		"field collision between p1 and p2",
+		FieldNameCollisionError{
+			Path1: "p1",
+			Path2: "p2",
+		}.Error(),
+	)
+}
+
+func TestUnsupportedTypeError_Error(t *testing.T) {
+	require.Equal(
+		t,
+		"struct field p1 with unsupported type int",
+		UnsupportedTypeError{
+			Path: "p1",
+			Type: reflect.TypeOf(10),
+		}.Error(),
+	)
 }

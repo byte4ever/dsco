@@ -24,6 +24,7 @@ func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 	fvalues.FieldValues, error,
 ) {
 	ltn := dsco.LongTypeName(s.value.Type())
+
 	if model.TypeName() != ltn {
 		return nil,
 			fmt.Errorf(
@@ -35,7 +36,7 @@ func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 
 	}
 
-	return model.FeedFieldValues(
+	return model.GetFieldValuesFor(
 		s.id,
 		s.value,
 	), nil

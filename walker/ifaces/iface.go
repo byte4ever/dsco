@@ -25,7 +25,7 @@ type Getter interface {
 type ModelInterface interface {
 	TypeName() string
 	ApplyOn(g Getter) (fvalues.FieldValues, error)
-	FeedFieldValues(id string, v reflect.Value) fvalues.FieldValues
+	GetFieldValuesFor(id string, v reflect.Value) fvalues.FieldValues
 	Fill(
 		inputModelValue reflect.Value,
 		layers []fvalues.FieldValues,

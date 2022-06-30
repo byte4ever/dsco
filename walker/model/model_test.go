@@ -4,7 +4,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/byte4ever/dsco/walker/fvalues"
+	"github.com/byte4ever/dsco/walker/plocation"
 )
 
 func Test_stackEmbed_pushToStack(t *testing.T) {
@@ -393,9 +398,14 @@ func Test_getVisibleFieldList(t *testing.T) {
 
 			require.Len(t, errs, 1)
 
-			require.ErrorIs(t, errs[0], ErrFieldNameCollision)
-			require.ErrorContains(t, errs[0], "\"X1\"")
-			require.ErrorContains(t, errs[0], "\"Sub1.Sub11.X1\"")
+			var e FieldNameCollisionError
+			require.ErrorAs(t, errs[0], &e)
+			require.Equal(
+				t, FieldNameCollisionError{
+					Path1: "X1",
+					Path2: "Sub1.Sub11.X1",
+				}, e,
+			)
 		},
 	)
 
@@ -427,9 +437,17 @@ func Test_getVisibleFieldList(t *testing.T) {
 			)
 
 			require.Len(t, errs, 1)
-			require.ErrorIs(t, errs[0], ErrFieldNameCollision)
-			require.ErrorContains(t, errs[0], "\"Sub1.X\"")
-			require.ErrorContains(t, errs[0], "\"Sub2.X\"")
+
+			var e FieldNameCollisionError
+			require.ErrorAs(t, errs[0], &e)
+			require.Equal(
+				t,
+				FieldNameCollisionError{
+					Path1: "Sub2.X",
+					Path2: "Sub1.X",
+				},
+				e,
+			)
 		},
 	)
 
@@ -469,9 +487,14 @@ func Test_getVisibleFieldList(t *testing.T) {
 			)
 
 			require.Len(t, errs, 1)
-			require.ErrorIs(t, errs[0], ErrFieldNameCollision)
-			require.ErrorContains(t, errs[0], "\"Sub1.Sub11.X\"")
-			require.ErrorContains(t, errs[0], "\"Sub2.Sub22.X\"")
+			var e FieldNameCollisionError
+			require.ErrorAs(t, errs[0], &e)
+			require.Equal(
+				t, FieldNameCollisionError{
+					Path1: "Sub2.Sub22.X",
+					Path2: "Sub1.Sub11.X",
+				}, e,
+			)
 		},
 	)
 }
@@ -483,6 +506,116 @@ func TestModel_TypeName(t *testing.T) {
 	require.Equal(t, "type-name", m.TypeName())
 }
 
-func TestModel_ApplyOn(t *testing.T) {
+func TestNewModel(t *testing.T) {
+	t.Parallel()
 
+	t.Run(
+		"success", func(t *testing.T) {
+			t.Parallel()
+
+			type Root struct {
+				X *float64
+				Y *float64
+			}
+
+			m, err := NewModel(reflect.TypeOf(&Root{}))
+			require.NoError(t, err)
+			require.Equal(t, uint(2), m.fieldCount)
+			require.NotNil(t, m.accelerator)
+			require.NotNil(t, m.getList)
+			require.Equal(t, 2, m.getList.Count())
+		},
+	)
+
+	t.Run(
+		"errors", func(t *testing.T) {
+			t.Parallel()
+
+			type Root struct {
+				Y *float64
+				X float64
+			}
+
+			m, err := NewModel(reflect.TypeOf(&Root{}))
+
+			var e ModelError
+			require.ErrorAs(t, err, &e)
+			require.False(t, e.None())
+			require.Nil(t, m)
+		},
+	)
+}
+
+func TestModel_ApplyOn(t *testing.T) {
+	fvs := make(fvalues.FieldValues, 10)
+
+	getter := NewMockGetter(t)
+
+	getList := NewMockGetListInterface(t)
+	getList.On("ApplyOn", getter).Return(fvs, errMocked1).Once()
+
+	m := &Model{
+		getList: getList,
+	}
+
+	gotFvs, err := m.ApplyOn(getter)
+
+	require.Equal(t, fvs, gotFvs)
+	require.Equal(t, errMocked1, err)
+}
+
+func TestModel_Fill(t *testing.T) {
+	v := reflect.ValueOf(1)
+	layers := []fvalues.FieldValues{nil, nil, nil}
+	ploc := plocation.PathLocations{plocation.PathLocation{}}
+
+	accelerator := NewMockNode(t)
+	accelerator.
+		On("Fill", v, layers).
+		Return(ploc, errMocked1).
+		Once()
+
+	m := &Model{
+		accelerator: accelerator,
+	}
+
+	gotPLoc, err := m.Fill(v, layers)
+
+	require.Equal(t, ploc, gotPLoc)
+	require.Equal(t, errMocked1, err)
+
+}
+
+func TestModelError_Is(t *testing.T) {
+	require.NotErrorIs(t, errMocked1, ErrModel)
+	require.ErrorIs(t, ModelError{}, ErrModel)
+}
+
+func TestModel_GetFieldValuesFor(t *testing.T) {
+	id := "id"
+	v := reflect.ValueOf(1)
+
+	accelerator := NewMockNode(t)
+	accelerator.
+		On(
+			"FeedFieldValues",
+			id,
+			mock.MatchedBy(
+				func(ifvs fvalues.FieldValues) bool {
+					return assert.Empty(t, ifvs)
+				},
+			),
+			v,
+		).
+		Return().
+		Once()
+
+	m := &Model{
+		fieldCount:  101,
+		accelerator: accelerator,
+	}
+
+	gotFvs := m.GetFieldValuesFor(id, v)
+
+	require.Empty(t, gotFvs)
 }

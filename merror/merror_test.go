@@ -177,3 +177,11 @@ func TestError_Add(t *testing.T) {
 		require.Equal(t, tt.afterState, tt.beforeState)
 	}
 }
+
+func TestMError_None(t *testing.T) {
+	e := MError{}
+	require.True(t, e.None())
+
+	e2 := make(MError, 0)
+	require.True(t, e2.None())
+}

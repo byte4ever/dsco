@@ -16,7 +16,8 @@ import (
 type Model struct {
 	accelerator Node
 	typeName    string
-	getList     GetList
+	getList     GetListInterface
+	fieldCount  uint
 }
 
 func (m *Model) TypeName() string {
@@ -39,17 +40,19 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	accelerator, errs := scan(&maxUID, "", inputModelType)
 
 	if !errs.None() {
-		return nil, errs
+		return nil, ModelError{
+			MError: errs,
+		}
 	}
 
-	var getList GetList
-
+	getList := make(GetList, 0, maxUID)
 	accelerator.BuildGetList(&getList)
 
 	return &Model{
+		fieldCount:  maxUID,
 		typeName:    dsco.LongTypeName(inputModelType),
 		accelerator: accelerator,
-		getList:     getList,
+		getList:     &getList,
 	}, nil
 }
 
@@ -57,8 +60,11 @@ func (m *Model) ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error) {
 	return m.getList.ApplyOn(g)
 }
 
-func (m *Model) FeedFieldValues(id string, v reflect.Value) fvalues.FieldValues {
-	k := make(fvalues.FieldValues, len(m.getList))
+func (m *Model) GetFieldValuesFor(
+	id string,
+	v reflect.Value,
+) fvalues.FieldValues {
+	k := make(fvalues.FieldValues, m.fieldCount)
 
 	m.accelerator.FeedFieldValues(
 		id,
@@ -70,68 +76,13 @@ func (m *Model) FeedFieldValues(id string, v reflect.Value) fvalues.FieldValues 
 }
 
 func (m *Model) Fill(
-	inputModelValue reflect.Value, layers []fvalues.FieldValues,
+	inputModelValue reflect.Value,
+	layers []fvalues.FieldValues,
 ) (plocation.PathLocations, error) {
 	return m.accelerator.Fill(
 		inputModelValue,
 		layers,
 	)
-}
-
-func scan(
-	uid *uint,
-	path string,
-	t reflect.Type,
-) (Node, ModelError) {
-	var errs ModelError
-
-	switch {
-	case t.Kind() == reflect.Slice || dsco.TypeIsRegistered(t):
-		n := &ValueNode{
-			UID:         *uid,
-			Type:        t,
-			VisiblePath: path,
-		}
-		*uid++
-
-		return n, errs
-
-	case t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Struct:
-		node := &StructNode{
-			Type: t,
-		}
-
-		visibleFields, lErrs := getVisibleFieldList(path, t)
-		if len(lErrs) > 0 {
-			errs.MError = append(errs.MError, lErrs...)
-		}
-
-		for _, field := range visibleFields {
-			subNode, subErrs := scan(
-				uid, pathTo(
-					path,
-					field.field.Name,
-				), field.field.Type,
-			)
-
-			if !subErrs.None() {
-				errs.MError = append(errs.MError, lErrs...)
-				continue
-			}
-
-			node.PushSubNodes(field.index, subNode)
-		}
-
-		return node, errs
-	default:
-		return nil, ModelError{
-			MError: []error{
-				fmt.Errorf("%s: %w", dsco.LongTypeName(t),
-					ErrUnsupportedType,
-				),
-			},
-		}
-	}
 }
 
 func (s *stackEmbed) pushToStack(
@@ -213,21 +164,19 @@ func getVisibleFieldList(path string, t reflect.Type) (elems, []error) {
 			if found {
 				errs = append(
 					errs,
-					fmt.Errorf(
-						"%q %q: %w",
-						pathTo(
+					FieldNameCollisionError{
+						Path1: pathTo(
 							path,
 							localFieldName,
 						),
-						pathTo(
+						Path2: pathTo(
 							path,
 							pathTo(
 								prevDecl.path,
 								prevDecl.field.Name,
 							),
 						),
-						ErrFieldNameCollision,
-					),
+					},
 				)
 
 				continue

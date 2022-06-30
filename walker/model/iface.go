@@ -23,4 +23,5 @@ type Node interface {
 type GetListInterface interface {
 	ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error)
 	Push(o GetOp)
+	Count() int
 }
