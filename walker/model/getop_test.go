@@ -77,14 +77,6 @@ func TestGetList_Push(t *testing.T) {
 
 }
 
-type FakeError1 struct {
-	error
-}
-
-type FakeError2 struct {
-	error
-}
-
 func TestGetList_ApplyOn(t *testing.T) {
 	t.Parallel()
 
@@ -111,7 +103,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			f1.On("Execute", getter).Return(
-				uint(1), nil, FakeError1{errMocked1},
+				uint(1), nil, MockedError1{},
 			)
 
 			f2.On("Execute", getter).Return(
@@ -119,7 +111,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			f3.On("Execute", getter).Return(
-				uint(3), nil, FakeError2{errMocked2},
+				uint(3), nil, MockedError2{},
 			)
 
 			l := GetList{
@@ -155,15 +147,8 @@ func TestGetList_ApplyOn(t *testing.T) {
 
 			res, err := l.ApplyOn(getter)
 
-			var e1 FakeError1
-
-			require.ErrorAs(t, err, &e1)
-			require.Equal(t, errMocked1, e1.error)
-
-			var e2 FakeError2
-
-			require.ErrorAs(t, err, &e2)
-			require.Equal(t, errMocked2, e2.error)
+			checkAsMockedError1(t, err)
+			checkAsMockedError2(t, err)
 
 			require.Equal(
 				t, res, fvalues.FieldValues{

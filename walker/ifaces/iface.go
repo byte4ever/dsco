@@ -9,7 +9,7 @@ import (
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).
 type FieldValuesGetter interface {
-	GetFieldValues(model ModelInterface) (fvalues.FieldValues, error)
+	GetFieldValuesFrom(model ModelInterface) (fvalues.FieldValues, error)
 }
 
 type Getter interface {

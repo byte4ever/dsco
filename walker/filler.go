@@ -70,7 +70,7 @@ func (c *dscoContext) generateBuilders() {
 func (c *dscoContext) generateFieldValues() {
 	if c.err.None() {
 		for idx, builder := range c.builders {
-			base, err := builder.GetFieldValues(c.model)
+			base, err := builder.GetFieldValuesFrom(c.model)
 			if err != nil {
 				c.err.Add(
 					fmt.Errorf(

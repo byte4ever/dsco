@@ -78,7 +78,11 @@ func (m *Model) Fill(
 	)
 }
 
-func scan(uid *uint, path string, t reflect.Type) (Node, ModelError) {
+func scan(
+	uid *uint,
+	path string,
+	t reflect.Type,
+) (Node, ModelError) {
 	var errs ModelError
 
 	switch {

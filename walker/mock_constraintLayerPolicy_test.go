@@ -15,7 +15,7 @@ type mockConstraintLayerPolicy struct {
 }
 
 // GetFieldValues provides a mock function with given fields: model
-func (_m *mockConstraintLayerPolicy) GetFieldValues(model ifaces.ModelInterface) (fvalues.FieldValues, error) {
+func (_m *mockConstraintLayerPolicy) GetFieldValuesFrom(model ifaces.ModelInterface) (fvalues.FieldValues, error) {
 	ret := _m.Called(model)
 
 	var r0 fvalues.FieldValues

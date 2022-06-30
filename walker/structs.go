@@ -20,7 +20,7 @@ type StructBuilder struct {
 	id    string
 }
 
-func (s *StructBuilder) GetFieldValues(model ifaces.ModelInterface) (
+func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 	fvalues.FieldValues, error,
 ) {
 	ltn := dsco.LongTypeName(s.value.Type())

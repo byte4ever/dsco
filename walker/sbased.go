@@ -199,7 +199,7 @@ func (m GetError) Is(err error) bool {
 }
 
 // GetBaseFor creates the bases.
-func (s *StringBasedBuilder) GetFieldValues(model ifaces.ModelInterface) (
+func (s *StringBasedBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 	fvalues.FieldValues, error,
 ) {
 	const errFmt = "%s: %w"
