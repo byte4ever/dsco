@@ -23,13 +23,12 @@ type StructBuilder struct {
 func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 	fvalues.FieldValues, error,
 ) {
-	ltn := dsco.LongTypeName(s.value.Type())
-
-	if model.TypeName() != ltn {
+	modelTName := model.TypeName()
+	if ltn := dsco.LongTypeName(s.value.Type()); modelTName != ltn {
 		return nil,
 			fmt.Errorf(
 				"%s != %s: %w",
-				model.TypeName(),
+				modelTName,
 				ltn,
 				ErrStructTypeDiffer,
 			)

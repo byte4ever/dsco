@@ -20,9 +20,40 @@ var ErrInvalidType = errors.New("invalid type")
 // ErrParse represents an error indicating that a value cannot be parsed.
 var ErrParse = errors.New("parse error")
 
+type ParseError struct {
+	Path     string
+	Type     reflect.Type
+	Location string
+}
+
+func (a ParseError) Error() string {
+	return fmt.Sprintf(
+		"parse error on %s-<%s> %s",
+		a.Path,
+		dsco.LongTypeName(a.Type),
+		a.Location,
+	)
+}
+
+func (a ParseError) Is(err error) bool {
+	return errors.Is(err, ErrParse)
+}
+
 // ErrAliasCollision represents an error indicating that an alias is colliding
 // with an actual key in the structure.
 var ErrAliasCollision = errors.New("alias collision")
+
+type AliasCollisionError struct {
+	Path string
+}
+
+func (a AliasCollisionError) Error() string {
+	return fmt.Sprintf("alias %s collides with structure", a.Path)
+}
+
+func (a AliasCollisionError) Is(err error) bool {
+	return errors.Is(err, ErrAliasCollision)
+}
 
 // ErrUnboundKey represents an error indicating that a key is never bound to the
 // structure.
@@ -122,11 +153,9 @@ func (s *StringBasedBuilder) Get(
 
 	// check for alias collisions
 	if _, found := s.internalOpts.aliases[convertedPath]; found {
-		return nil, fmt.Errorf(
-			errFmt,
-			path,
-			ErrAliasCollision,
-		)
+		return nil, AliasCollisionError{
+			Path: path,
+		}
 	}
 
 	entry, found := s.values[convertedPath]
@@ -143,13 +172,11 @@ func (s *StringBasedBuilder) Get(
 		if err := yaml.Unmarshal(
 			[]byte(entry.Value), tp.Interface(),
 		); err != nil {
-			return nil, fmt.Errorf(
-				"%s-<%s> %s: %w",
+			return nil, ParseError{
 				path,
-				dsco.LongTypeName(_type),
+				_type,
 				entry.Location,
-				ErrParse,
-			)
+			}
 		}
 
 		return &fvalues.FieldValue{
@@ -166,12 +193,11 @@ func (s *StringBasedBuilder) Get(
 			[]byte(entry.Value), tp.Interface(),
 		); err != nil {
 
-			return nil, fmt.Errorf(
-				errFmt2,
+			return nil, ParseError{
 				path,
+				_type,
 				entry.Location,
-				ErrParse,
-			)
+			}
 		}
 
 		return &fvalues.FieldValue{
