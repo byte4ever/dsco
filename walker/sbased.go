@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/fvalues"
 	"github.com/byte4ever/dsco/walker/ifaces"
@@ -55,9 +57,36 @@ func (a AliasCollisionError) Is(err error) bool {
 	return errors.Is(err, ErrAliasCollision)
 }
 
-// ErrUnboundKey represents an error indicating that a key is never bound to the
+// ErrUnboundLocation represents an error indicating that a key is never
+// bound to the
 // structure.
-var ErrUnboundKey = errors.New("unbound key")
+var ErrUnboundedLocation = errors.New("unbound key")
+
+type UnboundedLocationErrors []UnboundedLocationError
+
+func (u UnboundedLocationErrors) Len() int {
+	return len(u)
+}
+
+func (u UnboundedLocationErrors) Less(i, j int) bool {
+	return u[i].Location < u[j].Location
+}
+
+func (u UnboundedLocationErrors) Swap(i, j int) {
+	u[i], u[j] = u[j], u[i]
+}
+
+type UnboundedLocationError struct {
+	Location string
+}
+
+func (a UnboundedLocationError) Error() string {
+	return fmt.Sprintf("unbounded location %s", a.Location)
+}
+
+func (a UnboundedLocationError) Is(err error) bool {
+	return errors.Is(err, ErrUnboundedLocation)
+}
 
 // ErrOverriddenKey represents an error indicating that a potential key binding
 // wha overridden in another layer.
@@ -91,11 +120,11 @@ type AliasesOption map[string]string
 func (o *internalOpts) applyOptions(options []Option) error {
 	for i, option := range options {
 		if err := option.apply(o); err != nil {
-			return fmt.Errorf(
-				"when processing option #%d: %w",
-				i,
-				err,
-			)
+			return ierror.IError{
+				Index: i,
+				Info:  "when processing option",
+				Err:   err,
+			}
 		}
 	}
 
@@ -225,10 +254,12 @@ func (m GetError) Is(err error) bool {
 }
 
 // GetBaseFor creates the bases.
-func (s *StringBasedBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
-	fvalues.FieldValues, error,
+func (s *StringBasedBuilder) GetFieldValuesFrom(
+	model ifaces.ModelInterface,
+) (
+	fvalues.FieldValues,
+	error,
 ) {
-	const errFmt = "%s: %w"
 	var errs GetError
 
 	result, e := model.ApplyOn(s)
@@ -237,14 +268,21 @@ func (s *StringBasedBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 		errs.Add(e)
 	}
 
+	var e2s UnboundedLocationErrors
 	for _, v := range s.values {
-		errs.Add(
-			fmt.Errorf(
-				errFmt,
-				v.Location,
-				ErrUnboundKey,
-			),
+		e2s = append(
+			e2s,
+			UnboundedLocationError{
+				Location: v.Location,
+			},
 		)
+	}
+
+	if len(e2s) > 0 {
+		sort.Sort(e2s)
+		for _, e2 := range e2s {
+			errs.Add(e2)
+		}
 	}
 
 	if errs.None() {

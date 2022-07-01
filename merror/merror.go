@@ -47,3 +47,7 @@ func (m *MError) Add(err error) {
 func (m *MError) None() bool {
 	return len(*m) == 0
 }
+
+func (m *MError) Count() int {
+	return len(*m)
+}
