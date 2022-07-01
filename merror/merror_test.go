@@ -185,3 +185,13 @@ func TestMError_None(t *testing.T) {
 	e2 := make(MError, 0)
 	require.True(t, e2.None())
 }
+
+func TestMError_Count(t *testing.T) {
+	var e MError
+
+	require.Equal(t, 0, e.Count())
+
+	e2 := MError{}
+
+	require.Equal(t, 0, e2.Count())
+}

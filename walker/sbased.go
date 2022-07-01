@@ -148,7 +148,7 @@ func WithAliases(mapping map[string]string) AliasesOption {
 // NewStringBasedBuilder creates a bases builder for the provided path/text
 // value set.
 func NewStringBasedBuilder(
-	provider svalues.StringValuesProvider,
+	provider StringValuesProvider,
 	options ...Option,
 ) (
 	*StringBasedBuilder,

@@ -4,8 +4,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/walker/fvalues"
 	"github.com/byte4ever/dsco/walker/ifaces"
 	"github.com/byte4ever/dsco/walker/svalues"
@@ -421,6 +424,102 @@ func TestAliasesOption_apply(t *testing.T) {
 
 			ao := AliasesOption(mapping)
 			require.ErrorIs(t, ao.apply(&io), ErrNoAliasesProvided)
+		},
+	)
+}
+
+func TestNewStringBasedBuilder(t *testing.T) {
+	t.Parallel()
+
+	t.Run(
+		"success", func(t *testing.T) {
+			t.Parallel()
+			p := NewMockStringValuesProvider(t)
+
+			sv := svalues.StringValues{
+				"a": &svalues.StringValue{
+					Location: "",
+					Value:    "",
+				},
+			}
+
+			p.On("GetStringValues").Return(sv).Once()
+
+			o := NewMockOption(t)
+			o.
+				On(
+					"apply",
+					mock.MatchedBy(
+						func(o *internalOpts) bool {
+							return assert.NotNil(t, o)
+						},
+					),
+				).
+				Return(nil).
+				Once()
+
+			b, err := NewStringBasedBuilder(p, o)
+
+			require.NoError(t, err)
+			require.Equal(t, sv, b.values)
+		},
+	)
+
+	t.Run(
+		"nil provider", func(t *testing.T) {
+			t.Parallel()
+
+			b, err := NewStringBasedBuilder(nil)
+
+			require.ErrorIs(t, err, ErrNilProvider)
+			require.Nil(t, b)
+		},
+	)
+
+	t.Run(
+		"option error", func(t *testing.T) {
+			t.Parallel()
+			p := NewMockStringValuesProvider(t)
+
+			o1 := NewMockOption(t)
+			o1.
+				On(
+					"apply",
+					mock.MatchedBy(
+						func(o *internalOpts) bool {
+							return assert.NotNil(t, o)
+						},
+					),
+				).
+				Return(nil).
+				Once()
+
+			o2 := NewMockOption(t)
+			o2.
+				On(
+					"apply",
+					mock.MatchedBy(
+						func(o *internalOpts) bool {
+							return assert.NotNil(t, o)
+						},
+					),
+				).
+				Return(errMocked1).
+				Once()
+
+			b, err := NewStringBasedBuilder(p, o1, o2)
+			require.Nil(t, b)
+
+			var e ierror.IError
+			require.ErrorAs(t, err, &e)
+
+			require.Equal(
+				t, ierror.IError{
+					Index: 1,
+					Info:  "when processing option",
+					Err:   errMocked1,
+				}, e,
+			)
 		},
 	)
 }
