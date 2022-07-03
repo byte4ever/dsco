@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/cmdline"
 	"github.com/byte4ever/dsco/walker/env"
@@ -15,16 +16,80 @@ import (
 const duplicateFmt = "layer #%d and #%d: %w"
 
 // ErrCmdlineAlreadyUsed represent an error where ....
-var ErrCmdlineAlreadyUsed = errors.New("cmdline already used")
+var ErrCmdlineAlreadyUsed = errors.New("")
+
+type CmdlineAlreadyUsedError struct {
+	Index int
+}
+
+func (c CmdlineAlreadyUsedError) Error() string {
+	return fmt.Sprintf(
+		"cmdline already used in position #%d",
+		c.Index,
+	)
+}
+
+func (c CmdlineAlreadyUsedError) Is(err error) bool {
+	return errors.Is(err, ErrCmdlineAlreadyUsed)
+}
 
 // ErrDuplicateEnvPrefix represent an error where ....
-var ErrDuplicateEnvPrefix = errors.New("duplicate env prefix")
+var ErrDuplicateEnvPrefix = errors.New("")
+
+type DuplicateEnvPrefixError struct {
+	Index  int
+	Prefix string
+}
+
+func (c DuplicateEnvPrefixError) Error() string {
+	return fmt.Sprintf(
+		"layer #%d has same prefix=%s",
+		c.Index,
+		c.Prefix,
+	)
+}
+
+func (c DuplicateEnvPrefixError) Is(err error) bool {
+	return errors.Is(err, ErrDuplicateEnvPrefix)
+}
 
 // ErrDuplicateInputStruct represent an error where ....
-var ErrDuplicateInputStruct = errors.New("duplicate input struct")
+var ErrDuplicateInputStruct = errors.New("")
+
+type DuplicateInputStructError struct {
+	Index int
+}
+
+func (c DuplicateInputStructError) Error() string {
+	return fmt.Sprintf(
+		"struct layer #%d is using same pointer",
+		c.Index,
+	)
+}
+
+func (c DuplicateInputStructError) Is(err error) bool {
+	return errors.Is(err, ErrDuplicateInputStruct)
+}
 
 // ErrDuplicateStructID represent an error where ....
-var ErrDuplicateStructID = errors.New("duplicate struct id")
+var ErrDuplicateStructID = errors.New("")
+
+type DuplicateStructIDError struct {
+	Index int
+	ID    string
+}
+
+func (c DuplicateStructIDError) Error() string {
+	return fmt.Sprintf(
+		"struct layer #%d is using same id=%q",
+		c.Index,
+		c.ID,
+	)
+}
+
+func (c DuplicateStructIDError) Is(err error) bool {
+	return errors.Is(err, ErrDuplicateStructID)
+}
 
 type layerBuilder struct {
 	idDedup  map[string]int
@@ -45,13 +110,20 @@ func (m LayerErrors) Is(err error) bool {
 
 func (layers Layers) GetPolicies() (constraintLayerPolicies, error) {
 	var errs LayerErrors
-	bo := newLayerBuilder()
 
-	for _, layer := range layers {
+	bo := newLayerBuilder(len(layers))
+
+	for index, layer := range layers {
 		err := layer.register(bo)
 
 		if err != nil {
-			errs.Add(err)
+			errs.Add(
+				ierror.IError{
+					Index: index,
+					Info:  "layer",
+					Err:   err,
+				},
+			)
 		}
 	}
 
@@ -129,9 +201,9 @@ func Env(prefix string, options ...Option) (
 	return NewStringBasedBuilder(envProvider1, options...)
 }
 
-func newLayerBuilder() *layerBuilder {
+func newLayerBuilder(l int) *layerBuilder {
 	return &layerBuilder{
-		builders: nil,
+		builders: make(constraintLayerPolicies, 0, l),
 		idDedup:  make(map[string]int),
 	}
 }
@@ -156,16 +228,13 @@ func (o *layerBuilder) dedupId(id string) *int {
 
 func wrapCmdlineBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
 	options []Option,
 ) error {
 	if idx := to.dedupId("cmdLine"); idx != nil {
-		return fmt.Errorf(
-			duplicateFmt,
-			*idx,
-			to.curPos(),
-			ErrCmdlineAlreadyUsed,
-		)
+		return CmdlineAlreadyUsedError{
+			Index: *idx,
+		}
 	}
 
 	builder, err := CmdLine(options...)
@@ -179,7 +248,7 @@ func wrapCmdlineBuild(
 }
 
 func (o *StrictCmdlineLayer) register(to *layerBuilder) error {
-	return wrapCmdlineBuild(to, strictLayer, o.options)
+	return wrapCmdlineBuild(to, newStrictLayer, o.options)
 }
 
 // WithStrictCmdlineLayer creates a strict command line layer.
@@ -191,7 +260,7 @@ func WithStrictCmdlineLayer(options ...Option) *StrictCmdlineLayer {
 }
 
 func (o *CmdlineLayer) register(to *layerBuilder) error {
-	return wrapCmdlineBuild(to, normalLayer, o.options)
+	return wrapCmdlineBuild(to, newNormalLayer, o.options)
 }
 
 // WithCmdlineLayer creates a command line layer.
@@ -205,7 +274,7 @@ func WithCmdlineLayer(options ...Option) *CmdlineLayer {
 
 func wrapEnvBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
 	prefix string,
 	options []Option,
 ) error {
@@ -215,10 +284,10 @@ func wrapEnvBuild(
 			prefix,
 		),
 	); idx != nil {
-		return fmt.Errorf(
-			duplicateFmt, *idx, to.curPos(),
-			ErrDuplicateEnvPrefix,
-		)
+		return DuplicateEnvPrefixError{
+			Index:  *idx,
+			Prefix: prefix,
+		}
 	}
 
 	builder, err := Env(prefix, options...)
@@ -232,7 +301,7 @@ func wrapEnvBuild(
 }
 
 func (o *StrictEnvLayer) register(to *layerBuilder) error {
-	return wrapEnvBuild(to, strictLayer, o.prefix, o.options)
+	return wrapEnvBuild(to, newStrictLayer, o.prefix, o.options)
 }
 
 // WithStrictEnvLayer creates a new strict environment layer.
@@ -244,7 +313,7 @@ func WithStrictEnvLayer(prefix string, options ...Option) *StrictEnvLayer {
 }
 
 func (o *EnvLayer) register(to *layerBuilder) error {
-	return wrapEnvBuild(to, normalLayer, o.prefix, o.options)
+	return wrapEnvBuild(to, newNormalLayer, o.prefix, o.options)
 }
 
 // WithEnvLayer creates an environment variable layer.
@@ -259,36 +328,32 @@ func WithEnvLayer(prefix string, options ...Option) *EnvLayer {
 
 func wrapStructBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) *constraintLayer,
+	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
 	input any,
 	id string,
 ) error {
 	ptr := reflect.ValueOf(input).Pointer()
 
-	for _, issue := range []*struct {
-		err error
-		uid string
-	}{
-		{
-			uid: fmt.Sprintf(
-				"structPtr(%d)",
-				ptr,
-			),
-			err: ErrDuplicateInputStruct,
-		},
-		{
-			uid: fmt.Sprintf(
-				"structId(%s)",
-				id,
-			),
-			err: ErrDuplicateStructID,
-		},
-	} {
-		if idx := to.dedupId(issue.uid); idx != nil {
-			return fmt.Errorf(
-				duplicateFmt, *idx, to.curPos(),
-				issue.err,
-			)
+	if idx := to.dedupId(
+		fmt.Sprintf(
+			"structPtr(%d)",
+			ptr,
+		),
+	); idx != nil {
+		return DuplicateInputStructError{
+			Index: *idx,
+		}
+	}
+
+	if idx := to.dedupId(
+		fmt.Sprintf(
+			"structId(%s)",
+			id,
+		),
+	); idx != nil {
+		return DuplicateStructIDError{
+			Index: *idx,
+			ID:    id,
 		}
 	}
 
@@ -303,7 +368,7 @@ func wrapStructBuild(
 }
 
 func (o *StrictStructLayer) register(to *layerBuilder) error {
-	return wrapStructBuild(to, strictLayer, o.input, o.id)
+	return wrapStructBuild(to, newStrictLayer, o.input, o.id)
 }
 
 // WithStrictStructLayer creates a new strict structure layer.
@@ -315,7 +380,7 @@ func WithStrictStructLayer(input any, id string) *StrictStructLayer {
 }
 
 func (o *StructLayer) register(to *layerBuilder) error {
-	return wrapStructBuild(to, normalLayer, o.input, o.id)
+	return wrapStructBuild(to, newNormalLayer, o.input, o.id)
 }
 
 // WithStructLayer creates a structure layer.

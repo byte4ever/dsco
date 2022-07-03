@@ -4,8 +4,6 @@ import (
 	"github.com/byte4ever/dsco/walker/ifaces"
 )
 
-// TODO :- lmartin 6/21/22 -: don't use internal states
-
 type constraintLayerPolicies []constraintLayerPolicy
 
 type constraintLayerPolicy interface {
@@ -13,24 +11,30 @@ type constraintLayerPolicy interface {
 	isStrict() bool
 }
 
-type constraintLayer struct {
+type strictLayer struct {
 	ifaces.FieldValuesGetter
-	strictMode bool
 }
 
-func (p *constraintLayer) isStrict() bool {
-	return p.strictMode
+func (s *strictLayer) isStrict() bool {
+	return true
 }
 
-func strictLayer(bg ifaces.FieldValuesGetter) *constraintLayer {
-	return &constraintLayer{
+func newStrictLayer(bg ifaces.FieldValuesGetter) constraintLayerPolicy {
+	return &strictLayer{
 		FieldValuesGetter: bg,
-		strictMode:        true,
 	}
 }
 
-func normalLayer(bg ifaces.FieldValuesGetter) *constraintLayer {
-	return &constraintLayer{
+type normalLayer struct {
+	ifaces.FieldValuesGetter
+}
+
+func (n *normalLayer) isStrict() bool {
+	return false
+}
+
+func newNormalLayer(bg ifaces.FieldValuesGetter) constraintLayerPolicy {
+	return &normalLayer{
 		FieldValuesGetter: bg,
 	}
 }
