@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/fvalues"
+
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
