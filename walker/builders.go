@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/byte4ever/dsco"
 	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/merror"
 	"github.com/byte4ever/dsco/walker/cmdline"
@@ -13,7 +14,26 @@ import (
 	"github.com/byte4ever/dsco/walker/ifaces"
 )
 
-const duplicateFmt = "layer #%d and #%d: %w"
+// ErrNilInput is dummy...
+var ErrNilInput = errors.New("nil input")
+
+// ErrCmdlineAlreadyUsed represent an error where ....
+var ErrInvalidInput = errors.New("")
+
+type InvalidInputError struct {
+	Type reflect.Type
+}
+
+func (c InvalidInputError) Error() string {
+	return fmt.Sprintf(
+		"type %s is not a valid pointer on struct",
+		dsco.LongTypeName(c.Type),
+	)
+}
+
+func (c InvalidInputError) Is(err error) bool {
+	return errors.Is(err, ErrInvalidInput)
+}
 
 // ErrCmdlineAlreadyUsed represent an error where ....
 var ErrCmdlineAlreadyUsed = errors.New("")
@@ -332,6 +352,11 @@ func wrapStructBuild(
 	input any,
 	id string,
 ) error {
+	builder, err := NewStructBuilder(input, id)
+	if err != nil {
+		return err
+	}
+
 	ptr := reflect.ValueOf(input).Pointer()
 
 	if idx := to.dedupId(
@@ -355,11 +380,6 @@ func wrapStructBuild(
 			Index: *idx,
 			ID:    id,
 		}
-	}
-
-	builder, err := NewStructBuilder(input, id)
-	if err != nil {
-		return err
 	}
 
 	to.addBuilder(wrap(builder))

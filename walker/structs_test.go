@@ -11,15 +11,84 @@ import (
 )
 
 func TestNewStructBuilder(t *testing.T) {
-	id := "id"
+	t.Parallel()
 
-	v := 10
+	t.Run(
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
 
-	sb, err := NewStructBuilder(v, id)
-	require.NoError(t, err)
-	require.NotNil(t, sb)
-	require.Equal(t, id, sb.id)
-	require.Equal(t, 10, sb.value.Interface())
+			id := "id"
+
+			type Root struct {
+				X *float32
+				Y *float32
+			}
+
+			v := &Root{}
+
+			sb, err := NewStructBuilder(v, id)
+			require.NoError(t, err)
+			require.NotNil(t, sb)
+			require.Equal(t, id, sb.id)
+			require.Equal(t, v, sb.value.Interface())
+		},
+	)
+
+	t.Run(
+		"nil input",
+		func(t *testing.T) {
+			t.Parallel()
+
+			id := "id"
+
+			sb, err := NewStructBuilder(nil, id)
+			require.Nil(t, sb)
+			require.ErrorIs(t, err, ErrNilInput)
+		},
+	)
+
+	t.Run(
+		"not a pointer",
+		func(t *testing.T) {
+			t.Parallel()
+
+			id := "id"
+
+			type Root struct {
+				X *float32
+				Y *float32
+			}
+
+			v := Root{}
+
+			sb, err := NewStructBuilder(v, id)
+			require.Nil(t, sb)
+
+			var e InvalidInputError
+			require.ErrorAs(t, err, &e)
+			require.Equal(t, reflect.TypeOf(v), e.Type)
+		},
+	)
+
+	t.Run(
+		"not a pointer on struct",
+		func(t *testing.T) {
+			t.Parallel()
+
+			id := "id"
+
+			temp := 123
+			v := &temp
+
+			sb, err := NewStructBuilder(v, id)
+			require.Nil(t, sb)
+
+			var e InvalidInputError
+			require.ErrorAs(t, err, &e)
+			require.Equal(t, reflect.TypeOf(v), e.Type)
+		},
+	)
 }
 
 func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {

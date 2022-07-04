@@ -43,6 +43,21 @@ func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 
 // NewStructBuilder creates a new structure layer builder.
 func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
+	if inputStruct == nil {
+		return nil, ErrNilInput
+	}
+
+	v := reflect.ValueOf(inputStruct)
+	vt := v.Type()
+
+	if vt.Kind() != reflect.Pointer ||
+		vt.Elem().Kind() != reflect.Struct ||
+		v.IsNil() {
+		return nil, InvalidInputError{
+			Type: vt,
+		}
+	}
+
 	return &StructBuilder{
 		value: reflect.ValueOf(inputStruct),
 		id:    id,

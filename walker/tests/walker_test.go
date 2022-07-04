@@ -41,30 +41,6 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 	t.Setenv("TST-B", "123.1234")
 	// t.Setenv("API-Z-FIRST_NAME", "Laurent")
 
-	input1 := &Root{
-		A: dsco.R(120),
-		B: dsco.R(2333.32),
-		T: dsco.R(time.Now().UTC()),
-		Z: &Sub{
-			FirstName:    dsco.R("Lola"),
-			LastName:     dsco.R("MARTIN"),
-			TrainingTime: dsco.R(800 * time.Second),
-			T:            dsco.R(time.Now().UTC()),
-			B:            dsco.R(true),
-		},
-		NaNa: dsco.R(2331),
-		L:    []string{"A", "B", "C"},
-	}
-
-	input2 := &Root{
-		B: dsco.R(0.0),
-		Z: &Sub{
-			FirstName: dsco.R("Rose"),
-			LastName:  dsco.R("Dupont"),
-			B:         dsco.R(false),
-		},
-	}
-
 	var pp *Root
 	fillReport, err := walker.Fill(
 		&pp,
@@ -72,10 +48,30 @@ func Test_lab2(t *testing.T) { //nolint:paralleltest // using setenv
 		walker.WithEnvLayer("TST"),
 		walker.WithStrictCmdlineLayer(),
 		walker.WithStructLayer(
-			input2, "dflt1",
+			&Root{
+				B: dsco.R(0.0),
+				Z: &Sub{
+					FirstName: dsco.R("Rose"),
+					LastName:  dsco.R("Dupont"),
+					B:         dsco.R(false),
+				},
+			}, "dflt1",
 		),
 		walker.WithStructLayer(
-			input1, "dflt2",
+			&Root{
+				A: dsco.R(120),
+				B: dsco.R(2333.32),
+				T: dsco.R(time.Now().UTC()),
+				Z: &Sub{
+					FirstName:    dsco.R("Lola"),
+					LastName:     dsco.R("MARTIN"),
+					TrainingTime: dsco.R(800 * time.Second),
+					T:            dsco.R(time.Now().UTC()),
+					B:            dsco.R(true),
+				},
+				NaNa: dsco.R(2331),
+				L:    []string{"A", "B", "C"},
+			}, "dflt2",
 		),
 	)
 

@@ -315,8 +315,6 @@ func TestEnvLayer_register(t *testing.T) {
 		t.Run(
 			fmt.Sprintf("%s success", x.name),
 			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
 				lb := newLayerBuilder(1)
 				err := x.layer.register(lb)
 
@@ -329,8 +327,6 @@ func TestEnvLayer_register(t *testing.T) {
 		t.Run(
 			fmt.Sprintf("%s using same prefix", x.name),
 			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
 				lb := newLayerBuilder(1)
 				lb.idDedup["env(API)"] = 101
 
@@ -454,85 +450,138 @@ func TestStructLayer_register2(t *testing.T) {
 		Y *float64
 	}
 
-	k := &Root{
-		X: dsco.R(float32(123.123)),
-	}
-
 	for _, x := range []struct {
 		layer  Layer
 		strict bool
 		name   string
 	}{
 		{
-			name: "strict",
-			layer: &StrictStructLayer{
-				input: k,
-				id:    "default",
-			},
+			name:   "strict",
+			layer:  &StrictStructLayer{},
 			strict: true,
 		},
 		{
-			name: "normal",
-			layer: &StructLayer{
-				input: k,
-				id:    "default",
-			},
+			name:   "normal",
+			layer:  &StructLayer{},
 			strict: false,
 		},
 	} {
 		x := x
 
 		t.Run(
-			fmt.Sprintf("%s success", x.name),
+			fmt.Sprintf("%s invalid type", x.name),
 			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
+				t.Parallel()
 
 				lb := newLayerBuilder(1)
 				err := x.layer.register(lb)
-
-				require.NoError(t, err)
-				require.Len(t, lb.builders, 1)
-				require.Equal(t, x.strict, lb.builders[0].isStrict())
-			},
-		)
-
-		t.Run(
-			fmt.Sprintf("%s using same id", x.name),
-			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
-				lb := newLayerBuilder(1)
-				lb.idDedup["structId(default)"] = 101
-
-				err := x.layer.register(lb)
-
-				var e DuplicateStructIDError
-				require.ErrorAs(t, err, &e)
+				require.Error(t, err)
 				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
-				require.Equal(t, "default", e.ID)
-			},
-		)
-
-		t.Run(
-			fmt.Sprintf("%s using same ptr", x.name),
-			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
-				lb := newLayerBuilder(1)
-				lb.idDedup["structId(default)"] = 101
-				lb.idDedup[fmt.Sprintf(
-					"structPtr(%d)",
-					reflect.ValueOf(k).Pointer(),
-				)] = 101
-
-				err := x.layer.register(lb)
-
-				var e DuplicateInputStructError
-				require.ErrorAs(t, err, &e)
-				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
 			},
 		)
 	}
+}
+
+func TestInvalidInputError_Error(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(
+		t,
+		"type int is not a valid pointer on struct",
+		InvalidInputError{
+			Type: reflect.TypeOf(10),
+		}.Error(),
+	)
+}
+
+func TestInvalidInputError_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrInvalidInput)
+	require.ErrorIs(t, InvalidInputError{}, ErrInvalidInput)
+}
+
+func TestCmdlineAlreadyUsedError_Error(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(
+		t,
+		"cmdline already used in position #101",
+		CmdlineAlreadyUsedError{
+			Index: 101,
+		}.Error(),
+	)
+}
+
+func TestCmdlineAlreadyUsedError_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrCmdlineAlreadyUsed)
+	require.ErrorIs(t, CmdlineAlreadyUsedError{}, ErrCmdlineAlreadyUsed)
+}
+
+func TestDuplicateEnvPrefixError_Error(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(
+		t,
+		"layer #101 has same prefix=PREFIX",
+		DuplicateEnvPrefixError{
+			Index:  101,
+			Prefix: "PREFIX",
+		}.Error(),
+	)
+}
+
+func TestDuplicatAeEnvPrefixError_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrDuplicateEnvPrefix)
+	require.ErrorIs(t, DuplicateEnvPrefixError{}, ErrDuplicateEnvPrefix)
+}
+
+func TestDuplicateInputStructError_Error(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(
+		t,
+		"struct layer #101 is using same pointer",
+		DuplicateInputStructError{
+			Index: 101,
+		}.Error(),
+	)
+}
+
+func TestDuplicateInputStructError_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrDuplicateInputStruct)
+	require.ErrorIs(t, DuplicateInputStructError{}, ErrDuplicateInputStruct)
+}
+
+func TestDuplicateStructIDError_Error(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(
+		t,
+		"struct layer #101 is using same id=\"OTHER\"",
+		DuplicateStructIDError{
+			Index: 101,
+			ID:    "OTHER",
+		}.Error(),
+	)
+}
+
+func TestDuplicateStructIDError_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrDuplicateStructID)
+	require.ErrorIs(t, DuplicateStructIDError{}, ErrDuplicateStructID)
+}
+
+func TestLayerErrors_Is(t *testing.T) {
+	t.Parallel()
+
+	require.NotErrorIs(t, errMocked1, ErrLayer)
+	require.ErrorIs(t, LayerErrors{}, ErrLayer)
 }
