@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 )
 
@@ -22,7 +22,7 @@ func TestGetList_Push(t *testing.T) {
 
 			f1 := func(g ifaces.Getter) (
 				uid uint,
-				fieldValue *fvalues.FieldValue,
+				fieldValue *fvalue.Value,
 				err error,
 			) {
 				//nolint:revive // don't care
@@ -48,7 +48,7 @@ func TestGetList_Push(t *testing.T) {
 
 			f1 := func(g ifaces.Getter) (
 				uid uint,
-				fieldValue *fvalues.FieldValue,
+				fieldValue *fvalue.Value,
 				err error,
 			) {
 				//nolint:revive // don't care
@@ -59,7 +59,7 @@ func TestGetList_Push(t *testing.T) {
 
 			f2 := func(g ifaces.Getter) (
 				uid uint,
-				fieldValue *fvalues.FieldValue,
+				fieldValue *fvalue.Value,
 				err error,
 			) {
 				//nolint:revive // don't care
@@ -89,13 +89,13 @@ func TestGetList_ApplyOn(t *testing.T) {
 
 			getter := NewMockGetter(t)
 			f0 := NewMockGetOp(t)
-			fv0 := &fvalues.FieldValue{
+			fv0 := &fvalue.Value{
 				Location: "fv0",
 			}
 
 			f1 := NewMockGetOp(t)
 			f2 := NewMockGetOp(t)
-			fv2 := &fvalues.FieldValue{
+			fv2 := &fvalue.Value{
 				Location: "fv2",
 			}
 			f3 := NewMockGetOp(t)
@@ -119,28 +119,28 @@ func TestGetList_ApplyOn(t *testing.T) {
 			l := GetList{
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f0.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f1.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f2.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f3.Execute(g)
@@ -153,7 +153,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 			checkAsMockedError2(t, err)
 
 			require.Equal(
-				t, res, fvalues.FieldValues{
+				t, res, fvalue.Values{
 					0: fv0,
 					2: fv2,
 				},
@@ -170,22 +170,22 @@ func TestGetList_ApplyOn(t *testing.T) {
 			getter := NewMockGetter(t)
 
 			f0 := NewMockGetOp(t)
-			fv0 := &fvalues.FieldValue{
+			fv0 := &fvalue.Value{
 				Location: "fv0",
 			}
 
 			f1 := NewMockGetOp(t)
-			fv1 := &fvalues.FieldValue{
+			fv1 := &fvalue.Value{
 				Location: "fv1",
 			}
 
 			f2 := NewMockGetOp(t)
-			fv2 := &fvalues.FieldValue{
+			fv2 := &fvalue.Value{
 				Location: "fv2",
 			}
 
 			f3 := NewMockGetOp(t)
-			fv3 := &fvalues.FieldValue{
+			fv3 := &fvalue.Value{
 				Location: "fv3",
 			}
 
@@ -208,28 +208,28 @@ func TestGetList_ApplyOn(t *testing.T) {
 			l := GetList{
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f0.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f1.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f2.Execute(g)
 				},
 				func(g ifaces.Getter) (
 					uid uint,
-					fieldValue *fvalues.FieldValue,
+					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f3.Execute(g)
@@ -240,7 +240,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(
-				t, res, fvalues.FieldValues{
+				t, res, fvalue.Values{
 					0: fv0,
 					1: fv1,
 					2: fv2,

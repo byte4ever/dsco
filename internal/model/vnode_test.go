@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
@@ -32,7 +32,7 @@ func TestValueNode_Fill(t *testing.T) {
 
 			require.True(t, v.CanSet())
 
-			fvs := []fvalues.FieldValues{
+			fvs := []fvalue.Values{
 				{},
 				{
 					uint(50): {
@@ -49,7 +49,7 @@ func TestValueNode_Fill(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Contains(
-				t, ploc, plocation.PathLocation{
+				t, ploc, plocation.Location{
 					UID:      50,
 					Path:     "the.path",
 					Location: "some-location",
@@ -81,7 +81,7 @@ func TestValueNode_Fill(t *testing.T) {
 
 			ploc, err := n.Fill(
 				v,
-				[]fvalues.FieldValues{
+				[]fvalue.Values{
 					{},
 					{
 						uint(500): {
@@ -116,7 +116,7 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 				UID:         50,
 			}
 
-			fvs := fvalues.FieldValues{}
+			fvs := fvalue.Values{}
 
 			i := 15
 			pi := &i
@@ -132,7 +132,7 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 			require.Contains(t, fvs, uint(50))
 
 			require.Equal(
-				t, fvalues.FieldValue{
+				t, fvalue.Value{
 					Value:    vpi,
 					Location: "struct[srcID]:the.path",
 				},
@@ -151,7 +151,7 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 				UID:         50,
 			}
 
-			fvs := fvalues.FieldValues{}
+			fvs := fvalue.Values{}
 
 			pi := (*int)(nil)
 
@@ -201,7 +201,7 @@ func TestValueNode_BuildGetList(t *testing.T) {
 					someType,
 				).
 				Return(
-					&fvalues.FieldValue{
+					&fvalue.Value{
 						Value:    someValue,
 						Location: location,
 					},
@@ -215,7 +215,7 @@ func TestValueNode_BuildGetList(t *testing.T) {
 			require.NotNil(t, fv)
 			require.Equal(
 				t,
-				fvalues.FieldValue{
+				fvalue.Value{
 					Value:    someValue,
 					Location: location,
 				},

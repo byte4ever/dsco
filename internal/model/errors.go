@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 type FieldNameCollisionError struct {

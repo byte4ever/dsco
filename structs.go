@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 // ErrStructTypeDiffer represent an error where cannot produce a valid value
@@ -21,7 +21,7 @@ type StructBuilder struct {
 }
 
 func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
-	fvalues.FieldValues, error,
+	fvalue.Values, error,
 ) {
 	modelTName := model.TypeName() //nolint:ifshort // buggy linter
 

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 	"github.com/byte4ever/dsco/ref"
 )
@@ -21,7 +21,7 @@ func TestStructNode_Fill(t *testing.T) {
 		"success", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := []fvalues.FieldValues{}
+			fvs := []fvalue.Values{}
 
 			s0 := NewMockNode(t)
 			s0.
@@ -31,13 +31,13 @@ func TestStructNode_Fill(t *testing.T) {
 					fvs,
 				).
 				Return(
-					plocation.PathLocations{
-						plocation.PathLocation{
+					plocation.Locations{
+						plocation.Location{
 							UID:      0,
 							Path:     "path.s0.A",
 							Location: "loc-s0.A",
 						},
-						plocation.PathLocation{
+						plocation.Location{
 							UID:      1,
 							Path:     "path.s0.B",
 							Location: "loc-s0.B",
@@ -55,8 +55,8 @@ func TestStructNode_Fill(t *testing.T) {
 					fvs,
 				).
 				Return(
-					plocation.PathLocations{
-						plocation.PathLocation{
+					plocation.Locations{
+						plocation.Location{
 							UID:      2,
 							Path:     "path.s1",
 							Location: "loc-s1",
@@ -100,18 +100,18 @@ func TestStructNode_Fill(t *testing.T) {
 			// path locations are properly aggregate.
 			require.Equal(
 				t,
-				plocation.PathLocations{
-					plocation.PathLocation{
+				plocation.Locations{
+					plocation.Location{
 						UID:      0,
 						Path:     "path.s0.A",
 						Location: "loc-s0.A",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						UID:      1,
 						Path:     "path.s0.B",
 						Location: "loc-s0.B",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						UID:      2,
 						Path:     "path.s1",
 						Location: "loc-s1",
@@ -129,7 +129,7 @@ func TestStructNode_Fill(t *testing.T) {
 		"returning no error", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := []fvalues.FieldValues{}
+			fvs := []fvalue.Values{}
 
 			s0 := NewMockNode(t)
 			s0.
@@ -139,13 +139,13 @@ func TestStructNode_Fill(t *testing.T) {
 					fvs,
 				).
 				Return(
-					plocation.PathLocations{
-						plocation.PathLocation{
+					plocation.Locations{
+						plocation.Location{
 							UID:      0,
 							Path:     "path.s0.A",
 							Location: "loc-s0.A",
 						},
-						plocation.PathLocation{
+						plocation.Location{
 							UID:      1,
 							Path:     "path.s0.B",
 							Location: "loc-s0.B",
@@ -163,8 +163,8 @@ func TestStructNode_Fill(t *testing.T) {
 					fvs,
 				).
 				Return(
-					plocation.PathLocations{
-						plocation.PathLocation{
+					plocation.Locations{
+						plocation.Location{
 							UID:      2,
 							Path:     "path.s1",
 							Location: "loc-s1",
@@ -207,18 +207,18 @@ func TestStructNode_Fill(t *testing.T) {
 			// path locations are properly aggregate.
 			require.Equal(
 				t,
-				plocation.PathLocations{
-					plocation.PathLocation{
+				plocation.Locations{
+					plocation.Location{
 						UID:      0,
 						Path:     "path.s0.A",
 						Location: "loc-s0.A",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						UID:      1,
 						Path:     "path.s0.B",
 						Location: "loc-s0.B",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						UID:      2,
 						Path:     "path.s1",
 						Location: "loc-s1",
@@ -240,7 +240,7 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 		"success", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := fvalues.FieldValues{}
+			fvs := fvalue.Values{}
 
 			type SType struct {
 				A *int
@@ -316,7 +316,7 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 		"nil value case", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := fvalues.FieldValues{}
+			fvs := fvalue.Values{}
 
 			type SType struct {
 				A *int

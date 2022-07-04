@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/internal/svalues"
+	"github.com/byte4ever/dsco/internal/svalue"
 )
 
 func setEnv(t *testing.T, env map[string]string) {
@@ -204,7 +204,7 @@ func TestProvide(t *testing.T) { //nolint:paralleltest // using env variable
 				prefix: "PREFIX",
 			},
 			want: &EntriesProvider{
-				stringValues: svalues.StringValues{
+				stringValues: svalue.Values{
 					"arg1": {
 						Location: "env[PREFIX-ARG1]",
 						Value:    "val1",
@@ -223,7 +223,7 @@ func TestProvide(t *testing.T) { //nolint:paralleltest // using env variable
 				prefix: "PREFIX",
 			},
 			want: &EntriesProvider{
-				stringValues: svalues.StringValues{
+				stringValues: svalue.Values{
 					"arg1": {
 						Location: "env[PREFIX-ARG1]",
 						Value:    "val1",
@@ -277,7 +277,7 @@ func TestProvide_InvalidPrefix(t *testing.T) {
 func TestProvider_GetStringValues(t *testing.T) {
 	t.Parallel()
 
-	stringValues := svalues.StringValues{
+	stringValues := svalue.Values{
 		"k1": {
 			Location: "l1",
 			Value:    "v1",

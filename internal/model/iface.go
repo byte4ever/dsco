@@ -3,7 +3,7 @@ package model
 import (
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
@@ -12,16 +12,16 @@ type Node interface {
 	BuildGetList(s *GetList)
 	FeedFieldValues(
 		srcID string,
-		fieldValues fvalues.FieldValues,
+		fieldValues fvalue.Values,
 		value reflect.Value,
 	)
 	Fill(
 		value reflect.Value,
-		layers []fvalues.FieldValues,
-	) (plocation.PathLocations, error)
+		layers []fvalue.Values,
+	) (plocation.Locations, error)
 }
 type GetListInterface interface {
-	ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error)
+	ApplyOn(g ifaces.Getter) (fvalue.Values, error)
 	Push(o GetOp)
 	Count() int
 }

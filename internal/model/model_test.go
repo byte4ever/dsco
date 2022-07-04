@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
@@ -551,7 +551,7 @@ func TestNewModel(t *testing.T) {
 func TestModel_ApplyOn(t *testing.T) {
 	t.Parallel()
 
-	fvs := make(fvalues.FieldValues, 10)
+	fvs := make(fvalue.Values, 10)
 
 	getter := NewMockGetter(t)
 
@@ -572,8 +572,8 @@ func TestModel_Fill(t *testing.T) {
 	t.Parallel()
 
 	v := reflect.ValueOf(1)
-	layers := []fvalues.FieldValues{nil, nil, nil}
-	ploc := plocation.PathLocations{plocation.PathLocation{}}
+	layers := []fvalue.Values{nil, nil, nil}
+	ploc := plocation.Locations{plocation.Location{}}
 
 	accelerator := NewMockNode(t)
 	accelerator.
@@ -610,7 +610,7 @@ func TestModel_GetFieldValuesFor(t *testing.T) {
 			"FeedFieldValues",
 			id,
 			mock.MatchedBy(
-				func(ifvs fvalues.FieldValues) bool {
+				func(ifvs fvalue.Values) bool {
 					return assert.Empty(t, ifvs)
 				},
 			),

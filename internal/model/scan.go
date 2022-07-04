@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 //nolint:ireturn // expected to build abstract tree nodes

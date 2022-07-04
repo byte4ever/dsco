@@ -1,7 +1,7 @@
 package dsco
 
 import (
-	"github.com/byte4ever/dsco/internal/svalues"
+	"github.com/byte4ever/dsco/internal/svalue"
 )
 
 type PoliciesGetter interface {
@@ -10,5 +10,5 @@ type PoliciesGetter interface {
 
 // StringValuesProvider defines the behaviour if a string value provider.
 type StringValuesProvider interface {
-	GetStringValues() svalues.StringValues
+	GetStringValues() svalue.Values
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/byte4ever/dsco/internal/svalues"
+	"github.com/byte4ever/dsco/internal/svalue"
 )
 
 const locationFmt = "cmdline[--%s]"
@@ -16,11 +16,11 @@ var re = regexp.MustCompile(
 // EntriesProvider is an entries' provider that extract entries from
 // command line.
 type EntriesProvider struct {
-	stringValues svalues.StringValues
+	stringValues svalue.Values
 }
 
-// GetStringValues implements svalues.StringValuesProvider interface.
-func (ep *EntriesProvider) GetStringValues() svalues.StringValues {
+// GetStringValues implements svalue.Provider interface.
+func (ep *EntriesProvider) GetStringValues() svalue.Values {
 	return ep.stringValues
 }
 
@@ -39,7 +39,7 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 
 	dedup := make(map[string]int, lo)
 
-	stringValues := make(svalues.StringValues, lo)
+	stringValues := make(svalue.Values, lo)
 
 	expectedGroups := re.NumSubexp() + 1
 
@@ -84,7 +84,7 @@ func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 		dedup[key] = idx + 1
 
 		if len(errs) < 1 {
-			stringValues[key] = &svalues.StringValue{
+			stringValues[key] = &svalue.Value{
 				Location: fmt.Sprintf(locationFmt, key),
 				Value:    groups[2],
 			}

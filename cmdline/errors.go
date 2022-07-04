@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 // ErrInvalidFormat represents an error when creating the provider with an

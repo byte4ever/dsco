@@ -8,12 +8,12 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/internal/svalues"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/svalue"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 // ErrInvalidType represent an error where ....
@@ -117,7 +117,7 @@ var ErrNilProvider = errors.New("nil provider")
 // StringBasedBuilder is a value bases builder depending on text values.
 type StringBasedBuilder struct {
 	internalOpts
-	values svalues.StringValues
+	values svalue.Values
 }
 
 // ErrNoAliasesProvided represent an error where no aliases map was
@@ -193,7 +193,7 @@ func (s *StringBasedBuilder) Get(
 	path string,
 	_type reflect.Type,
 ) (
-	fieldValue *fvalues.FieldValue,
+	fieldValue *fvalue.Value,
 	err error,
 ) {
 	convertedPath := convert(path)
@@ -226,7 +226,7 @@ func (s *StringBasedBuilder) Get(
 			}
 		}
 
-		return &fvalues.FieldValue{
+		return &fvalue.Value{
 			Value:    tp,
 			Location: entry.Location,
 		}, nil
@@ -246,7 +246,7 @@ func (s *StringBasedBuilder) Get(
 			}
 		}
 
-		return &fvalues.FieldValue{
+		return &fvalue.Value{
 			Value:    tp.Elem(),
 			Location: entry.Location,
 		}, nil
@@ -274,7 +274,7 @@ func (GetError) Is(err error) bool {
 func (s *StringBasedBuilder) GetFieldValuesFrom(
 	model ifaces.ModelInterface,
 ) (
-	fvalues.FieldValues,
+	fvalue.Values,
 	error,
 ) {
 	var errs GetError

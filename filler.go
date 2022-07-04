@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/merror"
 	model2 "github.com/byte4ever/dsco/internal/model"
@@ -20,9 +20,9 @@ type dscoContext struct {
 	// ----
 	model            ifaces.ModelInterface
 	builders         constraintLayerPolicies
-	layerFieldValues []fvalues.FieldValues
+	layerFieldValues []fvalue.Values
 	mustBeUsed       []int
-	pathLocations    plocation.PathLocations
+	pathLocations    plocation.Locations
 }
 
 type FillerErrors struct {
@@ -128,7 +128,7 @@ func Fill(
 	inputModelRef any,
 	layers ...Layer,
 ) (
-	plocation.PathLocations,
+	plocation.Locations,
 	error,
 ) {
 	fillContext := newDSCOContext(inputModelRef, layers)

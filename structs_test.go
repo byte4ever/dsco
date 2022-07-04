@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 )
 
@@ -122,7 +122,7 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			id := "id"
 			value := reflect.ValueOf(10)
-			fvsOut := fvalues.FieldValues{
+			fvsOut := fvalue.Values{
 				uint(200): {
 					Location: "loc",
 				},

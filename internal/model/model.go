@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 type Model struct {
@@ -56,15 +56,15 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}, nil
 }
 
-func (m *Model) ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error) {
+func (m *Model) ApplyOn(g ifaces.Getter) (fvalue.Values, error) {
 	return m.getList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 
 func (m *Model) GetFieldValuesFor(
 	id string,
 	value reflect.Value,
-) fvalues.FieldValues {
-	fieldValues := make(fvalues.FieldValues, m.fieldCount)
+) fvalue.Values {
+	fieldValues := make(fvalue.Values, m.fieldCount)
 
 	m.accelerator.FeedFieldValues(
 		id,
@@ -77,8 +77,8 @@ func (m *Model) GetFieldValuesFor(
 
 func (m *Model) Fill(
 	inputModelValue reflect.Value,
-	layers []fvalues.FieldValues,
-) (plocation.PathLocations, error) {
+	layers []fvalue.Values,
+) (plocation.Locations, error) {
 	//nolint:wrapcheck // wrap no required
 	return m.accelerator.Fill(
 		inputModelValue,

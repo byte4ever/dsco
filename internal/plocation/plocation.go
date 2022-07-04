@@ -6,18 +6,18 @@ import (
 	"text/tabwriter"
 )
 
-// PathLocations contains all fillHelper Location for every key path.
-type PathLocations []PathLocation
+// Locations contains all fillHelper Location for every key path.
+type Locations []Location
 
-// PathLocation is the fillHelper report for a value.
-type PathLocation struct {
+// Location is the fillHelper report for a value.
+type Location struct {
 	Path     string
 	Location string
 	UID      uint
 }
 
-// Dump writes fillHelper report.
-func (f *PathLocations) Dump(writer io.Writer) {
+// Dump writes filling report in writer.
+func (f *Locations) Dump(writer io.Writer) {
 	tabWriter := tabwriter.NewWriter(
 		writer,
 		0,
@@ -39,9 +39,10 @@ func (f *PathLocations) Dump(writer io.Writer) {
 	_ = tabWriter.Flush()
 }
 
-func (f *PathLocations) Report(uid uint, path string, location string) {
+// Report adds a new fill report entry.
+func (f *Locations) Report(uid uint, path string, location string) {
 	*f = append(
-		*f, PathLocation{
+		*f, Location{
 			UID:      uid,
 			Path:     path,
 			Location: location,
@@ -49,7 +50,8 @@ func (f *PathLocations) Report(uid uint, path string, location string) {
 	)
 }
 
-func (f *PathLocations) ReportOther(other PathLocations) {
+// Append other locations.
+func (f *Locations) Append(other Locations) {
 	*f = append(
 		*f, other...,
 	)

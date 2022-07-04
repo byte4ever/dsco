@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/ierror"
-	"github.com/byte4ever/dsco/internal/svalues"
+	"github.com/byte4ever/dsco/internal/svalue"
 )
 
 func TestStringBasedBuilder_Get(t *testing.T) {
@@ -22,7 +22,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{},
+				values: map[string]*svalue.Value{},
 			}
 
 			gotFv, err := sb.Get("Some.Path", nil)
@@ -40,7 +40,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 					aliases: map[string]string{"some-path": "alias"},
 				},
 
-				values: map[string]*svalues.StringValue{},
+				values: map[string]*svalue.Value{},
 			}
 
 			gotFv, err := sb.Get("Some.Path", nil)
@@ -62,7 +62,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"some-path": {
 						Location: "loc1",
 						Value:    "123",
@@ -87,7 +87,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"some-path": {
 						Location: "loc1",
 						Value:    "[1,2,3,4,5]",
@@ -116,7 +116,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"some-path": {
 						Location: "loc1",
 						Value:    "asd",
@@ -150,7 +150,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"some-path": {
 						Location: "loc1",
 						Value:    "asd",
@@ -184,7 +184,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			t.Parallel()
 
 			sb := StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"some-path": {
 						Location: "loc1",
 						Value:    "asd",
@@ -217,8 +217,8 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 		"success", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := fvalues.FieldValues{
-				uint(101): &fvalues.FieldValue{
+			fvs := fvalue.Values{
+				uint(101): &fvalue.Value{
 					Location: "loc1",
 				},
 			}
@@ -243,14 +243,14 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 		"failures", func(t *testing.T) {
 			t.Parallel()
 
-			fvs := fvalues.FieldValues{
-				uint(101): &fvalues.FieldValue{
+			fvs := fvalue.Values{
+				uint(101): &fvalue.Value{
 					Location: "loc1",
 				},
 			}
 
 			sb := &StringBasedBuilder{
-				values: map[string]*svalues.StringValue{
+				values: map[string]*svalue.Value{
 					"a": {
 						Location: "loc-a",
 					},
@@ -454,8 +454,8 @@ func TestNewStringBasedBuilder(t *testing.T) {
 			t.Parallel()
 			p := NewMockStringValuesProvider(t)
 
-			sv := svalues.StringValues{
-				"a": &svalues.StringValue{
+			sv := svalue.Values{
+				"a": &svalue.Value{
 					Location: "",
 					Value:    "",
 				},

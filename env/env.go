@@ -7,14 +7,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/byte4ever/dsco/internal/svalues"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/svalue"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 // EntriesProvider is an entries' provider that extract entries from
 // environment variables.
 type EntriesProvider struct {
-	stringValues svalues.StringValues
+	stringValues svalue.Values
 }
 
 const (
@@ -66,11 +66,11 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 }
 
 func extractStringValues(env []string, prefix string) (
-	svalues.StringValues, error,
+	svalue.Values, error,
 ) {
 	var ambiguousKeys []string
 
-	stringValues := make(svalues.StringValues, len(env))
+	stringValues := make(svalue.Values, len(env))
 
 	sort.Strings(env)
 
@@ -81,7 +81,7 @@ func extractStringValues(env []string, prefix string) (
 		if len(groups) == rePrefixed.NumSubexp()+1 {
 			if reSubKey.MatchString(groups[1]) {
 				stringValues[strings.ToLower(groups[1][1:])] =
-					&svalues.StringValue{
+					&svalue.Value{
 						Location: fmt.Sprintf(
 							"env[%s%s]",
 							prefix,
@@ -124,7 +124,7 @@ func extractStringValues(env []string, prefix string) (
 	return stringValues, nil
 }
 
-// GetStringValues implements sbased2.StringValuesProvider interface.
-func (e *EntriesProvider) GetStringValues() svalues.StringValues {
+// GetStringValues implements sbased2.Provider interface.
+func (e *EntriesProvider) GetStringValues() svalue.Values {
 	return e.stringValues
 }

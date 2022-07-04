@@ -14,7 +14,7 @@ func TestPathLocations_Dump(t *testing.T) {
 		"", func(t *testing.T) {
 			t.Parallel()
 
-			ploc := PathLocations{
+			ploc := Locations{
 				{
 					UID:      0,
 					Path:     "path0",
@@ -45,7 +45,7 @@ func TestPathLocations_Dump(t *testing.T) {
 func TestPathLocations_Report(t *testing.T) {
 	t.Parallel()
 
-	ploc := PathLocations{
+	ploc := Locations{
 		{
 			UID:      0,
 			Path:     "path0",
@@ -57,7 +57,7 @@ func TestPathLocations_Report(t *testing.T) {
 	ploc.Report(2, "path2", "loc2")
 
 	require.Equal(
-		t, PathLocations{
+		t, Locations{
 			{
 				UID:      0,
 				Path:     "path0",
@@ -80,7 +80,7 @@ func TestPathLocations_Report(t *testing.T) {
 func TestPathLocations_ReportOther(t *testing.T) {
 	t.Parallel()
 
-	ploc1 := PathLocations{
+	ploc1 := Locations{
 		{
 			UID:      0,
 			Path:     "path0",
@@ -88,7 +88,7 @@ func TestPathLocations_ReportOther(t *testing.T) {
 		},
 	}
 
-	ploc2 := PathLocations{
+	ploc2 := Locations{
 		{
 			UID:      1,
 			Path:     "path1",
@@ -101,10 +101,10 @@ func TestPathLocations_ReportOther(t *testing.T) {
 		},
 	}
 
-	ploc1.ReportOther(ploc2)
+	ploc1.Append(ploc2)
 
 	require.Equal(
-		t, PathLocations{
+		t, Locations{
 			{
 				UID:      0,
 				Path:     "path0",

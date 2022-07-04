@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/internal/svalues"
+	"github.com/byte4ever/dsco/internal/svalue"
 )
 
 func TestProvide(t *testing.T) {
@@ -109,7 +109,7 @@ func TestProvide(t *testing.T) {
 				optionsLine: []string{arg1},
 			},
 			want: &EntriesProvider{
-				stringValues: svalues.StringValues{
+				stringValues: svalue.Values{
 					"arg1": {
 						Location: "cmdline[--arg1]",
 						Value:    "value1",
@@ -126,7 +126,7 @@ func TestProvide(t *testing.T) {
 				},
 			},
 			want: &EntriesProvider{
-				stringValues: svalues.StringValues{
+				stringValues: svalue.Values{
 					"arg1": {
 						Location: "cmdline[--arg1]",
 						Value:    "value1",
@@ -242,7 +242,7 @@ func TestProvide(t *testing.T) {
 func TestProvider_GetStringValues(t *testing.T) {
 	t.Parallel()
 
-	entries := svalues.StringValues{
+	entries := svalue.Values{
 		"k1": {
 			Location: "l1",
 			Value:    "v1",

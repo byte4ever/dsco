@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
@@ -188,8 +188,8 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 
 			model := ifaces.NewMockModelInterface(t)
 
-			fvs1 := fvalues.FieldValues{
-				200: &fvalues.FieldValue{
+			fvs1 := fvalue.Values{
+				200: &fvalue.Value{
 					Value:    reflect.Value{},
 					Location: "loc1",
 				},
@@ -206,8 +206,8 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 				Return(false).
 				Once()
 
-			fvs2 := fvalues.FieldValues{
-				400: &fvalues.FieldValue{
+			fvs2 := fvalue.Values{
+				400: &fvalue.Value{
 					Value:    reflect.Value{},
 					Location: "loc2",
 				},
@@ -237,7 +237,7 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 			c.generateFieldValues()
 			require.Equal(
 				t,
-				[]fvalues.FieldValues{fvs1, fvs2},
+				[]fvalue.Values{fvs1, fvs2},
 				c.layerFieldValues,
 			)
 			require.Equal(
@@ -262,8 +262,8 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 				Return(nil, errMocked1).
 				Once()
 
-			fvs2 := fvalues.FieldValues{
-				400: &fvalues.FieldValue{
+			fvs2 := fvalue.Values{
+				400: &fvalue.Value{
 					Value:    reflect.Value{},
 					Location: "loc2",
 				},
@@ -293,7 +293,7 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 			c.generateFieldValues()
 			require.Equal(
 				t,
-				[]fvalues.FieldValues{fvs2},
+				[]fvalue.Values{fvs2},
 				c.layerFieldValues,
 			)
 			require.Equal(
@@ -341,29 +341,29 @@ func Test_dscoContext_fillIt(t *testing.T) {
 
 			ve := reflect.ValueOf(pv).Elem()
 
-			base := []fvalues.FieldValues{
+			base := []fvalue.Values{
 				{
-					200: &fvalues.FieldValue{
+					200: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc1",
 					},
 				},
 				{
-					400: &fvalues.FieldValue{
+					400: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc2",
 					},
 				},
 			}
 
-			ploc := plocation.PathLocations{
-				plocation.PathLocation{
+			ploc := plocation.Locations{
+				plocation.Location{
 					Path: "p1",
 				},
-				plocation.PathLocation{
+				plocation.Location{
 					Path: "p2",
 				},
-				plocation.PathLocation{
+				plocation.Location{
 					Path: "p3",
 				},
 			}
@@ -401,15 +401,15 @@ func Test_dscoContext_fillIt(t *testing.T) {
 
 			ve := reflect.ValueOf(pv).Elem()
 
-			base := []fvalues.FieldValues{
+			base := []fvalue.Values{
 				{
-					200: &fvalues.FieldValue{
+					200: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc1",
 					},
 				},
 				{
-					400: &fvalues.FieldValue{
+					400: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc2",
 					},
@@ -460,15 +460,15 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			base := []fvalues.FieldValues{
+			base := []fvalue.Values{
 				{
-					0: &fvalues.FieldValue{
+					0: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc0",
 					},
 				},
 				{
-					1: &fvalues.FieldValue{
+					1: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc1",
 					},
@@ -476,12 +476,12 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 			}
 
 			c := &dscoContext{
-				pathLocations: plocation.PathLocations{
-					plocation.PathLocation{
+				pathLocations: plocation.Locations{
+					plocation.Location{
 						Path:     "path0",
 						Location: "foundLoc0",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						Path:     "path1",
 						Location: "foundLoc1",
 					},
@@ -511,15 +511,15 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			base := []fvalues.FieldValues{
+			base := []fvalue.Values{
 				{
-					0: &fvalues.FieldValue{
+					0: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc0",
 					},
 				},
 				{
-					1: &fvalues.FieldValue{
+					1: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc1",
 					},
@@ -527,12 +527,12 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 			}
 
 			c := &dscoContext{
-				pathLocations: plocation.PathLocations{
-					plocation.PathLocation{
+				pathLocations: plocation.Locations{
+					plocation.Location{
 						Path:     "path0",
 						Location: "foundLoc0",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						Path:     "path1",
 						Location: "foundLoc1",
 					},
@@ -551,9 +551,9 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			base := []fvalues.FieldValues{
+			base := []fvalue.Values{
 				{
-					0: &fvalues.FieldValue{
+					0: &fvalue.Value{
 						Value:    reflect.Value{},
 						Location: "loc0",
 					},
@@ -562,12 +562,12 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 			}
 
 			c := &dscoContext{
-				pathLocations: plocation.PathLocations{
-					plocation.PathLocation{
+				pathLocations: plocation.Locations{
+					plocation.Location{
 						Path:     "path0",
 						Location: "foundLoc0",
 					},
-					plocation.PathLocation{
+					plocation.Location{
 						Path:     "path1",
 						Location: "foundLoc1",
 					},

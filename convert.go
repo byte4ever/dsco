@@ -3,7 +3,7 @@ package dsco
 import (
 	"strings"
 
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 func convert(s string) string {

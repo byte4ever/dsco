@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
@@ -25,10 +25,10 @@ func (StructNodeError) Is(err error) bool {
 }
 
 func (n StructNode) Fill(
-	value reflect.Value, layers []fvalues.FieldValues,
-) (plocation.PathLocations, error) {
+	value reflect.Value, layers []fvalue.Values,
+) (plocation.Locations, error) {
 	var (
-		pl   plocation.PathLocations
+		pl   plocation.Locations
 		errs StructNodeError
 	)
 
@@ -46,7 +46,7 @@ func (n StructNode) Fill(
 			errs.Add(err)
 		}
 
-		pl.ReportOther(pln)
+		pl.Append(pln)
 	}
 
 	if errs.None() {
@@ -58,7 +58,7 @@ func (n StructNode) Fill(
 
 func (n *StructNode) FeedFieldValues(
 	srcID string,
-	fieldValues fvalues.FieldValues,
+	fieldValues fvalue.Values,
 	value reflect.Value,
 ) {
 	if value.IsNil() {

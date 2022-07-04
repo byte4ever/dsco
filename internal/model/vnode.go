@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
@@ -16,8 +16,8 @@ type ValueNode struct {
 }
 
 func (n *ValueNode) Fill(
-	value reflect.Value, layers []fvalues.FieldValues,
-) (plocation.PathLocations, error) {
+	value reflect.Value, layers []fvalue.Values,
+) (plocation.Locations, error) {
 	for _, layer := range layers {
 		fieldValue := layer[n.UID]
 
@@ -25,7 +25,7 @@ func (n *ValueNode) Fill(
 			delete(layer, n.UID)
 			value.Set(fieldValue.Value)
 
-			var pl plocation.PathLocations
+			var pl plocation.Locations
 
 			pl.Report(n.UID, n.VisiblePath, fieldValue.Location)
 
@@ -42,14 +42,14 @@ func (n *ValueNode) Fill(
 
 func (n *ValueNode) FeedFieldValues(
 	srcID string,
-	fieldValues fvalues.FieldValues,
+	fieldValues fvalue.Values,
 	value reflect.Value,
 ) {
 	if value.IsNil() {
 		return
 	}
 
-	fieldValues[n.UID] = &fvalues.FieldValue{
+	fieldValues[n.UID] = &fvalue.Value{
 		Value:    value,
 		Location: fmt.Sprintf("struct[%s]:%s", srcID, n.VisiblePath),
 	}
@@ -57,7 +57,7 @@ func (n *ValueNode) FeedFieldValues(
 
 func (n *ValueNode) BuildGetList(s *GetList) {
 	s.Push(
-		func(g ifaces.Getter) (uint, *fvalues.FieldValue, error) {
+		func(g ifaces.Getter) (uint, *fvalue.Value, error) {
 			fieldValue, err := g.Get(n.VisiblePath, n.Type)
 
 			return n.UID, fieldValue, err //nolint:wrapcheck // don't wan to wrap

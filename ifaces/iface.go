@@ -3,14 +3,14 @@ package ifaces
 import (
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).
 type FieldValuesGetter interface {
-	GetFieldValuesFrom(model ModelInterface) (fvalues.FieldValues, error)
+	GetFieldValuesFrom(model ModelInterface) (fvalue.Values, error)
 }
 
 type Getter interface {
@@ -18,17 +18,17 @@ type Getter interface {
 		path string,
 		_type reflect.Type,
 	) (
-		fieldValue *fvalues.FieldValue,
+		fieldValue *fvalue.Value,
 		err error,
 	)
 }
 
 type ModelInterface interface {
 	TypeName() string
-	ApplyOn(g Getter) (fvalues.FieldValues, error)
-	GetFieldValuesFor(id string, v reflect.Value) fvalues.FieldValues
+	ApplyOn(g Getter) (fvalue.Values, error)
+	GetFieldValuesFor(id string, v reflect.Value) fvalue.Values
 	Fill(
 		inputModelValue reflect.Value,
-		layers []fvalues.FieldValues,
-	) (plocation.PathLocations, error)
+		layers []fvalue.Values,
+	) (plocation.Locations, error)
 }

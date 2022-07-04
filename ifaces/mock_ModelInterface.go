@@ -3,7 +3,7 @@
 package ifaces
 
 import (
-	"github.com/byte4ever/dsco/fvalues"
+	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 
 	"github.com/stretchr/testify/mock"
@@ -17,15 +17,15 @@ type MockModelInterface struct {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockModelInterface) ApplyOn(g Getter) (fvalues.FieldValues, error) {
+func (_m *MockModelInterface) ApplyOn(g Getter) (fvalue.Values, error) {
 	ret := _m.Called(g)
 
-	var r0 fvalues.FieldValues
-	if rf, ok := ret.Get(0).(func(Getter) fvalues.FieldValues); ok {
+	var r0 fvalue.Values
+	if rf, ok := ret.Get(0).(func(Getter) fvalue.Values); ok {
 		r0 = rf(g)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(fvalues.FieldValues)
+			r0 = ret.Get(0).(fvalue.Values)
 		}
 	}
 
@@ -40,20 +40,20 @@ func (_m *MockModelInterface) ApplyOn(g Getter) (fvalues.FieldValues, error) {
 }
 
 // Fill provides a mock function with given fields: inputModelValue, layers
-func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []fvalues.FieldValues) (plocation.PathLocations, error) {
+func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []fvalue.Values) (plocation.Locations, error) {
 	ret := _m.Called(inputModelValue, layers)
 
-	var r0 plocation.PathLocations
-	if rf, ok := ret.Get(0).(func(reflect.Value, []fvalues.FieldValues) plocation.PathLocations); ok {
+	var r0 plocation.Locations
+	if rf, ok := ret.Get(0).(func(reflect.Value, []fvalue.Values) plocation.Locations); ok {
 		r0 = rf(inputModelValue, layers)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(plocation.PathLocations)
+			r0 = ret.Get(0).(plocation.Locations)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(reflect.Value, []fvalues.FieldValues) error); ok {
+	if rf, ok := ret.Get(1).(func(reflect.Value, []fvalue.Values) error); ok {
 		r1 = rf(inputModelValue, layers)
 	} else {
 		r1 = ret.Error(1)
@@ -63,15 +63,15 @@ func (_m *MockModelInterface) Fill(inputModelValue reflect.Value, layers []fvalu
 }
 
 // GetFieldValuesFor provides a mock function with given fields: id, v
-func (_m *MockModelInterface) GetFieldValuesFor(id string, v reflect.Value) fvalues.FieldValues {
+func (_m *MockModelInterface) GetFieldValuesFor(id string, v reflect.Value) fvalue.Values {
 	ret := _m.Called(id, v)
 
-	var r0 fvalues.FieldValues
-	if rf, ok := ret.Get(0).(func(string, reflect.Value) fvalues.FieldValues); ok {
+	var r0 fvalue.Values
+	if rf, ok := ret.Get(0).(func(string, reflect.Value) fvalue.Values); ok {
 		r0 = rf(id, v)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(fvalues.FieldValues)
+			r0 = ret.Get(0).(fvalue.Values)
 		}
 	}
 
