@@ -523,3 +523,20 @@ func TestNewStringBasedBuilder(t *testing.T) {
 		},
 	)
 }
+
+func TestOverriddenKeyError_Error(t *testing.T) {
+	require.Equal(
+		t,
+		"for path <path> <location> is override by <overrideLocation>",
+		OverriddenKeyError{
+			Path:             "<path>",
+			Location:         "<location>",
+			OverrideLocation: "<overrideLocation>",
+		}.Error(),
+	)
+}
+
+func TestOverriddenKeyError_Is(t *testing.T) {
+	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
+	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
+}

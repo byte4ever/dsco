@@ -15,7 +15,7 @@ import (
 type dscoContext struct {
 	inputModelRef any
 	err           FillerErrors
-	layers        Layers
+	layers        PoliciesGetter
 
 	// ----
 	model            ifaces.ModelInterface
@@ -61,6 +61,7 @@ func (c *dscoContext) generateBuilders() {
 	if c.err.None() {
 		var err error
 		c.builders, err = c.layers.GetPolicies()
+
 		if err != nil {
 			c.err.Add(err)
 		}
@@ -79,6 +80,7 @@ func (c *dscoContext) generateFieldValues() {
 						err,
 					),
 				)
+
 				continue
 			}
 
@@ -107,19 +109,15 @@ func (c *dscoContext) fillIt() {
 
 func (c *dscoContext) checkUnused() {
 	if c.err.None() {
-		if len(c.mustBeUsed) > 0 {
-			for _, idx := range c.mustBeUsed {
-				for valUID, e := range c.layerFieldValues[idx] {
-					c.err.Add(
-						fmt.Errorf(
-							"%s %s by %s: %w",
-							c.pathLocations[valUID].Path,
-							e.Location,
-							c.pathLocations[valUID].Location,
-							ErrOverriddenKey,
-						),
-					)
-				}
+		for _, idx := range c.mustBeUsed {
+			for valUID, e := range c.layerFieldValues[idx] {
+				c.err.Add(
+					OverriddenKeyError{
+						Path:             c.pathLocations[valUID].Path,
+						Location:         e.Location,
+						OverrideLocation: c.pathLocations[valUID].Location,
+					},
+				)
 			}
 		}
 	}

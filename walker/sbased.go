@@ -92,6 +92,25 @@ func (a UnboundedLocationError) Is(err error) bool {
 // wha overridden in another layer.
 var ErrOverriddenKey = errors.New("overridden key")
 
+type OverriddenKeyError struct {
+	Path             string
+	Location         string
+	OverrideLocation string
+}
+
+func (a OverriddenKeyError) Error() string {
+	return fmt.Sprintf(
+		"for path %s %s is override by %s",
+		a.Path,
+		a.Location,
+		a.OverrideLocation,
+	)
+}
+
+func (a OverriddenKeyError) Is(err error) bool {
+	return errors.Is(err, ErrOverriddenKey)
+}
+
 // ErrNilProvider is shitty...
 var ErrNilProvider = errors.New("nil provider")
 

@@ -20,11 +20,13 @@ func (n *ValueNode) Fill(
 ) (plocation.PathLocations, error) {
 	for _, layer := range layers {
 		fieldValue := layer[n.UID]
+
 		if fieldValue != nil {
 			delete(layer, n.UID)
 			value.Set(fieldValue.Value)
 
 			var pl plocation.PathLocations
+
 			pl.Report(n.UID, n.VisiblePath, fieldValue.Location)
 
 			return pl, nil

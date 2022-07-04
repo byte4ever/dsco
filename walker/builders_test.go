@@ -221,9 +221,8 @@ func TestWithStrictCmdlineLayer(t *testing.T) {
 	require.Equal(t, []Option{o1, o2}, k.options)
 }
 
+//nolint:paralleltest // using global variable
 func TestStrictCmdlineLayer_register(t *testing.T) {
-	t.Parallel()
-
 	for _, x := range []struct {
 		layer  Layer
 		strict bool
@@ -241,8 +240,6 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 
 		t.Run(
 			"success", func(t *testing.T) {
-				t.Parallel()
-
 				os.Args = []string{"cmdName"}
 
 				lb := newLayerBuilder(1)
@@ -257,8 +254,6 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 
 		t.Run(
 			"using twice", func(t *testing.T) {
-				t.Parallel()
-
 				os.Args = []string{"cmdName"}
 
 				lb := newLayerBuilder(1)
@@ -275,8 +270,6 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 
 		t.Run(
 			"cmdline error", func(t *testing.T) {
-				t.Parallel()
-
 				os.Args = []string{"cmdName", "asdasdasd"}
 
 				lb := newLayerBuilder(1)
