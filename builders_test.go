@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/ierror"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/ierror"
+	"github.com/byte4ever/dsco/ref"
 )
 
 func TestLayers_GetPolicies(t *testing.T) {
@@ -355,7 +355,7 @@ func TestStructLayer_register(t *testing.T) {
 	}
 
 	k := &Root{
-		X: utils.R(float32(123.123)),
+		X: ref.R(float32(123.123)),
 	}
 
 	for _, x := range []struct {

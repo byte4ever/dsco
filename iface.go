@@ -1,7 +1,7 @@
 package dsco
 
 import (
-	"github.com/byte4ever/dsco/svalues"
+	"github.com/byte4ever/dsco/internal/svalues"
 )
 
 type PoliciesGetter interface {

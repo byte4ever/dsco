@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/ref"
 )
 
 func Test_scan(t *testing.T) {
@@ -21,13 +21,13 @@ func Test_scan(t *testing.T) {
 				E1X *int
 			}
 
-			e1xType := reflect.TypeOf(utils.R(0))
+			e1xType := reflect.TypeOf(ref.R(0))
 
 			type E2 struct {
 				E2X *string
 			}
 
-			e2xType := reflect.TypeOf(utils.R(""))
+			e2xType := reflect.TypeOf(ref.R(""))
 
 			type Sub1 struct {
 				E1
@@ -35,8 +35,8 @@ func Test_scan(t *testing.T) {
 				Sub1Y *float64
 			}
 
-			sub1xType := reflect.TypeOf(utils.R(float32(0.0)))
-			sub1yType := reflect.TypeOf(utils.R(0.0))
+			sub1xType := reflect.TypeOf(ref.R(float32(0.0)))
+			sub1yType := reflect.TypeOf(ref.R(0.0))
 			sub1Type := reflect.TypeOf(&Sub1{})
 
 			type Sub2 struct {
@@ -45,7 +45,7 @@ func Test_scan(t *testing.T) {
 				Sub2Y *time.Time
 			}
 
-			sub2xType := reflect.TypeOf(utils.R(time.Duration(0)))
+			sub2xType := reflect.TypeOf(ref.R(time.Duration(0)))
 			sub2yType := reflect.TypeOf(&time.Time{})
 			sub2Type := reflect.TypeOf(&Sub2{})
 
@@ -160,7 +160,7 @@ func Test_scan(t *testing.T) {
 				E1Invalid string
 			}
 
-			e1xType := reflect.TypeOf(utils.R(0))
+			e1xType := reflect.TypeOf(ref.R(0))
 			e1invalidType := reflect.TypeOf("")
 
 			type InvalidStruct struct{}
@@ -170,7 +170,7 @@ func Test_scan(t *testing.T) {
 				E2Invalid InvalidStruct
 			}
 
-			e2xType := reflect.TypeOf(utils.R(""))
+			e2xType := reflect.TypeOf(ref.R(""))
 			e2invalidType := reflect.TypeOf(InvalidStruct{})
 
 			type Sub1 struct { //nolint:govet // this field order is required
@@ -180,8 +180,8 @@ func Test_scan(t *testing.T) {
 				Invalid int
 			}
 
-			sub1xType := reflect.TypeOf(utils.R(float32(0.0)))
-			sub1yType := reflect.TypeOf(utils.R(0.0))
+			sub1xType := reflect.TypeOf(ref.R(float32(0.0)))
+			sub1yType := reflect.TypeOf(ref.R(0.0))
 			sub1invalidType := reflect.TypeOf(0)
 			sub1Type := reflect.TypeOf(&Sub1{})
 
@@ -192,7 +192,7 @@ func Test_scan(t *testing.T) {
 				Invalid float64
 			}
 
-			sub2xType := reflect.TypeOf(utils.R(time.Duration(0)))
+			sub2xType := reflect.TypeOf(ref.R(time.Duration(0)))
 			sub2yType := reflect.TypeOf(&time.Time{})
 			sub2invalidType := reflect.TypeOf(23.32)
 			sub2Type := reflect.TypeOf(&Sub2{})
@@ -337,13 +337,13 @@ func Test_scan(t *testing.T) {
 				E1X *int
 			}
 
-			e1xType := reflect.TypeOf(utils.R(0))
+			e1xType := reflect.TypeOf(ref.R(0))
 
 			type E2 struct {
 				E2X *string
 			}
 
-			e2xType := reflect.TypeOf(utils.R(""))
+			e2xType := reflect.TypeOf(ref.R(""))
 
 			type Sub1 struct {
 				E1
@@ -351,8 +351,8 @@ func Test_scan(t *testing.T) {
 				Sub1Y *float64
 			}
 
-			sub1xType := reflect.TypeOf(utils.R(float32(0.0)))
-			sub1yType := reflect.TypeOf(utils.R(0.0))
+			sub1xType := reflect.TypeOf(ref.R(float32(0.0)))
+			sub1yType := reflect.TypeOf(ref.R(0.0))
 			sub1Type := reflect.TypeOf(&Sub1{})
 
 			type Sub2 struct {
@@ -361,7 +361,7 @@ func Test_scan(t *testing.T) {
 				Sub2Y *time.Time
 			}
 
-			sub2xType := reflect.TypeOf(utils.R(time.Duration(0)))
+			sub2xType := reflect.TypeOf(ref.R(time.Duration(0)))
 			sub2yType := reflect.TypeOf(&time.Time{})
 			sub2Type := reflect.TypeOf(&Sub2{})
 

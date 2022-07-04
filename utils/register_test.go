@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	id1 "github.com/byte4ever/dsco/dummy/d1"
+	"github.com/byte4ever/dsco/ref"
 )
 
 func Test_longTypeName(t *testing.T) {
@@ -32,7 +33,7 @@ func Test_longTypeName(t *testing.T) {
 		{
 			name: "built in pointer",
 			args: args{
-				t: reflect.TypeOf(R(0)),
+				t: reflect.TypeOf(ref.R(0)),
 			},
 			want: "*int",
 		},
@@ -132,91 +133,91 @@ func Test_typeIsRegistered(t *testing.T) {
 		{
 			name: "int",
 			args: args{
-				v: R(0),
+				v: ref.R(0),
 			},
 			want: true,
 		},
 		{
 			name: "int8",
 			args: args{
-				v: R(int8(0)),
+				v: ref.R(int8(0)),
 			},
 			want: true,
 		},
 		{
 			name: "int16",
 			args: args{
-				v: R(int16(0)),
+				v: ref.R(int16(0)),
 			},
 			want: true,
 		},
 		{
 			name: "int32",
 			args: args{
-				v: R(int32(0)),
+				v: ref.R(int32(0)),
 			},
 			want: true,
 		},
 		{
 			name: "int64",
 			args: args{
-				v: R(int64(0)),
+				v: ref.R(int64(0)),
 			},
 			want: true,
 		},
 		{
 			name: "uint",
 			args: args{
-				v: R(uint(0)),
+				v: ref.R(uint(0)),
 			},
 			want: true,
 		},
 		{
 			name: "uint8",
 			args: args{
-				v: R(uint8(0)),
+				v: ref.R(uint8(0)),
 			},
 			want: true,
 		},
 		{
 			name: "uint16",
 			args: args{
-				v: R(uint16(0)),
+				v: ref.R(uint16(0)),
 			},
 			want: true,
 		},
 		{
 			name: "uint32",
 			args: args{
-				v: R(uint32(0)),
+				v: ref.R(uint32(0)),
 			},
 			want: true,
 		},
 		{
 			name: "uint64",
 			args: args{
-				v: R(uint64(0)),
+				v: ref.R(uint64(0)),
 			},
 			want: true,
 		},
 		{
 			name: "float32",
 			args: args{
-				v: R(float32(0)),
+				v: ref.R(float32(0)),
 			},
 			want: true,
 		},
 		{
 			name: "float64",
 			args: args{
-				v: R(float64(0)),
+				v: ref.R(float64(0)),
 			},
 			want: true,
 		},
 		{
 			name: "string",
 			args: args{
-				v: R(""),
+				v: ref.R(""),
 			},
 			want: true,
 		},

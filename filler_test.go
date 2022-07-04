@@ -11,9 +11,9 @@ import (
 
 	"github.com/byte4ever/dsco/fvalues"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/merror"
-	"github.com/byte4ever/dsco/plocation"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/merror"
+	"github.com/byte4ever/dsco/internal/plocation"
+	"github.com/byte4ever/dsco/ref"
 )
 
 func Test_newDSCOContext(t *testing.T) {
@@ -624,27 +624,27 @@ func TestFill(t *testing.T) {
 				WithStrictCmdlineLayer(),
 				WithStructLayer(
 					&Root{
-						B: utils.R(0.0),
+						B: ref.R(0.0),
 						Z: &Sub{
-							FirstName: utils.R("Rose"),
-							LastName:  utils.R("Dupont"),
-							B:         utils.R(false),
+							FirstName: ref.R("Rose"),
+							LastName:  ref.R("Dupont"),
+							B:         ref.R(false),
 						},
 					}, "dflt1",
 				),
 				WithStructLayer(
 					&Root{
-						A: utils.R(120),
-						B: utils.R(2333.32),
-						T: utils.R(time.Now().UTC()),
+						A: ref.R(120),
+						B: ref.R(2333.32),
+						T: ref.R(time.Now().UTC()),
 						Z: &Sub{
-							FirstName:    utils.R("Lola"),
-							LastName:     utils.R("MARTIN"),
-							TrainingTime: utils.R(800 * time.Second),
-							T:            utils.R(time.Now().UTC()),
-							B:            utils.R(true),
+							FirstName:    ref.R("Lola"),
+							LastName:     ref.R("MARTIN"),
+							TrainingTime: ref.R(800 * time.Second),
+							T:            ref.R(time.Now().UTC()),
+							B:            ref.R(true),
 						},
-						NaNa: utils.R(2331),
+						NaNa: ref.R(2331),
 						L:    []string{"A", "B", "C"},
 					}, "dflt2",
 				),
@@ -701,25 +701,25 @@ func TestFill(t *testing.T) {
 				WithStrictCmdlineLayer(),
 				WithStructLayer(
 					&Root{
-						B: utils.R(0.0),
+						B: ref.R(0.0),
 						Z: &Sub{
-							FirstName: utils.R("Rose"),
-							B:         utils.R(false),
+							FirstName: ref.R("Rose"),
+							B:         ref.R(false),
 						},
 					}, "dflt1",
 				),
 				WithStructLayer(
 					&Root{
-						A: utils.R(120),
-						B: utils.R(2333.32),
-						T: utils.R(time.Now().UTC()),
+						A: ref.R(120),
+						B: ref.R(2333.32),
+						T: ref.R(time.Now().UTC()),
 						Z: &Sub{
-							FirstName:    utils.R("Lola"),
-							TrainingTime: utils.R(800 * time.Second),
-							T:            utils.R(time.Now().UTC()),
-							B:            utils.R(true),
+							FirstName:    ref.R("Lola"),
+							TrainingTime: ref.R(800 * time.Second),
+							T:            ref.R(time.Now().UTC()),
+							B:            ref.R(true),
 						},
-						NaNa: utils.R(2331),
+						NaNa: ref.R(2331),
 						L:    []string{"A", "B", "C"},
 					}, "dflt2",
 				),

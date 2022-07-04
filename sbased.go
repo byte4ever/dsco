@@ -9,10 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco/fvalues"
-	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/merror"
-	"github.com/byte4ever/dsco/svalues"
+	"github.com/byte4ever/dsco/internal/ierror"
+	"github.com/byte4ever/dsco/internal/merror"
+	"github.com/byte4ever/dsco/internal/svalues"
 	"github.com/byte4ever/dsco/utils"
 )
 

@@ -3,7 +3,7 @@ package model
 import (
 	"reflect"
 
-	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/utils"
 )
 

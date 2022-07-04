@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/byte4ever/dsco/ref"
 )
 
 var nameToType sync.Map //nolint:gochecknoglobals // required for registration
@@ -16,27 +18,27 @@ func init() {
 }
 
 func registerDefaultTypes() {
-	Register(R(0))
-	Register(R(int8(0)))
-	Register(R(int16(0)))
-	Register(R(int32(0)))
-	Register(R(int64(0)))
+	Register(ref.R(0))
+	Register(ref.R(int8(0)))
+	Register(ref.R(int16(0)))
+	Register(ref.R(int32(0)))
+	Register(ref.R(int64(0)))
 
-	Register(R(uint(0)))
-	Register(R(uint8(0)))
-	Register(R(uint16(0)))
-	Register(R(uint32(0)))
-	Register(R(uint64(0)))
+	Register(ref.R(uint(0)))
+	Register(ref.R(uint8(0)))
+	Register(ref.R(uint16(0)))
+	Register(ref.R(uint32(0)))
+	Register(ref.R(uint64(0)))
 
-	Register(R(float32(0)))
-	Register(R(float64(0)))
+	Register(ref.R(float32(0)))
+	Register(ref.R(float64(0)))
 
-	Register(R(true))
+	Register(ref.R(true))
 
-	Register(R(""))
+	Register(ref.R(""))
 
 	Register(&time.Time{})
-	Register(R(time.Duration(0)))
+	Register(ref.R(time.Duration(0)))
 }
 
 // LongTypeName returns long name for a type.

@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/fvalues"
-	"github.com/byte4ever/dsco/merror"
-	"github.com/byte4ever/dsco/plocation"
+	"github.com/byte4ever/dsco/internal/merror"
+	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 type StructNode struct {

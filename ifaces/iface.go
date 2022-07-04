@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/fvalues"
-	"github.com/byte4ever/dsco/plocation"
+	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 // FieldValuesGetter defines the ability to get a path/value set (bases).

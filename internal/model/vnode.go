@@ -6,7 +6,7 @@ import (
 
 	"github.com/byte4ever/dsco/fvalues"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/plocation"
+	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 type ValueNode struct {

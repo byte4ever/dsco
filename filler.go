@@ -7,9 +7,9 @@ import (
 
 	"github.com/byte4ever/dsco/fvalues"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/merror"
-	model2 "github.com/byte4ever/dsco/model"
-	"github.com/byte4ever/dsco/plocation"
+	"github.com/byte4ever/dsco/internal/merror"
+	model2 "github.com/byte4ever/dsco/internal/model"
+	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 type dscoContext struct {

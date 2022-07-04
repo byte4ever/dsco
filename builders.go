@@ -7,8 +7,8 @@ import (
 
 	"github.com/byte4ever/dsco/cmdline"
 	"github.com/byte4ever/dsco/env"
-	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/ifaces"
+	"github.com/byte4ever/dsco/internal/ierror"
 )
 
 type layerBuilder struct {

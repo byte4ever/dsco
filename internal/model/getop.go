@@ -5,7 +5,7 @@ import (
 
 	"github.com/byte4ever/dsco/fvalues"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/merror"
+	"github.com/byte4ever/dsco/internal/merror"
 )
 
 type GetList []GetOp

@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/byte4ever/dsco/fvalues"
-	"github.com/byte4ever/dsco/plocation"
-	"github.com/byte4ever/dsco/utils"
+	"github.com/byte4ever/dsco/internal/plocation"
+	"github.com/byte4ever/dsco/ref"
 )
 
 func TestStructNode_Fill(t *testing.T) {
@@ -248,8 +248,8 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 			}
 
 			i := &SType{
-				A: utils.R(123),
-				B: utils.R(float32(123.123)),
+				A: ref.R(123),
+				B: ref.R(float32(123.123)),
 			}
 
 			v := reflect.ValueOf(&i).Elem()

@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/byte4ever/dsco/fvalues"
-	"github.com/byte4ever/dsco/ierror"
 	"github.com/byte4ever/dsco/ifaces"
-	"github.com/byte4ever/dsco/svalues"
+	"github.com/byte4ever/dsco/internal/ierror"
+	"github.com/byte4ever/dsco/internal/svalues"
 )
 
 func TestStringBasedBuilder_Get(t *testing.T) {

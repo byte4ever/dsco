@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/byte4ever/dsco/svalues"
+	"github.com/byte4ever/dsco/internal/svalues"
 	"github.com/byte4ever/dsco/utils"
 )
 
