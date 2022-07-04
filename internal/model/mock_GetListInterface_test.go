@@ -3,7 +3,7 @@
 package model
 
 import (
-	fvalues "github.com/byte4ever/dsco/fvalue"
+	fvalue "github.com/byte4ever/dsco/fvalue"
 	ifaces "github.com/byte4ever/dsco/ifaces"
 
 	mock "github.com/stretchr/testify/mock"
@@ -15,15 +15,15 @@ type MockGetListInterface struct {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockGetListInterface) ApplyOn(g ifaces.Getter) (fvalues.Values, error) {
+func (_m *MockGetListInterface) ApplyOn(g ifaces.Getter) (fvalue.Values, error) {
 	ret := _m.Called(g)
 
-	var r0 fvalues.Values
-	if rf, ok := ret.Get(0).(func(ifaces.Getter) fvalues.Values); ok {
+	var r0 fvalue.Values
+	if rf, ok := ret.Get(0).(func(ifaces.Getter) fvalue.Values); ok {
 		r0 = rf(g)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(fvalues.Values)
+			r0 = ret.Get(0).(fvalue.Values)
 		}
 	}
 

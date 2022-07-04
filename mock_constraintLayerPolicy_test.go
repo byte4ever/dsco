@@ -3,7 +3,7 @@
 package dsco
 
 import (
-	fvalues "github.com/byte4ever/dsco/fvalue"
+	fvalue "github.com/byte4ever/dsco/fvalue"
 	ifaces "github.com/byte4ever/dsco/ifaces"
 
 	mock "github.com/stretchr/testify/mock"
@@ -15,15 +15,15 @@ type mockConstraintLayerPolicy struct {
 }
 
 // GetFieldValuesFrom provides a mock function with given fields: model
-func (_m *mockConstraintLayerPolicy) GetFieldValuesFrom(model ifaces.ModelInterface) (fvalues.Values, error) {
+func (_m *mockConstraintLayerPolicy) GetFieldValuesFrom(model ifaces.ModelInterface) (fvalue.Values, error) {
 	ret := _m.Called(model)
 
-	var r0 fvalues.Values
-	if rf, ok := ret.Get(0).(func(ifaces.ModelInterface) fvalues.Values); ok {
+	var r0 fvalue.Values
+	if rf, ok := ret.Get(0).(func(ifaces.ModelInterface) fvalue.Values); ok {
 		r0 = rf(model)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(fvalues.Values)
+			r0 = ret.Get(0).(fvalue.Values)
 		}
 	}
 

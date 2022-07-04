@@ -3,7 +3,7 @@
 package dsco
 
 import (
-	svalues "github.com/byte4ever/dsco/internal/svalue"
+	svalue "github.com/byte4ever/dsco/internal/svalue"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -13,15 +13,15 @@ type MockStringValuesProvider struct {
 }
 
 // GetStringValues provides a mock function with given fields:
-func (_m *MockStringValuesProvider) GetStringValues() svalues.Values {
+func (_m *MockStringValuesProvider) GetStringValues() svalue.Values {
 	ret := _m.Called()
 
-	var r0 svalues.Values
-	if rf, ok := ret.Get(0).(func() svalues.Values); ok {
+	var r0 svalue.Values
+	if rf, ok := ret.Get(0).(func() svalue.Values); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(svalues.Values)
+			r0 = ret.Get(0).(svalue.Values)
 		}
 	}
 

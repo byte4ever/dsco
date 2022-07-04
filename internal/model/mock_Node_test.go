@@ -3,7 +3,7 @@
 package model
 
 import (
-	fvalues "github.com/byte4ever/dsco/fvalue"
+	fvalue "github.com/byte4ever/dsco/fvalue"
 	mock "github.com/stretchr/testify/mock"
 
 	plocation "github.com/byte4ever/dsco/internal/plocation"
@@ -22,16 +22,16 @@ func (_m *MockNode) BuildGetList(s *GetList) {
 }
 
 // FeedFieldValues provides a mock function with given fields: srcID, fieldValues, value
-func (_m *MockNode) FeedFieldValues(srcID string, fieldValues fvalues.Values, value reflect.Value) {
+func (_m *MockNode) FeedFieldValues(srcID string, fieldValues fvalue.Values, value reflect.Value) {
 	_m.Called(srcID, fieldValues, value)
 }
 
 // Fill provides a mock function with given fields: value, layers
-func (_m *MockNode) Fill(value reflect.Value, layers []fvalues.Values) (plocation.Locations, error) {
+func (_m *MockNode) Fill(value reflect.Value, layers []fvalue.Values) (plocation.Locations, error) {
 	ret := _m.Called(value, layers)
 
 	var r0 plocation.Locations
-	if rf, ok := ret.Get(0).(func(reflect.Value, []fvalues.Values) plocation.Locations); ok {
+	if rf, ok := ret.Get(0).(func(reflect.Value, []fvalue.Values) plocation.Locations); ok {
 		r0 = rf(value, layers)
 	} else {
 		if ret.Get(0) != nil {
@@ -40,7 +40,7 @@ func (_m *MockNode) Fill(value reflect.Value, layers []fvalues.Values) (plocatio
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(reflect.Value, []fvalues.Values) error); ok {
+	if rf, ok := ret.Get(1).(func(reflect.Value, []fvalue.Values) error); ok {
 		r1 = rf(value, layers)
 	} else {
 		r1 = ret.Error(1)

@@ -3,7 +3,7 @@
 package model
 
 import (
-	fvalues "github.com/byte4ever/dsco/fvalue"
+	fvalue "github.com/byte4ever/dsco/fvalue"
 	ifaces "github.com/byte4ever/dsco/ifaces"
 
 	mock "github.com/stretchr/testify/mock"
@@ -15,7 +15,7 @@ type MockGetOp struct {
 }
 
 // Execute provides a mock function with given fields: g
-func (_m *MockGetOp) Execute(g ifaces.Getter) (uint, *fvalues.Value, error) {
+func (_m *MockGetOp) Execute(g ifaces.Getter) (uint, *fvalue.Value, error) {
 	ret := _m.Called(g)
 
 	var r0 uint
@@ -25,12 +25,12 @@ func (_m *MockGetOp) Execute(g ifaces.Getter) (uint, *fvalues.Value, error) {
 		r0 = ret.Get(0).(uint)
 	}
 
-	var r1 *fvalues.Value
-	if rf, ok := ret.Get(1).(func(ifaces.Getter) *fvalues.Value); ok {
+	var r1 *fvalue.Value
+	if rf, ok := ret.Get(1).(func(ifaces.Getter) *fvalue.Value); ok {
 		r1 = rf(g)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(*fvalues.Value)
+			r1 = ret.Get(1).(*fvalue.Value)
 		}
 	}
 
