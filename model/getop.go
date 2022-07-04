@@ -20,7 +20,7 @@ type ApplyError struct {
 
 var ErrApply = errors.New("")
 
-func (m ApplyError) Is(err error) bool {
+func (ApplyError) Is(err error) bool {
 	return errors.Is(err, ErrApply)
 }
 

@@ -5,16 +5,18 @@ import (
 )
 
 type IError struct {
-	Index int
-	Info  string
 	Err   error
+	Info  string
+	Index int
 }
 
 func (e IError) Error() string {
-	return fmt.Sprintf("%s #%d: %s",
+	return fmt.Sprintf(
+		"%s #%d: %s",
 		e.Info,
 		e.Index,
-		e.Err.Error())
+		e.Err.Error(),
+	)
 }
 
 func (e *IError) Unwrap() error {

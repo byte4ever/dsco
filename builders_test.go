@@ -18,7 +18,9 @@ func TestLayers_GetPolicies(t *testing.T) {
 	t.Parallel()
 
 	t.Run(
-		"success", func(t *testing.T) {
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
 			l1 := NewMockLayer(t)
 			l1.
 				On(
@@ -79,7 +81,9 @@ func TestLayers_GetPolicies(t *testing.T) {
 	)
 
 	t.Run(
-		"fail", func(t *testing.T) {
+		"fail",
+		func(t *testing.T) {
+			t.Parallel()
 
 			l1 := NewMockLayer(t)
 			l1.
@@ -135,19 +139,19 @@ func TestLayers_GetPolicies(t *testing.T) {
 
 			require.Nil(t, clp)
 
-			var e LayerErrors
+			var expectedErr LayerErrors
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(t, err, &expectedErr)
 
 			for idx, et := range []struct {
-				ie int
 				e  error
+				ie int
 			}{
-				{0, errMocked1},
-				{2, errMocked2},
+				{errMocked1, 0},
+				{errMocked2, 2},
 			} {
 				var ie ierror.IError
-				require.ErrorAs(t, e.MError[idx], &ie)
+				require.ErrorAs(t, expectedErr.MError[idx], &ie)
 				require.Equal(t, et.ie, ie.Index)
 				require.Equal(t, et.e, ie.Err)
 			}
@@ -280,13 +284,12 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest // dealing with env variables
 func TestEnvLayer_register(t *testing.T) {
-	t.Parallel()
-
 	for _, x := range []struct {
 		layer  Layer
-		strict bool
 		name   string
+		strict bool
 	}{
 		{
 			name: "strict",
@@ -344,9 +347,8 @@ func TestEnvLayer_register(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest // dealing with global variables
 func TestStructLayer_register(t *testing.T) {
-	t.Parallel()
-
 	type Root struct {
 		X *float32
 		Y *float64
@@ -358,8 +360,8 @@ func TestStructLayer_register(t *testing.T) {
 
 	for _, x := range []struct {
 		layer  Layer
-		strict bool
 		name   string
+		strict bool
 	}{
 		{
 			name: "strict",
@@ -438,15 +440,10 @@ func TestStructLayer_register(t *testing.T) {
 func TestStructLayer_register2(t *testing.T) {
 	t.Parallel()
 
-	type Root struct {
-		X *float32
-		Y *float64
-	}
-
-	for _, x := range []struct {
+	for _, x := range []struct { //nolint:paralleltest //  linter is buggy
 		layer  Layer
-		strict bool
 		name   string
+		strict bool
 	}{
 		{
 			name:   "strict",

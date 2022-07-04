@@ -11,28 +11,27 @@ import (
 func scan(
 	uid *uint,
 	path string,
-	t reflect.Type,
+	_type reflect.Type,
 ) (Node, merror.MError) {
-
 	switch {
-	case t.Kind() == reflect.Slice || utils.TypeIsRegistered(t):
-		n := &ValueNode{
+	case _type.Kind() == reflect.Slice || utils.TypeIsRegistered(_type):
+		valueNode := &ValueNode{
 			UID:         *uid,
-			Type:        t,
+			Type:        _type,
 			VisiblePath: path,
 		}
 		*uid++
 
-		return n, nil
+		return valueNode, nil
 
-	case t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Struct:
+	case _type.Kind() == reflect.Pointer && _type.Elem().Kind() == reflect.Struct:
 		var errs merror.MError
 
-		node := &StructNode{
-			Type: t,
+		structNode := &StructNode{
+			Type: _type,
 		}
 
-		visibleFields, lErrs := getVisibleFieldList(path, t)
+		visibleFields, lErrs := getVisibleFieldList(path, _type)
 		if len(lErrs) > 0 {
 			errs = append(errs, lErrs...)
 		}
@@ -50,16 +49,16 @@ func scan(
 			}
 
 			if subNode != nil {
-				node.PushSubNodes(field.index, subNode)
+				structNode.PushSubNodes(field.index, subNode)
 			}
 		}
 
-		return node, errs
+		return structNode, errs
 	default:
 		return nil, merror.MError{
 			UnsupportedTypeError{
 				Path: path,
-				Type: t,
+				Type: _type,
 			},
 		}
 	}

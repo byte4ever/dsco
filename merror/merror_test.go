@@ -12,6 +12,8 @@ var errMocked2 = errors.New("mocked error 2")
 var errMocked3 = errors.New("mocked error 3")
 
 func TestError_Error(t *testing.T) {
+	t.Parallel()
+
 	{
 		k := MError{
 			errMocked1,
@@ -49,6 +51,8 @@ mocked error 2`
 }
 
 func TestError_Is(t *testing.T) {
+	t.Parallel()
+
 	var e MError
 
 	require.ErrorIs(t, e, Err)
@@ -56,11 +60,13 @@ func TestError_Is(t *testing.T) {
 
 type dummyError struct{}
 
-func (d dummyError) Error() string {
+func (dummyError) Error() string {
 	panic("implement me")
 }
 
 func TestError_As(t *testing.T) {
+	t.Parallel()
+
 	te := newMockTestError(t)
 	te.
 		On("Error").
@@ -89,7 +95,7 @@ type RootError struct {
 
 var ErrRoot = errors.New("")
 
-func (m RootError) Is(err error) bool {
+func (RootError) Is(err error) bool {
 	return errors.Is(err, ErrRoot)
 }
 
@@ -99,11 +105,13 @@ type SubError struct {
 
 var ErrSub = errors.New("")
 
-func (m SubError) Is(err error) bool {
+func (SubError) Is(err error) bool {
 	return errors.Is(err, ErrSub)
 }
 
 func TestError_CascadingEffect(t *testing.T) {
+	t.Parallel()
+
 	te := newMockTestError(t)
 	te.
 		On("Error").
@@ -145,6 +153,8 @@ func TestError_CascadingEffect(t *testing.T) {
 }
 
 func TestError_Add(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		err error
 	}
@@ -179,6 +189,8 @@ func TestError_Add(t *testing.T) {
 }
 
 func TestMError_None(t *testing.T) {
+	t.Parallel()
+
 	e := MError{}
 	require.True(t, e.None())
 
@@ -187,6 +199,8 @@ func TestMError_None(t *testing.T) {
 }
 
 func TestMError_Count(t *testing.T) {
+	t.Parallel()
+
 	var e MError
 
 	require.Equal(t, 0, e.Count())

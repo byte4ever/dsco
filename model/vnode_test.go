@@ -101,7 +101,6 @@ func TestValueNode_Fill(t *testing.T) {
 			require.Nil(t, i)
 		},
 	)
-
 }
 
 func TestValueNode_FeedFieldValues(t *testing.T) {
@@ -167,7 +166,6 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 			require.Empty(t, fvs)
 		},
 	)
-
 }
 
 func TestValueNode_BuildGetList(t *testing.T) {

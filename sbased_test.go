@@ -202,10 +202,11 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			require.ErrorIs(t, err, ErrInvalidType)
 		},
 	)
-
 }
 
 func TestGetError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, errMocked1, ErrGet)
 	require.ErrorIs(t, GetError{}, ErrGet)
 }
@@ -302,6 +303,8 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 }
 
 func TestUnboundedLocationErrors_Len(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, 0, UnboundedLocationErrors{}.Len())
 	require.Equal(t, 0, UnboundedLocationErrors(nil).Len())
 	require.Equal(
@@ -313,6 +316,8 @@ func TestUnboundedLocationErrors_Len(t *testing.T) {
 }
 
 func TestUnboundedLocationErrors_Swap(t *testing.T) {
+	t.Parallel()
+
 	l := UnboundedLocationErrors{
 		UnboundedLocationError{
 			Location: "A",
@@ -336,6 +341,8 @@ func TestUnboundedLocationErrors_Swap(t *testing.T) {
 }
 
 func TestUnboundedLocationError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"unbounded location loc-a",
@@ -346,16 +353,22 @@ func TestUnboundedLocationError_Error(t *testing.T) {
 }
 
 func TestUnboundedLocationError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, UnboundedLocationError{}, errMocked1)
 	require.ErrorIs(t, UnboundedLocationError{}, ErrUnboundedLocation)
 }
 
 func TestParseError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, ParseError{}, errMocked1)
 	require.ErrorIs(t, ParseError{}, ErrParse)
 }
 
 func TestParseError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"parse error on some-path-<int> loc-a",
@@ -368,11 +381,15 @@ func TestParseError_Error(t *testing.T) {
 }
 
 func TestAliasCollisionError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, AliasCollisionError{}, errMocked1)
 	require.ErrorIs(t, AliasCollisionError{}, ErrAliasCollision)
 }
 
 func TestAliasCollisionError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"alias collision-path collides with structure",
@@ -383,6 +400,7 @@ func TestAliasCollisionError_Error(t *testing.T) {
 }
 
 func TestWithAliases(t *testing.T) {
+	t.Parallel()
 
 	mapping := map[string]string{
 		"a": "ta",
@@ -525,6 +543,8 @@ func TestNewStringBasedBuilder(t *testing.T) {
 }
 
 func TestOverriddenKeyError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"for path <path> <location> is override by <overrideLocation>",
@@ -537,6 +557,8 @@ func TestOverriddenKeyError_Error(t *testing.T) {
 }
 
 func TestOverriddenKeyError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
 	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
 }

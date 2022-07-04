@@ -23,7 +23,8 @@ type StructBuilder struct {
 func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 	fvalues.FieldValues, error,
 ) {
-	modelTName := model.TypeName()
+	modelTName := model.TypeName() //nolint:ifshort // buggy linter
+
 	if ltn := utils.LongTypeName(s.value.Type()); modelTName != ltn {
 		return nil,
 			fmt.Errorf(
@@ -32,7 +33,6 @@ func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
 				ltn,
 				ErrStructTypeDiffer,
 			)
-
 	}
 
 	return model.GetFieldValuesFor(

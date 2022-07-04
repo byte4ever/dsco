@@ -43,7 +43,7 @@ func TestStructNode_Fill(t *testing.T) {
 							Location: "loc-s0.B",
 						},
 					},
-					MockedError1{},
+					Mocked1Error{},
 				).
 				Once()
 
@@ -62,7 +62,7 @@ func TestStructNode_Fill(t *testing.T) {
 							Location: "loc-s1",
 						},
 					},
-					MockedError2{},
+					Mocked2Error{},
 				).
 				Once()
 
@@ -352,6 +352,8 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 }
 
 func TestIndexedSubNodes_GetIndexes(t *testing.T) {
+	t.Parallel()
+
 	sn := IndexedSubNodes{
 		&IndexedSubNode{
 			Node:  nil,
@@ -378,6 +380,8 @@ func TestIndexedSubNodes_GetIndexes(t *testing.T) {
 }
 
 func TestStructNode_BuildGetList(t *testing.T) {
+	t.Parallel()
+
 	var gl GetList
 
 	s0 := NewMockNode(t)
@@ -408,6 +412,8 @@ func TestStructNode_BuildGetList(t *testing.T) {
 }
 
 func TestStructNode_PushSubNodes(t *testing.T) {
+	t.Parallel()
+
 	s0 := NewMockNode(t)
 
 	n := &StructNode{
@@ -429,13 +435,8 @@ func TestStructNode_PushSubNodes(t *testing.T) {
 }
 
 func TestStructNodeError_Is(t *testing.T) {
-	{
-		e := MockedError1{}
+	t.Parallel()
 
-		require.False(t, errors.Is(e, ErrStructNode))
-	}
-	{
-		e := StructNodeError{}
-		require.True(t, errors.Is(e, ErrStructNode))
-	}
+	require.False(t, errors.Is(Mocked1Error{}, ErrStructNode))
+	require.True(t, errors.Is(StructNodeError{}, ErrStructNode))
 }

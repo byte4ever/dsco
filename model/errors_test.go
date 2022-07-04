@@ -9,11 +9,10 @@ import (
 )
 
 var errMocked1 = errors.New("error mocked 1")
-var errMocked2 = errors.New("error mocked 2")
 
-type MockedError1 struct{}
+type Mocked1Error struct{}
 
-func (m MockedError1) Error() string {
+func (Mocked1Error) Error() string {
 	return "mocked error #1"
 }
 
@@ -23,13 +22,14 @@ func checkAsMockedError1(
 ) {
 	t.Helper()
 
-	var me MockedError1
+	var me Mocked1Error
+
 	require.ErrorAs(t, err, &me)
 }
 
-type MockedError2 struct{}
+type Mocked2Error struct{}
 
-func (m MockedError2) Error() string {
+func (Mocked2Error) Error() string {
 	return "mocked error #1"
 }
 
@@ -39,11 +39,14 @@ func checkAsMockedError2(
 ) {
 	t.Helper()
 
-	var me MockedError2
+	var me Mocked2Error
+
 	require.ErrorAs(t, err, &me)
 }
 
 func TestFieldNameCollisionError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"field collision between p1 and p2",
@@ -55,6 +58,8 @@ func TestFieldNameCollisionError_Error(t *testing.T) {
 }
 
 func TestUnsupportedTypeError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"struct field p1 with unsupported type int",

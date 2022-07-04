@@ -15,8 +15,8 @@ import (
 
 type Model struct {
 	accelerator Node
-	typeName    string
 	getList     GetListInterface
+	typeName    string
 	fieldCount  uint
 }
 
@@ -30,7 +30,7 @@ type ModelError struct {
 
 var ErrModel = errors.New("")
 
-func (e ModelError) Is(err error) bool {
+func (ModelError) Is(err error) bool {
 	return errors.Is(err, ErrModel)
 }
 
@@ -57,28 +57,29 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 }
 
 func (m *Model) ApplyOn(g ifaces.Getter) (fvalues.FieldValues, error) {
-	return m.getList.ApplyOn(g)
+	return m.getList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 
 func (m *Model) GetFieldValuesFor(
 	id string,
-	v reflect.Value,
+	value reflect.Value,
 ) fvalues.FieldValues {
-	k := make(fvalues.FieldValues, m.fieldCount)
+	fieldValues := make(fvalues.FieldValues, m.fieldCount)
 
 	m.accelerator.FeedFieldValues(
 		id,
-		k,
-		v,
+		fieldValues,
+		value,
 	)
 
-	return k
+	return fieldValues
 }
 
 func (m *Model) Fill(
 	inputModelValue reflect.Value,
 	layers []fvalues.FieldValues,
 ) (plocation.PathLocations, error) {
+	//nolint:wrapcheck // wrap no required
 	return m.accelerator.Fill(
 		inputModelValue,
 		layers,
@@ -88,6 +89,7 @@ func (m *Model) Fill(
 func (s *stackEmbed) pushToStack(
 	index []int, depth int, path string, _type reflect.Type,
 ) error {
+	// Todo :- lmartin 7/4/22 -:  create InvalidEmbededError type
 	if _type.Kind() != reflect.Struct {
 		return fmt.Errorf("%s: %w", path, ErrInvalidEmbedded)
 	}
@@ -112,10 +114,12 @@ func (s *stackEmbed) pushToStack(
 	return nil
 }
 
+const preallocateStack = 16
+
 func getVisibleFieldList(path string, t reflect.Type) (elems, []error) {
 	var errs []error
 
-	st := make(stackEmbed, 0, 16)
+	st := make(stackEmbed, 0, preallocateStack)
 
 	_ = st.pushToStack(nil, 0, "", t.Elem())
 

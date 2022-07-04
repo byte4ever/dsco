@@ -26,12 +26,13 @@ func (m MError) Error() string {
 	return sb.String()
 }
 
-func (m MError) Is(err error) bool {
+func (MError) Is(err error) bool {
 	return errors.Is(err, Err)
 }
 
 func (m MError) As(errAs any) bool {
 	for _, err := range m {
+		//goland:noinspection GoErrorsAs
 		if errors.As(err, errAs) {
 			return true
 		}

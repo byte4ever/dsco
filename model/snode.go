@@ -20,7 +20,7 @@ type StructNodeError struct {
 
 var ErrStructNode = errors.New("")
 
-func (e StructNodeError) Is(err error) bool {
+func (StructNodeError) Is(err error) bool {
 	return errors.Is(err, ErrStructNode)
 }
 

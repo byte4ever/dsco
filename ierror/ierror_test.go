@@ -10,6 +10,8 @@ import (
 var errMocked = errors.New("mocked error")
 
 func TestIError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"-info- #101: mocked error",
@@ -22,6 +24,8 @@ func TestIError_Error(t *testing.T) {
 }
 
 func TestIError_Unwrap(t *testing.T) {
+	t.Parallel()
+
 	e := IError{
 		Err: errMocked,
 	}

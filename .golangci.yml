@@ -139,7 +139,7 @@ linters-settings:
 
     # If true, order of declarations is not checked at all.
     # Default: true (disabled)
-    disable-dec-order-check: false
+    disable-dec-order-check: true
 
     # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
     # Default: true (disabled)
@@ -829,6 +829,9 @@ linters-settings:
 #      - unusedresult
 #      - unusedwrite
 
+  fieldalignment:
+
+
   grouper:
     # Require the use of a single global 'const' declaration only.
     # Default: false
@@ -1169,7 +1172,7 @@ linters-settings:
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#exported
       - name: exported
         severity: warning
-        disabled: false
+        disabled: true
         arguments:
           - "checkPrivateReceivers"
           - "sayRepetitiveInsteadOfStutters"
@@ -1737,6 +1740,7 @@ issues:
         - maintidx
         - forcetypeassert
         - dupl
+        - varnamelen
 
     # Exclude known linters from partially hard-vendored code,
     # which is impossible to exclude via `nolint` comments.

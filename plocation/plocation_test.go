@@ -43,6 +43,8 @@ func TestPathLocations_Dump(t *testing.T) {
 }
 
 func TestPathLocations_Report(t *testing.T) {
+	t.Parallel()
+
 	ploc := PathLocations{
 		{
 			UID:      0,
@@ -76,6 +78,8 @@ func TestPathLocations_Report(t *testing.T) {
 }
 
 func TestPathLocations_ReportOther(t *testing.T) {
+	t.Parallel()
+
 	ploc1 := PathLocations{
 		{
 			UID:      0,

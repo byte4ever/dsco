@@ -31,7 +31,7 @@ type FillerErrors struct {
 
 var ErrFiller = errors.New("")
 
-func (m FillerErrors) Is(err error) bool {
+func (FillerErrors) Is(err error) bool {
 	return errors.Is(err, ErrFiller)
 }
 
@@ -131,17 +131,17 @@ func Fill(
 	plocation.PathLocations,
 	error,
 ) {
-	c := newDSCOContext(inputModelRef, layers)
+	fillContext := newDSCOContext(inputModelRef, layers)
 
-	c.generateModel()
-	c.generateBuilders()
-	c.generateFieldValues()
-	c.fillIt()
-	c.checkUnused()
+	fillContext.generateModel()
+	fillContext.generateBuilders()
+	fillContext.generateFieldValues()
+	fillContext.fillIt()
+	fillContext.checkUnused()
 
-	if c.err.None() {
-		return c.pathLocations, nil
+	if fillContext.err.None() {
+		return fillContext.pathLocations, nil
 	}
 
-	return c.pathLocations, c.err //nolint:wrapcheck
+	return fillContext.pathLocations, fillContext.err //nolint:wrapcheck // ok
 }

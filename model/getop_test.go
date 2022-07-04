@@ -25,6 +25,7 @@ func TestGetList_Push(t *testing.T) {
 				fieldValue *fvalues.FieldValue,
 				err error,
 			) {
+				//nolint:revive // don't care
 				return
 			}
 
@@ -50,6 +51,7 @@ func TestGetList_Push(t *testing.T) {
 				fieldValue *fvalues.FieldValue,
 				err error,
 			) {
+				//nolint:revive // don't care
 				return
 			}
 
@@ -60,6 +62,7 @@ func TestGetList_Push(t *testing.T) {
 				fieldValue *fvalues.FieldValue,
 				err error,
 			) {
+				//nolint:revive // don't care
 				return
 			}
 
@@ -74,7 +77,6 @@ func TestGetList_Push(t *testing.T) {
 			)
 		},
 	)
-
 }
 
 func TestGetList_ApplyOn(t *testing.T) {
@@ -103,7 +105,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			f1.On("Execute", getter).Return(
-				uint(1), nil, MockedError1{},
+				uint(1), nil, Mocked1Error{},
 			)
 
 			f2.On("Execute", getter).Return(
@@ -111,7 +113,7 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			f3.On("Execute", getter).Return(
-				uint(3), nil, MockedError2{},
+				uint(3), nil, Mocked2Error{},
 			)
 
 			l := GetList{
@@ -251,6 +253,8 @@ func TestGetList_ApplyOn(t *testing.T) {
 }
 
 func TestApplyError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, errMocked1, ErrApply)
 	require.ErrorIs(t, ApplyError{}, ErrApply)
 }

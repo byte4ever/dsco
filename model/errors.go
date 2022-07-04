@@ -8,9 +8,6 @@ import (
 	"github.com/byte4ever/dsco/utils"
 )
 
-// ErrFieldNameCollision represent an error where ....
-var ErrFieldNameCollision = errors.New("field name collision")
-
 type FieldNameCollisionError struct {
 	Path1 string
 	Path2 string
@@ -24,12 +21,9 @@ func (u FieldNameCollisionError) Error() string {
 	)
 }
 
-// ErrUnsupportedType represent an error where ....
-var ErrUnsupportedType = errors.New("unsupported type")
-
 type UnsupportedTypeError struct {
-	Path string
 	Type reflect.Type
+	Path string
 }
 
 func (u UnsupportedTypeError) Error() string {

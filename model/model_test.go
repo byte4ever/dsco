@@ -33,7 +33,7 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 			type Root struct {
 				Sub1
 				S  *Sub2
-				aa *int
+				aa *int //nolint:unused // don't care
 				A  *float32
 			}
 
@@ -104,7 +104,7 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 			type Root struct {
 				Sub1
 				S  *Sub2
-				aa *int
+				aa *int //nolint:unused // don't care
 				A  *float32
 			}
 
@@ -163,7 +163,7 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 			t.Parallel()
 
 			type Root struct {
-				aa *int
+				aa *int //nolint:unused // don't care
 				A  *float32
 			}
 
@@ -198,7 +198,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 
 			type Sub2 struct {
 				Y2         *int
-				notVisible *int
+				notVisible *int //nolint:unused // don't care
 				Y1         *TS1
 			}
 
@@ -208,7 +208,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 			type Sub1 struct {
 				X2 *int
 				Sub2
-				notVisible *int
+				notVisible *int //nolint:unused // don't care
 				X1         *int
 			}
 
@@ -218,7 +218,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 			type Sub0 struct {
 				Q *int
 				Sub1
-				notVisible *int
+				notVisible *int //nolint:unused // don't care
 				W          *int
 			}
 
@@ -228,7 +228,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 			type Root struct {
 				A *float32
 				Sub0
-				notVisible *int
+				notVisible *int //nolint:unused // don't care
 				B          *int
 			}
 
@@ -500,6 +500,8 @@ func Test_getVisibleFieldList(t *testing.T) {
 }
 
 func TestModel_TypeName(t *testing.T) {
+	t.Parallel()
+
 	m := &Model{
 		typeName: "type-name",
 	}
@@ -547,6 +549,8 @@ func TestNewModel(t *testing.T) {
 }
 
 func TestModel_ApplyOn(t *testing.T) {
+	t.Parallel()
+
 	fvs := make(fvalues.FieldValues, 10)
 
 	getter := NewMockGetter(t)
@@ -565,6 +569,8 @@ func TestModel_ApplyOn(t *testing.T) {
 }
 
 func TestModel_Fill(t *testing.T) {
+	t.Parallel()
+
 	v := reflect.ValueOf(1)
 	layers := []fvalues.FieldValues{nil, nil, nil}
 	ploc := plocation.PathLocations{plocation.PathLocation{}}
@@ -583,15 +589,18 @@ func TestModel_Fill(t *testing.T) {
 
 	require.Equal(t, ploc, gotPLoc)
 	require.Equal(t, errMocked1, err)
-
 }
 
 func TestModelError_Is(t *testing.T) {
+	t.Parallel()
+
 	require.NotErrorIs(t, errMocked1, ErrModel)
 	require.ErrorIs(t, ModelError{}, ErrModel)
 }
 
 func TestModel_GetFieldValuesFor(t *testing.T) {
+	t.Parallel()
+
 	id := "id"
 	v := reflect.ValueOf(1)
 

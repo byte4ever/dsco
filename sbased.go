@@ -37,7 +37,7 @@ func (a ParseError) Error() string {
 	)
 }
 
-func (a ParseError) Is(err error) bool {
+func (ParseError) Is(err error) bool {
 	return errors.Is(err, ErrParse)
 }
 
@@ -53,11 +53,11 @@ func (a AliasCollisionError) Error() string {
 	return fmt.Sprintf("alias %s collides with structure", a.Path)
 }
 
-func (a AliasCollisionError) Is(err error) bool {
+func (AliasCollisionError) Is(err error) bool {
 	return errors.Is(err, ErrAliasCollision)
 }
 
-// ErrUnboundLocation represents an error indicating that a key is never
+// ErrUnboundedLocation represents an error indicating that a key is never
 // bound to the
 // structure.
 var ErrUnboundedLocation = errors.New("unbound key")
@@ -84,7 +84,7 @@ func (a UnboundedLocationError) Error() string {
 	return fmt.Sprintf("unbounded location %s", a.Location)
 }
 
-func (a UnboundedLocationError) Is(err error) bool {
+func (UnboundedLocationError) Is(err error) bool {
 	return errors.Is(err, ErrUnboundedLocation)
 }
 
@@ -107,7 +107,7 @@ func (a OverriddenKeyError) Error() string {
 	)
 }
 
-func (a OverriddenKeyError) Is(err error) bool {
+func (OverriddenKeyError) Is(err error) bool {
 	return errors.Is(err, ErrOverriddenKey)
 }
 
@@ -190,13 +190,12 @@ func NewStringBasedBuilder(
 }
 
 func (s *StringBasedBuilder) Get(
-	path string, _type reflect.Type,
-) (fieldValue *fvalues.FieldValue, err error) {
-	const (
-		errFmt  = "%s: %w"
-		errFmt2 = "%s [%s]: %w"
-	)
-
+	path string,
+	_type reflect.Type,
+) (
+	fieldValue *fvalues.FieldValue,
+	err error,
+) {
 	convertedPath := convert(path)
 
 	// check for alias collisions
@@ -208,7 +207,7 @@ func (s *StringBasedBuilder) Get(
 
 	entry, found := s.values[convertedPath]
 	if !found {
-		return nil, nil
+		return nil, nil //nolint:nilnil // required when nothing is found
 	}
 
 	switch _type.Kind() { //nolint:exhaustive // it's expected
@@ -240,7 +239,6 @@ func (s *StringBasedBuilder) Get(
 		if err := yaml.Unmarshal(
 			[]byte(entry.Value), tp.Interface(),
 		); err != nil {
-
 			return nil, ParseError{
 				path,
 				_type,
@@ -255,7 +253,7 @@ func (s *StringBasedBuilder) Get(
 
 	default:
 		return nil, fmt.Errorf(
-			errFmt,
+			"%s: %w",
 			path,
 			ErrInvalidType,
 		)
@@ -268,7 +266,7 @@ type GetError struct {
 
 var ErrGet = errors.New("")
 
-func (m GetError) Is(err error) bool {
+func (GetError) Is(err error) bool {
 	return errors.Is(err, ErrGet)
 }
 
@@ -299,6 +297,7 @@ func (s *StringBasedBuilder) GetFieldValuesFrom(
 
 	if len(e2s) > 0 {
 		sort.Sort(e2s)
+
 		for _, e2 := range e2s {
 			errs.Add(e2)
 		}

@@ -30,8 +30,8 @@ type CmdlineAlreadyUsedError struct {
 var ErrDuplicateEnvPrefix = errors.New("")
 
 type DuplicateEnvPrefixError struct {
-	Index  int
 	Prefix string
+	Index  int
 }
 
 // ErrDuplicateInputStruct represent an error where ....
@@ -45,8 +45,8 @@ type DuplicateInputStructError struct {
 var ErrDuplicateStructID = errors.New("")
 
 type DuplicateStructIDError struct {
-	Index int
 	ID    string
+	Index int
 }
 
 func (c InvalidInputError) Error() string {
@@ -67,7 +67,7 @@ func (c CmdlineAlreadyUsedError) Error() string {
 	)
 }
 
-func (c CmdlineAlreadyUsedError) Is(err error) bool {
+func (CmdlineAlreadyUsedError) Is(err error) bool {
 	return errors.Is(err, ErrCmdlineAlreadyUsed)
 }
 
@@ -79,7 +79,7 @@ func (c DuplicateEnvPrefixError) Error() string {
 	)
 }
 
-func (c DuplicateEnvPrefixError) Is(err error) bool {
+func (DuplicateEnvPrefixError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateEnvPrefix)
 }
 
@@ -90,7 +90,7 @@ func (c DuplicateInputStructError) Error() string {
 	)
 }
 
-func (c DuplicateInputStructError) Is(err error) bool {
+func (DuplicateInputStructError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateInputStruct)
 }
 
@@ -102,7 +102,7 @@ func (c DuplicateStructIDError) Error() string {
 	)
 }
 
-func (c DuplicateStructIDError) Is(err error) bool {
+func (DuplicateStructIDError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateStructID)
 }
 
@@ -112,6 +112,6 @@ type LayerErrors struct {
 
 var ErrLayer = errors.New("")
 
-func (m LayerErrors) Is(err error) bool {
+func (LayerErrors) Is(err error) bool {
 	return errors.Is(err, ErrLayer)
 }

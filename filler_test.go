@@ -77,8 +77,8 @@ func Test_dscoContext_generateModel(t *testing.T) {
 			t.Parallel()
 
 			type Root struct {
-				X float64
 				Y *float32
+				X float64
 			}
 
 			var v *Root
@@ -667,10 +667,10 @@ func TestFill(t *testing.T) {
 
 			type Sub struct {
 				FirstName    *string
-				LastName     string // error here
 				TrainingTime *time.Duration
 				T            *time.Time
 				B            *bool
+				LastName     string
 			}
 
 			type Root struct {
@@ -728,9 +728,10 @@ func TestFill(t *testing.T) {
 			require.Error(t, err)
 		},
 	)
-
 }
 
 func TestFillerErrors_Is(t *testing.T) {
+	t.Parallel()
+
 	require.ErrorIs(t, FillerErrors{}, ErrFiller)
 }

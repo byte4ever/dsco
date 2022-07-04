@@ -11,9 +11,9 @@ type PathLocations []PathLocation
 
 // PathLocation is the fillHelper report for a value.
 type PathLocation struct {
+	Path     string
+	Location string
 	UID      uint
-	Path     string // is the key path.
-	Location string // is the Location of the value.
 }
 
 // Dump writes fillHelper report.

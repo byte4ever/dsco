@@ -165,7 +165,7 @@ func Test_scan(t *testing.T) {
 
 			type InvalidStruct struct{}
 
-			type E2 struct {
+			type E2 struct { //nolint:govet // this field order is required
 				E2X       *string
 				E2Invalid InvalidStruct
 			}
@@ -173,7 +173,7 @@ func Test_scan(t *testing.T) {
 			e2xType := reflect.TypeOf(utils.R(""))
 			e2invalidType := reflect.TypeOf(InvalidStruct{})
 
-			type Sub1 struct {
+			type Sub1 struct { //nolint:govet // this field order is required
 				E1
 				Sub1X   *float32
 				Sub1Y   *float64
@@ -185,7 +185,7 @@ func Test_scan(t *testing.T) {
 			sub1invalidType := reflect.TypeOf(0)
 			sub1Type := reflect.TypeOf(&Sub1{})
 
-			type Sub2 struct {
+			type Sub2 struct { //nolint:govet // this field order is required
 				E2
 				Sub2X   *time.Duration
 				Sub2Y   *time.Time
@@ -197,7 +197,7 @@ func Test_scan(t *testing.T) {
 			sub2invalidType := reflect.TypeOf(23.32)
 			sub2Type := reflect.TypeOf(&Sub2{})
 
-			type Root struct {
+			type Root struct { //nolint:govet // this field order is required
 				E1
 				E2
 				S1 *Sub1
@@ -338,8 +338,6 @@ func Test_scan(t *testing.T) {
 			}
 
 			e1xType := reflect.TypeOf(utils.R(0))
-
-			type InvalidStruct struct{}
 
 			type E2 struct {
 				E2X *string
