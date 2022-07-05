@@ -3,8 +3,7 @@ package ifaces
 import (
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalue"
-
+	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 

@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/byte4ever/dsco/internal/svalue"
 	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 // EntriesProvider is an entries' provider that extract entries from

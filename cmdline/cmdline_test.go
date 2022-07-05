@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/internal/svalue"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 func TestProvide(t *testing.T) {

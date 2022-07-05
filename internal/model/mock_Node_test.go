@@ -3,7 +3,7 @@
 package model
 
 import (
-	fvalue "github.com/byte4ever/dsco/fvalue"
+	fvalue "github.com/byte4ever/dsco/internal/fvalue"
 	mock "github.com/stretchr/testify/mock"
 
 	plocation "github.com/byte4ever/dsco/internal/plocation"

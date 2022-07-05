@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/byte4ever/dsco/internal/svalue"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 const locationFmt = "cmdline[--%s]"

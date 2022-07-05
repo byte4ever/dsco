@@ -3,7 +3,7 @@
 package ifaces
 
 import (
-	"github.com/byte4ever/dsco/fvalue"
+	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 
 	"github.com/stretchr/testify/mock"

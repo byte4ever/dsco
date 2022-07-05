@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
+	"github.com/byte4ever/dsco/internal/fvalue"
 )
 
 func TestGetList_Push(t *testing.T) {

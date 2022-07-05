@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/internal/svalue"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 func setEnv(t *testing.T, env map[string]string) {

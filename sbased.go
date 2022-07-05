@@ -8,12 +8,12 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/dsco/fvalue"
 	"github.com/byte4ever/dsco/ifaces"
+	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/internal/svalue"
 	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 // ErrInvalidType represent an error where ....

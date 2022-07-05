@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/byte4ever/dsco/fvalue"
+	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
 )

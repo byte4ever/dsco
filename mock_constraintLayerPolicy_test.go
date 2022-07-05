@@ -3,8 +3,8 @@
 package dsco
 
 import (
-	fvalue "github.com/byte4ever/dsco/fvalue"
 	ifaces "github.com/byte4ever/dsco/ifaces"
+	fvalue "github.com/byte4ever/dsco/internal/fvalue"
 
 	mock "github.com/stretchr/testify/mock"
 )

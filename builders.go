@@ -300,3 +300,89 @@ func WithStructLayer(input any, id string) *StructLayer {
 		id:    id,
 	}
 }
+
+type StringProviderLayer struct {
+	provider NamedStringValuesProvider
+	options  []Option
+}
+
+func (s *StringProviderLayer) register(to *layerBuilder) error {
+	return wrapStringProviderBuild(
+		to, newNormalLayer, s.provider, s.options,
+	)
+}
+
+type DuplicateStringProviderError struct {
+	Index int
+	ID    string
+}
+
+func (d DuplicateStringProviderError) Error() string {
+	return fmt.Sprintf(
+		"string provider layer #%d is using same id=%q",
+		d.Index,
+		d.ID,
+	)
+}
+
+func wrapStringProviderBuild(
+	to *layerBuilder,
+	wrap func(bg ifaces.FieldValuesGetter) constraintLayerPolicy,
+	provider NamedStringValuesProvider,
+	options []Option,
+) error {
+	providerName := provider.GetName()
+
+	if idx := to.dedupId(
+		fmt.Sprintf(
+			"stringProvider(%s)",
+			providerName,
+		),
+	); idx != nil {
+		return DuplicateStringProviderError{
+			Index: *idx,
+			ID:    providerName,
+		}
+	}
+
+	builder, err := NewStringBasedBuilder(provider, options...)
+	if err != nil {
+		return err
+	}
+
+	to.addBuilder(wrap(builder))
+
+	return nil
+}
+
+type StrictStringProviderLayer struct {
+	StringProviderLayer
+}
+
+func (s *StrictStringProviderLayer) register(to *layerBuilder) error {
+	return wrapStringProviderBuild(
+		to, newStrictLayer, s.provider, s.options,
+	)
+}
+
+func WithStringValueProvider(
+	provider NamedStringValuesProvider,
+	options ...Option,
+) *StringProviderLayer {
+	return &StringProviderLayer{
+		provider: provider,
+		options:  options,
+	}
+}
+
+func WithStrictStringValueProvider(
+	provider NamedStringValuesProvider,
+	options ...Option,
+) *StrictStringProviderLayer {
+	return &StrictStringProviderLayer{
+		StringProviderLayer: StringProviderLayer{
+			provider: provider,
+			options:  options,
+		},
+	}
+}

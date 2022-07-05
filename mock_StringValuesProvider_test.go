@@ -3,7 +3,7 @@
 package dsco
 
 import (
-	svalue "github.com/byte4ever/dsco/internal/svalue"
+	svalue "github.com/byte4ever/dsco/svalue"
 	mock "github.com/stretchr/testify/mock"
 )
 

@@ -12,6 +12,7 @@ import (
 
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/ref"
+	"github.com/byte4ever/dsco/svalue"
 )
 
 func TestLayers_GetPolicies(t *testing.T) {
@@ -253,6 +254,7 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 				require.NoError(t, err)
 				require.Len(t, lb.builders, 1)
 				require.Equal(t, x.strict, lb.builders[0].isStrict())
+				require.Contains(t, lb.idDedup, "cmdLine")
 			},
 		)
 
@@ -317,6 +319,7 @@ func TestEnvLayer_register(t *testing.T) {
 				require.NoError(t, err)
 				require.Len(t, lb.builders, 1)
 				require.Equal(t, x.strict, lb.builders[0].isStrict())
+				require.Contains(t, lb.idDedup, "env(API)")
 			},
 		)
 
@@ -385,22 +388,31 @@ func TestStructLayer_register(t *testing.T) {
 		t.Run(
 			fmt.Sprintf("%s success", x.name),
 			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
 				lb := newLayerBuilder(1)
 				err := x.layer.register(lb)
 
 				require.NoError(t, err)
 				require.Len(t, lb.builders, 1)
 				require.Equal(t, x.strict, lb.builders[0].isStrict())
+				require.Contains(
+					t,
+					lb.idDedup,
+					fmt.Sprintf(
+						"structPtr(%d)",
+						reflect.ValueOf(k).Pointer(),
+					),
+				)
+				require.Contains(
+					t,
+					lb.idDedup,
+					"structId(default)",
+				)
 			},
 		)
 
 		t.Run(
 			fmt.Sprintf("%s using same id", x.name),
 			func(t *testing.T) {
-				os.Args = []string{"cmdName"}
-
 				lb := newLayerBuilder(1)
 				lb.idDedup["structId(default)"] = 101
 
@@ -470,4 +482,267 @@ func TestStructLayer_register2(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestWithStringValueProvider(t *testing.T) {
+	options := []Option{NewMockOption(t), NewMockOption(t)}
+	p := NewMockNamedStringValuesProvider(t)
+
+	l := WithStringValueProvider(p, options...)
+
+	require.Equal(t, options, l.options)
+	require.Equal(t, p, l.provider)
+}
+
+func TestWithStrictStringValueProvider(t *testing.T) {
+	options := []Option{NewMockOption(t), NewMockOption(t)}
+	p := NewMockNamedStringValuesProvider(t)
+
+	l := WithStrictStringValueProvider(p, options...)
+
+	require.Equal(t, options, l.options)
+	require.Equal(t, p, l.provider)
+}
+
+func TestStrictStringProviderLayer_register(t *testing.T) {
+	t.Parallel()
+
+	svs := svalue.Values{
+		"v1": &svalue.Value{
+			Location: "l1",
+			Value:    "v1",
+		},
+	}
+
+	t.Run(
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+			p.
+				On("GetStringValues").
+				Return(svs, nil).
+				Once()
+
+			x := &StrictStringProviderLayer{
+				StringProviderLayer: StringProviderLayer{
+					provider: p,
+				},
+			}
+
+			lb := newLayerBuilder(1)
+			err := x.register(lb)
+
+			require.NoError(t, err)
+			require.Len(t, lb.builders, 1)
+			require.True(t, lb.builders[0].isStrict())
+			require.Contains(t, lb.idDedup, "stringProvider(name)")
+		},
+	)
+
+	t.Run(
+		"duplicate id",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+
+			x := &StrictStringProviderLayer{
+				StringProviderLayer: StringProviderLayer{
+					provider: p,
+				},
+			}
+
+			lb := newLayerBuilder(1)
+			lb.idDedup["stringProvider(name)"] = 101
+			err := x.register(lb)
+
+			require.Len(t, lb.builders, 0)
+
+			var e DuplicateStringProviderError
+			require.ErrorAs(t, err, &e)
+			require.Equal(
+				t,
+				DuplicateStringProviderError{
+					Index: 101,
+					ID:    "name",
+				},
+				e,
+			)
+			require.Len(t, lb.idDedup, 1)
+		},
+	)
+
+	t.Run(
+		"option error",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+
+			o := NewMockOption(t)
+			o.On(
+				"apply",
+				mock.MatchedBy(
+					func(opts *internalOpts) bool {
+						return assert.NotNil(t, opts)
+					},
+				),
+			).Return(errMocked1)
+
+			x := &StrictStringProviderLayer{
+				StringProviderLayer: StringProviderLayer{
+					provider: p,
+					options:  []Option{o},
+				},
+			}
+
+			lb := newLayerBuilder(1)
+			err := x.register(lb)
+
+			var e ierror.IError
+			require.ErrorAs(t, err, &e)
+			require.ErrorIs(t, e.Err, errMocked1)
+			require.Equal(t, 0, e.Index)
+			require.Len(t, lb.builders, 0)
+			require.Len(t, lb.idDedup, 1)
+		},
+	)
+}
+
+func TestStringProviderLayer_register(t *testing.T) {
+	t.Parallel()
+
+	svs := svalue.Values{
+		"v1": &svalue.Value{
+			Location: "l1",
+			Value:    "v1",
+		},
+	}
+
+	t.Run(
+		"success",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+			p.
+				On("GetStringValues").
+				Return(svs, nil).
+				Once()
+
+			x := &StringProviderLayer{
+				provider: p,
+			}
+
+			lb := newLayerBuilder(1)
+			err := x.register(lb)
+
+			require.NoError(t, err)
+			require.Len(t, lb.builders, 1)
+			require.False(t, lb.builders[0].isStrict())
+			require.Contains(t, lb.idDedup, "stringProvider(name)")
+		},
+	)
+
+	t.Run(
+		"duplicate id",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+
+			x := &StringProviderLayer{
+				provider: p,
+			}
+
+			lb := newLayerBuilder(1)
+			lb.idDedup["stringProvider(name)"] = 101
+			err := x.register(lb)
+
+			require.Len(t, lb.builders, 0)
+
+			var e DuplicateStringProviderError
+			require.ErrorAs(t, err, &e)
+			require.Equal(
+				t,
+				DuplicateStringProviderError{
+					Index: 101,
+					ID:    "name",
+				},
+				e,
+			)
+			require.Len(t, lb.idDedup, 1)
+		},
+	)
+
+	t.Run(
+		"option error",
+		func(t *testing.T) {
+			t.Parallel()
+
+			p := NewMockNamedStringValuesProvider(t)
+			p.
+				On("GetName").
+				Return("name").
+				Once()
+
+			o := NewMockOption(t)
+			o.On(
+				"apply",
+				mock.MatchedBy(
+					func(opts *internalOpts) bool {
+						return assert.NotNil(t, opts)
+					},
+				),
+			).Return(errMocked1)
+
+			x := &StringProviderLayer{
+				provider: p,
+				options:  []Option{o},
+			}
+
+			lb := newLayerBuilder(1)
+			err := x.register(lb)
+
+			var e ierror.IError
+			require.ErrorAs(t, err, &e)
+			require.ErrorIs(t, e.Err, errMocked1)
+			require.Equal(t, 0, e.Index)
+			require.Len(t, lb.builders, 0)
+			require.Len(t, lb.idDedup, 1)
+		},
+	)
+}
+
+func TestDuplicateStringProviderError_Error(t *testing.T) {
+	require.Equal(
+		t,
+		"string provider layer #101 is using same id=\"<name>\"",
+		DuplicateStringProviderError{
+			Index: 101,
+			ID:    "<name>",
+		}.Error(),
+	)
 }
