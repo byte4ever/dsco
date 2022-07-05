@@ -91,7 +91,12 @@ func (s *stackEmbed) pushToStack(
 ) error {
 	// Todo :- lmartin 7/4/22 -:  create InvalidEmbededError type
 	if _type.Kind() != reflect.Struct {
-		return fmt.Errorf("%s: %w", path, ErrInvalidEmbedded)
+		return fmt.Errorf(
+			//nolint:goconst // goconst is so annoying!
+			"%s: %w",
+			path,
+			ErrInvalidEmbedded,
+		)
 	}
 
 	for i := _type.NumField() - 1; i >= 0; i-- {

@@ -7,7 +7,9 @@ import (
 
 var Err = errors.New("")
 
-type MError []error
+// TODO :- lmartin 7/5/22 -: rename
+
+type MError []error //nolint:errname // need to be fixed
 
 func (m MError) Error() string {
 	if len(m) == 0 {
