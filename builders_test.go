@@ -485,6 +485,8 @@ func TestStructLayer_register2(t *testing.T) {
 }
 
 func TestWithStringValueProvider(t *testing.T) {
+	t.Parallel()
+
 	options := []Option{NewMockOption(t), NewMockOption(t)}
 	p := NewMockNamedStringValuesProvider(t)
 
@@ -495,6 +497,8 @@ func TestWithStringValueProvider(t *testing.T) {
 }
 
 func TestWithStrictStringValueProvider(t *testing.T) {
+	t.Parallel()
+
 	options := []Option{NewMockOption(t), NewMockOption(t)}
 	p := NewMockNamedStringValuesProvider(t)
 
@@ -737,6 +741,8 @@ func TestStringProviderLayer_register(t *testing.T) {
 }
 
 func TestDuplicateStringProviderError_Error(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(
 		t,
 		"string provider layer #101 is using same id=\"<name>\"",

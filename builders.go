@@ -18,7 +18,11 @@ type layerBuilder struct {
 
 type Layers []Layer
 
-func (layers Layers) GetPolicies() (constraintLayerPolicies, error) {
+func (layers Layers) GetPolicies() (
+	//nolint:revive // need refactoring
+	constraintLayerPolicies,
+	error,
+) {
 	var errs LayerErrors
 
 	bo := newLayerBuilder(len(layers))
@@ -313,8 +317,8 @@ func (s *StringProviderLayer) register(to *layerBuilder) error {
 }
 
 type DuplicateStringProviderError struct {
-	Index int
 	ID    string
+	Index int
 }
 
 func (d DuplicateStringProviderError) Error() string {
