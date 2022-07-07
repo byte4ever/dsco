@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/svalue"
@@ -225,7 +224,7 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			sb := &StringBasedBuilder{}
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("ApplyOn", sb).
 				Return(
@@ -263,7 +262,7 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 				},
 			}
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("ApplyOn", sb).
 				Return(

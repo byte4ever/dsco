@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
@@ -186,7 +185,7 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 
 			fvs1 := fvalue.Values{
 				200: &fvalue.Value{
@@ -254,7 +253,7 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 
 			clp1 := newMockConstraintLayerPolicy(t)
 			clp1.
@@ -368,7 +367,7 @@ func Test_dscoContext_fillIt(t *testing.T) {
 				},
 			}
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("Fill", ve, base).
 				Return(ploc, nil).
@@ -416,7 +415,7 @@ func Test_dscoContext_fillIt(t *testing.T) {
 				},
 			}
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("Fill", ve, base).
 				Return(nil, errMocked1).

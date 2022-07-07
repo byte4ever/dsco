@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/utils"
 )
@@ -20,7 +19,7 @@ type StructBuilder struct {
 	id    string
 }
 
-func (s *StructBuilder) GetFieldValuesFrom(model ifaces.ModelInterface) (
+func (s *StructBuilder) GetFieldValuesFrom(model ModelInterface) (
 	fvalue.Values, error,
 ) {
 	modelTName := model.TypeName() //nolint:ifshort // buggy linter

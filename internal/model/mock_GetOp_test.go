@@ -3,7 +3,7 @@
 package model
 
 import (
-	ifaces "github.com/byte4ever/dsco/ifaces"
+	internal "github.com/byte4ever/dsco/internal"
 	fvalue "github.com/byte4ever/dsco/internal/fvalue"
 
 	mock "github.com/stretchr/testify/mock"
@@ -15,18 +15,18 @@ type MockGetOp struct {
 }
 
 // Execute provides a mock function with given fields: g
-func (_m *MockGetOp) Execute(g ifaces.Getter) (uint, *fvalue.Value, error) {
+func (_m *MockGetOp) Execute(g internal.Getter) (uint, *fvalue.Value, error) {
 	ret := _m.Called(g)
 
 	var r0 uint
-	if rf, ok := ret.Get(0).(func(ifaces.Getter) uint); ok {
+	if rf, ok := ret.Get(0).(func(internal.Getter) uint); ok {
 		r0 = rf(g)
 	} else {
 		r0 = ret.Get(0).(uint)
 	}
 
 	var r1 *fvalue.Value
-	if rf, ok := ret.Get(1).(func(ifaces.Getter) *fvalue.Value); ok {
+	if rf, ok := ret.Get(1).(func(internal.Getter) *fvalue.Value); ok {
 		r1 = rf(g)
 	} else {
 		if ret.Get(1) != nil {
@@ -35,7 +35,7 @@ func (_m *MockGetOp) Execute(g ifaces.Getter) (uint, *fvalue.Value, error) {
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(ifaces.Getter) error); ok {
+	if rf, ok := ret.Get(2).(func(internal.Getter) error); ok {
 		r2 = rf(g)
 	} else {
 		r2 = ret.Error(2)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 )
 
@@ -98,7 +97,7 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 		"invalid type name", func(t *testing.T) {
 			t.Parallel()
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("TypeName").
 				Return("other").
@@ -128,7 +127,7 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 				},
 			}
 
-			model := ifaces.NewMockModelInterface(t)
+			model := NewMockModelInterface(t)
 			model.
 				On("TypeName").
 				Return("int").

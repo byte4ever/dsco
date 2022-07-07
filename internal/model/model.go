@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/byte4ever/dsco/ifaces"
+	"github.com/byte4ever/dsco/internal"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
@@ -56,7 +56,7 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}, nil
 }
 
-func (m *Model) ApplyOn(g ifaces.Getter) (fvalue.Values, error) {
+func (m *Model) ApplyOn(g internal.Getter) (fvalue.Values, error) {
 	return m.getList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 

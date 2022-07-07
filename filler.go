@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	model2 "github.com/byte4ever/dsco/internal/model"
@@ -18,7 +17,7 @@ type dscoContext struct {
 	layers        PoliciesGetter
 
 	// ----
-	model            ifaces.ModelInterface
+	model            ModelInterface
 	builders         constraintLayerPolicies
 	layerFieldValues []fvalue.Values
 	mustBeUsed       []int

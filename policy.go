@@ -1,18 +1,14 @@
 package dsco
 
-import (
-	"github.com/byte4ever/dsco/ifaces"
-)
-
 type constraintLayerPolicies []constraintLayerPolicy
 
 type constraintLayerPolicy interface {
-	ifaces.FieldValuesGetter
+	FieldValuesGetter
 	isStrict() bool
 }
 
 type strictLayer struct {
-	ifaces.FieldValuesGetter
+	FieldValuesGetter
 }
 
 func (*strictLayer) isStrict() bool {
@@ -20,14 +16,14 @@ func (*strictLayer) isStrict() bool {
 }
 
 //nolint:ireturn // this is required
-func newStrictLayer(bg ifaces.FieldValuesGetter) constraintLayerPolicy {
+func newStrictLayer(bg FieldValuesGetter) constraintLayerPolicy {
 	return &strictLayer{
 		FieldValuesGetter: bg,
 	}
 }
 
 type normalLayer struct {
-	ifaces.FieldValuesGetter
+	FieldValuesGetter
 }
 
 func (*normalLayer) isStrict() bool {
@@ -35,7 +31,7 @@ func (*normalLayer) isStrict() bool {
 }
 
 //nolint:ireturn // this is required
-func newNormalLayer(bg ifaces.FieldValuesGetter) constraintLayerPolicy {
+func newNormalLayer(bg FieldValuesGetter) constraintLayerPolicy {
 	return &normalLayer{
 		FieldValuesGetter: bg,
 	}

@@ -5,7 +5,6 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/cmdline"
 	"github.com/byte4ever/dsco/internal/env"
 	"github.com/byte4ever/dsco/internal/ierror"
@@ -142,7 +141,7 @@ func (o *layerBuilder) dedupId(id string) *int {
 
 func wrapCmdlineBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
+	wrap func(FieldValuesGetter) constraintLayerPolicy,
 	options []Option,
 ) error {
 	if idx := to.dedupId("cmdLine"); idx != nil {
@@ -188,7 +187,7 @@ func WithCmdlineLayer(options ...Option) *CmdlineLayer {
 
 func wrapEnvBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
+	wrap func(FieldValuesGetter) constraintLayerPolicy,
 	prefix string,
 	options []Option,
 ) error {
@@ -242,7 +241,7 @@ func WithEnvLayer(prefix string, options ...Option) *EnvLayer {
 
 func wrapStructBuild(
 	to *layerBuilder,
-	wrap func(ifaces.FieldValuesGetter) constraintLayerPolicy,
+	wrap func(FieldValuesGetter) constraintLayerPolicy,
 	input any,
 	id string,
 ) error {
@@ -331,7 +330,7 @@ func (d DuplicateStringProviderError) Error() string {
 
 func wrapStringProviderBuild(
 	to *layerBuilder,
-	wrap func(bg ifaces.FieldValuesGetter) constraintLayerPolicy,
+	wrap func(bg FieldValuesGetter) constraintLayerPolicy,
 	provider NamedStringValuesProvider,
 	options []Option,
 ) error {

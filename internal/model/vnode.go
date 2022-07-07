@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/ifaces"
+	"github.com/byte4ever/dsco/internal"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
@@ -57,7 +57,7 @@ func (n *ValueNode) FeedFieldValues(
 
 func (n *ValueNode) BuildGetList(s *GetList) {
 	s.Push(
-		func(g ifaces.Getter) (uint, *fvalue.Value, error) {
+		func(g internal.Getter) (uint, *fvalue.Value, error) {
 			fieldValue, err := g.Get(n.VisiblePath, n.Type)
 
 			return n.UID, fieldValue, err //nolint:wrapcheck // don't wan to wrap

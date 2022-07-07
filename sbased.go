@@ -8,7 +8,6 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/byte4ever/dsco/ifaces"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
@@ -272,7 +271,7 @@ func (GetError) Is(err error) bool {
 
 // GetBaseFor creates the bases.
 func (s *StringBasedBuilder) GetFieldValuesFrom(
-	model ifaces.ModelInterface,
+	model ModelInterface,
 ) (
 	fvalue.Values,
 	error,
