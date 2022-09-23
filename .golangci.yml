@@ -1,3 +1,5 @@
+# simple change 1
+
 # This file contains all available configuration options
 # with their default values (in comments).
 #
@@ -175,8 +177,8 @@ linters-settings:
     packages-with-error-message:
       - github.com/sirupsen/logrus: 'logging is allowed only by logutils.Log'
 
-    # Create additional guards that follow the same configuration pattern.
-    # Results from all guards are aggregated together.
+        # Create additional guards that follow the same configuration pattern.
+        # Results from all guards are aggregated together.
 #    additional-guards:
 #      - list-type: denylist
 #        include-go-root: false
@@ -639,10 +641,10 @@ linters-settings:
 
   gomodguard:
 #    allowed:
-      # List of allowed modules.
+    # List of allowed modules.
 #      modules:
 #        - gopkg.in/yaml.v2
-      # List of allowed module domains.
+    # List of allowed module domains.
 #      domains:
 #        - golang.org
     blocked:
@@ -882,7 +884,7 @@ linters-settings:
     # Do not allow non-required aliases.
     # Default: false
     no-extra-aliases: false
-    # List of aliases
+      # List of aliases
 #    alias:
       # Using `servingv1` alias for `knative.dev/serving/pkg/apis/serving/v1` package.
 #      - pkg: knative.dev/serving/pkg/apis/serving/v1
@@ -892,7 +894,7 @@ linters-settings:
 #        alias: autoscalingv1alpha1
       # You can specify the package path by regular expression,
       # and alias by regular expression expansion syntax like below.
-      # see https://github.com/julz/importas#use-regular-expression for details
+    # see https://github.com/julz/importas#use-regular-expression for details
 #      - pkg: knative.dev/serving/pkg/apis/(\w+)/(v[\w\d]+)
 #        alias: $1$2
 
@@ -1590,21 +1592,21 @@ linters-settings:
   custom: {}
     # Each custom linter should have a unique name.
 #    example:
-      # The path to the plugin *.so. Can be absolute or local.
-      # Required for each custom linter.
+    # The path to the plugin *.so. Can be absolute or local.
+    # Required for each custom linter.
 #      path: /path/to/example.so
-      # The description of the linter.
-      # Optional.
+    # The description of the linter.
+    # Optional.
 #      description: This is an example usage of a plugin linter.
-      # Intended to point to the repo location of the linter.
-      # Optional.
+    # Intended to point to the repo location of the linter.
+  # Optional.
 
 
 #      original-url: github.com/golangci/example-linter
 linters:
   disable-all: true
   enable:
-   # Deprecated
+    # Deprecated
 #    - exhaustivestruct
 #    - golint
 #    - interfacer
@@ -1800,7 +1802,7 @@ issues:
   new: false
 
   # Show only new issues created after git revision `REV`.
- #  new-from-rev: HEAD
+  #  new-from-rev: HEAD
 
   # Show only new issues created in git patch with set file path.
 #  new-from-patch: path/to/patch/file
