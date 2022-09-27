@@ -299,6 +299,7 @@ linters-settings:
       - 'cobra\.Command$'
 
   forbidigo:
+
     # Forbid the following identifiers (list of regexp).
     forbid:
       - ^print.*$
@@ -1742,6 +1743,12 @@ issues:
         - forcetypeassert
         - dupl
         - varnamelen
+
+    - path: ^examples/.*
+      linters:
+        - forbidigo
+        - gomnd
+        - goconst
 
     # Exclude known linters from partially hard-vendored code,
     # which is impossible to exclude via `nolint` comments.

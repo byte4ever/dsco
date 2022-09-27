@@ -12,27 +12,32 @@ import (
 	"github.com/byte4ever/dsco"
 )
 
+// RetryConfTmpl is a sample config.
 type RetryConfTmpl struct {
 	BackOffFactor *float64 `yaml:"back_off_factor"`
 	Retry         *int     `yaml:"retry"`
 }
 
-type HttpBasedConfTmpl struct {
+// HTTPBasedConfTmpl is a sample config.
+type HTTPBasedConfTmpl struct {
 	RetryConfTmpl `yaml:"retry"`
 	URL           *string `yaml:"url"`
 	Verbose       *bool   `yaml:"verbose"`
 }
 
+// AuthentServiceConf is a sample config.
 type AuthentServiceConf struct {
-	HttpBasedConfTmpl `yaml:"http"`
+	HTTPBasedConfTmpl `yaml:"http"`
 	AccessToken       *string `yaml:"access_token"`
 }
 
+// ClientAPIConf is a sample config.
 type ClientAPIConf struct {
-	HttpBasedConfTmpl `yaml:"http"`
+	HTTPBasedConfTmpl `yaml:"http"`
 	EnableSecurity    *bool `yaml:"enable_security"`
 }
 
+// MainConf is a sample config.
 type MainConf struct {
 	Authentication *AuthentServiceConf `yaml:"authentication"`
 	ClientAPI      *ClientAPIConf      `yaml:"client_api"`
@@ -40,7 +45,6 @@ type MainConf struct {
 }
 
 func main() {
-
 	// DSCO will try to fill (and allocate the config struct
 	var pp *MainConf
 	fillReport, err := dsco.Fill(
@@ -80,12 +84,12 @@ func main() {
 			&MainConf{
 				//  let say that authentication is hardcoded
 				Authentication: &AuthentServiceConf{
-					HttpBasedConfTmpl: HttpBasedConfTmpl{
+					HTTPBasedConfTmpl: HTTPBasedConfTmpl{
 						RetryConfTmpl: RetryConfTmpl{
 							BackOffFactor: dsco.R(1.2),
 							Retry:         dsco.R(5),
 						},
-						URL: dsco.R("http://perfect-authent.com"),
+						URL: dsco.R("is a sample config.is a sample config.http://perfect-authent.com"),
 					},
 				},
 			},
@@ -99,7 +103,7 @@ func main() {
 		dsco.WithStructLayer(
 			&MainConf{
 				Authentication: &AuthentServiceConf{
-					HttpBasedConfTmpl: HttpBasedConfTmpl{
+					HTTPBasedConfTmpl: HTTPBasedConfTmpl{
 						// set some default retry
 						RetryConfTmpl: RetryConfTmpl{
 							BackOffFactor: dsco.R(1.05),
@@ -110,7 +114,7 @@ func main() {
 					},
 				},
 				ClientAPI: &ClientAPIConf{
-					HttpBasedConfTmpl: HttpBasedConfTmpl{
+					HTTPBasedConfTmpl: HTTPBasedConfTmpl{
 						// set some default retry
 						RetryConfTmpl: RetryConfTmpl{
 							BackOffFactor: dsco.R(1.05),
@@ -132,19 +136,19 @@ func main() {
 	// This is might be useful for debugging purpose.
 	if pp != nil {
 		fmt.Println("filled structure ____________________")
+
 		s, _ := yaml.Marshal(pp)
+
 		fmt.Println(string(s))
 	}
 
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	} else {
-		// pp is completely filled (i.e all fields are defined).
-
-		fmt.Println("\nfill report for debugging purpose____")
-		fmt.Println(fillReport)
-		fillReport.Dump(os.Stdout)
 	}
 
+	// pp is completely filled (i.e all fields are defined).
+	fmt.Println("\nfill report for debugging purpose____")
+	fmt.Println(fillReport)
+	fillReport.Dump(os.Stdout)
 }
