@@ -29,7 +29,6 @@ func (ep *EntriesProvider) GetStringValues() svalue.Values {
 //
 // Each command line parameter MUST match regexp '^--([a-z\d_-]+)=(.+)$'.
 // ErrInvalidFormat is returned in such a case.
-//
 func NewEntriesProvider(commandLine []string) (*EntriesProvider, error) {
 	lo := len(commandLine)
 
