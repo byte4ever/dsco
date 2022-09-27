@@ -5,10 +5,6 @@
 # it contains the exhaustive configuration with explanations of the options.
 
 
-# changes from main 1
-# changes from main 2
-# changes from main 3
-
 # Options for analysis running.
 run:
   # The default concurrency value is the number of available CPU.
@@ -324,32 +320,32 @@ linters-settings:
     # Default: 40
     statements: -1
 
-  gci:
-    # DEPRECATED: use `sections` and `prefix(github.com/org/project)` instead.
-    #    local-prefixes: github.com/org/project
-
-    # Checks that no inline Comments are present.
-    # Default: false
-    no-inline-comments: true
-
-    # Checks that no prefix Comments(comment lines above an import) are present.
-    # Default: false
-    no-prefix-comments: true
-
-    # Section configuration to compare against.
-    # Section names are case-insensitive and may contain parameters in ().
-    # Default: ["standard", "default"]
-    sections:
-      - standard                       # Captures all standard packages if they do not match another section.
-      - default                        # Contains all imports that could not be matched to another section type.
-      - comment(your text here)        # Prints the specified indented comment.
-      - newLine                        # Prints an empty line
-      - prefix(github.com/org/project) # Groups all imports with the specified Prefix.
-
-    # Separators that should be present between sections.
-    # Default: ["newLine"]
-    section-separators:
-      - newLine
+#   gci:
+#    # DEPRECATED: use `sections` and `prefix(github.com/org/project)` instead.
+#    #    local-prefixes: github.com/org/project
+#
+#    # Checks that no inline Comments are present.
+#    # Default: false
+#    no-inline-comments: true
+#
+#    # Checks that no prefix Comments(comment lines above an import) are present.
+#    # Default: false
+#    no-prefix-comments: true
+#
+#    # Section configuration to compare against.
+#    # Section names are case-insensitive and may contain parameters in ().
+#    # Default: ["standard", "default"]
+#    sections:
+#      - standard                       # Captures all standard packages if they do not match another section.
+#      - default                        # Contains all imports that could not be matched to another section type.
+#      - comment(your text here)        # Prints the specified indented comment.
+#      - newLine                        # Prints an empty line
+#      - prefix(github.com/org/project) # Groups all imports with the specified Prefix.
+#
+#    # Separators that should be present between sections.
+#    # Default: ["newLine"]
+#    section-separators:
+#      - newLine
 
   gocognit:
     # Minimal code complexity to report
@@ -1633,14 +1629,14 @@ linters:
     ## style
     #    - gofumpt
     ## in default
-    - deadcode
+    #    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - typecheck
     - unused
-    - varcheck
+    #    - varcheck
     ## ---- VALIDATED ------
     - revive
     - wsl
@@ -1676,7 +1672,7 @@ linters:
     - gomoddirectives
     - gomodguard
     - goprintffuncname
-    - ifshort
+#    - ifshort
     - importas
     - ireturn
     - makezero
