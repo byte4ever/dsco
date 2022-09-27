@@ -7,6 +7,7 @@ import (
 	"github.com/byte4ever/dsco/internal"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/plocation"
+	"github.com/byte4ever/dsco/internal/utils"
 )
 
 type ValueNode struct {
@@ -34,8 +35,9 @@ func (n *ValueNode) Fill(
 	}
 
 	return nil, fmt.Errorf(
-		"%s: %w",
+		"%s-[%s]: %w",
 		n.VisiblePath,
+		utils.LongTypeName(value.Type()),
 		ErrUninitializedKey,
 	)
 }

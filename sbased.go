@@ -182,9 +182,28 @@ func NewStringBasedBuilder(
 		return nil, err
 	}
 
+	if len(internalOptions.aliases) == 0 {
+		return &StringBasedBuilder{
+			internalOpts: internalOptions,
+			values:       provider.GetStringValues(),
+		}, nil
+	}
+
+	values := provider.GetStringValues()
+	converted := make(svalue.Values, len(values))
+
+	for n, value := range values {
+		if target, found := internalOptions.aliases[n]; found {
+			converted[target] = value
+			continue
+		}
+
+		converted[n] = value
+	}
+
 	return &StringBasedBuilder{
 		internalOpts: internalOptions,
-		values:       provider.GetStringValues(),
+		values:       converted,
 	}, nil
 }
 
