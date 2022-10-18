@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 )
 
 // ErrNilInput is dummy...
@@ -52,7 +52,7 @@ type DuplicateStructIDError struct {
 func (c InvalidInputError) Error() string {
 	return fmt.Sprintf(
 		"type %s is not a valid pointer on struct",
-		utils.LongTypeName(c.Type),
+		registry.LongTypeName(c.Type),
 	)
 }
 

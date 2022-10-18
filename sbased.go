@@ -11,7 +11,7 @@ import (
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 	"github.com/byte4ever/dsco/svalue"
 )
 
@@ -31,7 +31,7 @@ func (a ParseError) Error() string {
 	return fmt.Sprintf(
 		"parse error on %s-<%s> %s",
 		a.Path,
-		utils.LongTypeName(a.Type),
+		registry.LongTypeName(a.Type),
 		a.Location,
 	)
 }

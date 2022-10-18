@@ -10,7 +10,7 @@ import (
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 )
 
 type Model struct {
@@ -50,7 +50,7 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 
 	return &Model{
 		fieldCount:  maxUID,
-		typeName:    utils.LongTypeName(inputModelType),
+		typeName:    registry.LongTypeName(inputModelType),
 		accelerator: accelerator,
 		getList:     &getList,
 	}, nil

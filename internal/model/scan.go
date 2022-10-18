@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/internal/merror"
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 )
 
 //nolint:ireturn // expected to build abstract tree nodes
@@ -14,7 +14,7 @@ func scan(
 	_type reflect.Type,
 ) (Node, merror.MError) {
 	switch {
-	case _type.Kind() == reflect.Slice || utils.TypeIsRegistered(_type):
+	case _type.Kind() == reflect.Slice || registry.TypeIsRegistered(_type):
 		valueNode := &ValueNode{
 			UID:         *uid,
 			Type:        _type,

@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/byte4ever/dsco/internal/fvalue"
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 )
 
 // ErrStructTypeDiffer represent an error where cannot produce a valid value
@@ -24,7 +24,7 @@ func (s *StructBuilder) GetFieldValuesFrom(model ModelInterface) (
 ) {
 	modelTName := model.TypeName() //nolint:ifshort // buggy linter
 
-	if ltn := utils.LongTypeName(s.value.Type()); modelTName != ltn {
+	if ltn := registry.LongTypeName(s.value.Type()); modelTName != ltn {
 		return nil,
 			fmt.Errorf(
 				"%s != %s: %w",

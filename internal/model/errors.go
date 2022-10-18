@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byte4ever/dsco/internal/utils"
+	"github.com/byte4ever/dsco/registry"
 )
 
 type FieldNameCollisionError struct {
@@ -30,7 +30,7 @@ func (u UnsupportedTypeError) Error() string {
 	return fmt.Sprintf(
 		"struct field %s with unsupported type %s",
 		u.Path,
-		utils.LongTypeName(u.Type),
+		registry.LongTypeName(u.Type),
 	)
 }
 
