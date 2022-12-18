@@ -15,7 +15,8 @@ type MockFS struct {
 	errPermissionOn map[string]struct{} //nolint:revive //dgas
 }
 
-func (m *MockFS) Create(name string) ( //nolint:ireturn //dgas
+//nolint:ireturn //dgas
+func (m *MockFS) Create(name string) (
 	afero.File,
 	error,
 ) { //nolint:ireturn //dgas
@@ -50,7 +51,8 @@ func (m *MockFS) Open(name string) (afero.File, error) { //nolint:ireturn //dgas
 	return m.Fs.Open(name) //nolint:wrapcheck // dgas
 }
 
-func (m *MockFS) OpenFile( //nolint:ireturn //dgas
+//nolint:ireturn //dgas
+func (m *MockFS) OpenFile(
 	name string,
 	flag int,
 	perm os.FileMode,
@@ -293,4 +295,56 @@ func Test_scanDirectory(t *testing.T) {
 			require.Nil(t, values)
 		},
 	)
+}
+
+func Test(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		fileName string
+		match    bool
+	}{
+		{
+			name:     "match1",
+			fileName: "A4S3D",
+			match:    true,
+		},
+		{
+			name:     "match2",
+			fileName: "A1SD_A1SD",
+			match:    true,
+		},
+		{
+			name:     "match3",
+			fileName: "A1SD-Z1AY_ASD1-Q1WE",
+			match:    true,
+		},
+		{
+			name:     "unmatch1",
+			fileName: "12ASD",
+		},
+		{
+			name:     "unmatch2",
+			fileName: "PQR+",
+		},
+		{
+			name:     "unmatch2",
+			fileName: "dPQR",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(
+			test.name, func(t *testing.T) {
+				t.Parallel()
+				require.Equal(
+					t,
+					test.match,
+					reFileName.Match([]byte(test.fileName)),
+				)
+			},
+		)
+	}
 }
