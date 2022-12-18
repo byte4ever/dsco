@@ -27,12 +27,12 @@ type options struct {
 	silentFileErrors bool
 }
 
-func scanDirectory(
+func newProvider(
 	fs afero.Fs,
 	dirName string,
 	opt *options,
 ) (
-	svalue.Values,
+	*EntriesProvider,
 	error,
 ) {
 	result := make(svalue.Values)
@@ -97,8 +97,31 @@ func scanDirectory(
 	}
 
 	if len(result) == 0 {
-		result = nil
+		return &EntriesProvider{}, nil
 	}
 
-	return result, nil
+	return &EntriesProvider{
+		values: result,
+	}, nil
+}
+
+type EntriesProvider struct {
+	values svalue.Values
+}
+
+func (e *EntriesProvider) GetStringValues() svalue.Values {
+	return e.values
+}
+
+func NewEntriesProvider(
+	path string,
+) (
+	*EntriesProvider,
+	error,
+) {
+	return newProvider(
+		afero.NewReadOnlyFs(afero.NewOsFs()),
+		path,
+		&options{},
+	)
 }

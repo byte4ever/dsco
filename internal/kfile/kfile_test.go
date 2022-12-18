@@ -2,11 +2,14 @@ package kfile
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
+
+	"github.com/byte4ever/dsco/svalue"
 )
 
 type MockFS struct {
@@ -127,7 +130,7 @@ func Test_scanDirectory(t *testing.T) {
 			t.Parallel()
 			fs := afero.NewMemMapFs()
 
-			values, err := scanDirectory(fs, "/tmp", &options{})
+			provider, err := newProvider(fs, "/tmp", &options{})
 
 			var ep PathErrors
 			require.ErrorAs(t, err, &ep)
@@ -136,7 +139,7 @@ func Test_scanDirectory(t *testing.T) {
 			e := ep[0]
 			require.Equal(t, e.path, "/tmp")
 			require.ErrorIs(t, e.err, os.ErrNotExist)
-			require.Nil(t, values)
+			require.Nil(t, provider)
 		},
 	)
 
@@ -147,10 +150,11 @@ func Test_scanDirectory(t *testing.T) {
 
 			require.NoError(t, fs.MkdirAll("/test", 0755))
 
-			values, err := scanDirectory(fs, "/test", &options{})
+			provider, err := newProvider(fs, "/test", &options{})
 
 			require.NoError(t, err)
-			require.Nil(t, values)
+			require.NotNil(t, provider)
+			require.Nil(t, provider.values)
 		},
 	)
 
@@ -182,9 +186,11 @@ func Test_scanDirectory(t *testing.T) {
 				),
 			)
 
-			values, err := scanDirectory(fs, "/test", &options{})
+			provider, err := newProvider(fs, "/test", &options{})
 
 			require.NoError(t, err)
+
+			values := provider.values
 			require.Len(t, values, 3)
 			require.Contains(t, values, "k1")
 			require.Contains(t, values, "k2")
@@ -231,7 +237,7 @@ func Test_scanDirectory(t *testing.T) {
 				),
 			)
 
-			values, err := scanDirectory(ff2, "/", &options{})
+			provider, err := newProvider(ff2, "/", &options{})
 
 			var ep PathErrors
 			require.ErrorAs(t, err, &ep)
@@ -240,7 +246,7 @@ func Test_scanDirectory(t *testing.T) {
 			e := ep[0]
 			require.Equal(t, e.path, "/a/b/c/K1")
 			require.ErrorIs(t, e.err, os.ErrPermission)
-			require.Nil(t, values)
+			require.Nil(t, provider)
 		},
 	)
 
@@ -258,7 +264,7 @@ func Test_scanDirectory(t *testing.T) {
 			}
 
 			require.NoError(t, fs.MkdirAll("/a/b/c", 0000))
-			values, err := scanDirectory(ff2, "/", &options{})
+			provider, err := newProvider(ff2, "/", &options{})
 
 			var ep PathErrors
 			require.ErrorAs(t, err, &ep)
@@ -267,7 +273,7 @@ func Test_scanDirectory(t *testing.T) {
 			e := ep[0]
 			require.Equal(t, e.path, "/a/b/c")
 			require.ErrorIs(t, e.err, os.ErrPermission)
-			require.Nil(t, values)
+			require.Nil(t, provider)
 		},
 	)
 
@@ -283,7 +289,7 @@ func Test_scanDirectory(t *testing.T) {
 				),
 			)
 
-			values, err := scanDirectory(fs, "/", &options{})
+			provider, err := newProvider(fs, "/", &options{})
 
 			var ep PathErrors
 			require.ErrorAs(t, err, &ep)
@@ -292,7 +298,7 @@ func Test_scanDirectory(t *testing.T) {
 			e := ep[0]
 			require.Equal(t, e.path, "/a/b/c/zobby")
 			require.ErrorIs(t, e.err, ErrInvalidFileName)
-			require.Nil(t, values)
+			require.Nil(t, provider)
 		},
 	)
 }
@@ -347,4 +353,76 @@ func Test(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestEntriesProvider_GetStringValues(t *testing.T) {
+	t.Parallel()
+
+	values := make(svalue.Values)
+
+	values["k1"] = &svalue.Value{
+		Location: "l1",
+		Value:    "v1",
+	}
+
+	ep := &EntriesProvider{
+		values: values,
+	}
+
+	fv := ep.GetStringValues()
+	require.Equal(t, values, fv)
+}
+
+func TestNewEntriesProvider(t *testing.T) {
+	t.Parallel()
+
+	t.Run(
+		"ok", func(t *testing.T) {
+			t.Parallel()
+
+			tempDir := t.TempDir()
+
+			fs := afero.NewBasePathFs(
+				afero.NewOsFs(),
+				tempDir,
+			)
+
+			require.NoError(
+				t, fs.MkdirAll(
+					"/a/b/c",
+					0777,
+				),
+			)
+
+			require.NoError(
+				t, afero.WriteFile(
+					fs,
+					"/a/b/c/K1",
+					[]byte("content1"),
+					0777,
+				),
+			)
+
+			provider, err := NewEntriesProvider(tempDir)
+
+			require.NoError(t, err)
+			require.NotNil(t, provider)
+			require.Len(t, provider.values, 1)
+		},
+	)
+
+	t.Run(
+		"ko", func(t *testing.T) {
+			t.Parallel()
+
+			tempDir := t.TempDir()
+
+			provider, err := NewEntriesProvider(
+				filepath.Join(tempDir, "a/b/c/fail"),
+			)
+
+			require.Error(t, err)
+			require.Nil(t, provider)
+		},
+	)
 }
