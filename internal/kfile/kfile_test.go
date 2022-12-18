@@ -12,10 +12,13 @@ import (
 type MockFS struct {
 	afero.Fs
 	t               *testing.T
-	errPermissionOn map[string]struct{}
+	errPermissionOn map[string]struct{} //nolint:revive //dgas
 }
 
-func (m *MockFS) Create(name string) (afero.File, error) {
+func (m *MockFS) Create(name string) ( //nolint:ireturn //dgas
+	afero.File,
+	error,
+) { //nolint:ireturn //dgas
 	m.t.Helper()
 	m.t.Logf("Call Create(%q):", name)
 
@@ -36,7 +39,7 @@ func (m *MockFS) MkdirAll(path string, perm os.FileMode) error {
 	return m.Fs.MkdirAll(path, perm) //nolint:wrapcheck // dgas
 }
 
-func (m *MockFS) Open(name string) (afero.File, error) {
+func (m *MockFS) Open(name string) (afero.File, error) { //nolint:ireturn //dgas
 	m.t.Helper()
 	m.t.Logf("Call Open(%q):", name)
 
@@ -47,7 +50,11 @@ func (m *MockFS) Open(name string) (afero.File, error) {
 	return m.Fs.Open(name) //nolint:wrapcheck // dgas
 }
 
-func (m *MockFS) OpenFile(name string, flag int, perm os.FileMode) (
+func (m *MockFS) OpenFile( //nolint:ireturn //dgas
+	name string,
+	flag int,
+	perm os.FileMode,
+) (
 	afero.File, error,
 ) {
 	m.t.Helper()
@@ -75,7 +82,6 @@ func (m *MockFS) Rename(oldname, newname string) error {
 	m.t.Logf("Call Rename(%q, %q):", oldname, newname)
 
 	return m.Fs.Rename(oldname, newname) //nolint:wrapcheck // dgas
-
 }
 
 func (m *MockFS) Stat(name string) (os.FileInfo, error) {
@@ -268,15 +274,6 @@ func Test_scanDirectory(t *testing.T) {
 			t.Parallel()
 			fs := afero.NewMemMapFs()
 
-			// ff2 := &MockFS{
-			// 	Fs: fs,
-			// 	t:  t,
-			// 	errPermissionOn: map[string]struct{}{
-			// 		"/a/b/c/K1": {},
-			// 	},
-			// }
-
-			// require.NoError(t, fs.MkdirAll("/a/b/c", 0000))
 			require.NoError(
 				t,
 				afero.WriteFile(
@@ -296,14 +293,4 @@ func Test_scanDirectory(t *testing.T) {
 			require.Nil(t, values)
 		},
 	)
-
-	// t.Run(
-	// 	"bof2", func(t *testing.T) {
-	// 		// HERE: trying to forge a tar ball with invalid permissions (root,
-	// 		// etc)
-	// 		tarReader := tar.NewReader()
-	// 		fs := tarfs.New()
-	// 	},
-	// )
-
 }

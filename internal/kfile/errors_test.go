@@ -5,26 +5,26 @@ import (
 	"testing"
 )
 
-var mockedErr1 = errors.New("err1")
-var mockedErr2 = errors.New("err2")
+var errMocked1 = errors.New("err1")
+var errMocked2 = errors.New("err2")
 
 func TestPathErrors_Error(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		p    PathErrors
 		want string
+		p    PathErrors
 	}{
 		{
 			name: "t1",
 			p: PathErrors{
 				&pathError{
-					err:  mockedErr1,
+					err:  errMocked1,
 					path: "p1",
 				},
 				&pathError{
-					err:  mockedErr2,
+					err:  errMocked2,
 					path: "p2",
 				},
 			},

@@ -23,14 +23,14 @@ var (
 )
 
 type options struct {
-	silentDirErrors  bool
+	// silentDirErrors  bool
 	silentFileErrors bool
 }
 
 func scanDirectory(
 	fs afero.Fs,
 	dirName string,
-	o *options,
+	opt *options,
 ) (
 	svalue.Values,
 	error,
@@ -45,7 +45,7 @@ func scanDirectory(
 			// fmt.Println(path, info.Mode(), info.Sys(), err)
 
 			if err != nil {
-				if !o.silentFileErrors {
+				if !opt.silentFileErrors {
 					errs = append(
 						errs, &pathError{
 							path: path,
