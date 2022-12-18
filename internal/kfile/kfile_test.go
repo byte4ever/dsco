@@ -190,6 +190,12 @@ func Test_scanDirectory(t *testing.T) {
 
 			require.NoError(t, err)
 
+			require.Equal(
+				t,
+				"kfile(/test)",
+				provider.name,
+			)
+
 			values := provider.values
 			require.Len(t, values, 3)
 			require.Contains(t, values, "k1")
@@ -425,4 +431,15 @@ func TestNewEntriesProvider(t *testing.T) {
 			require.Nil(t, provider)
 		},
 	)
+}
+
+func TestEntriesProvider_GetName(t *testing.T) {
+	t.Parallel()
+
+	const v = "21sq"
+
+	ep := EntriesProvider{
+		name: v,
+	}
+	require.Equal(t, v, ep.GetName())
 }

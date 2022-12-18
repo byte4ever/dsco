@@ -102,11 +102,20 @@ func newProvider(
 
 	return &EntriesProvider{
 		values: result,
+		name: fmt.Sprintf(
+			"kfile(%s)",
+			dirName,
+		),
 	}, nil
 }
 
 type EntriesProvider struct {
 	values svalue.Values
+	name   string
+}
+
+func (e *EntriesProvider) GetName() string {
+	return e.name
 }
 
 func (e *EntriesProvider) GetStringValues() svalue.Values {
