@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -35,12 +36,21 @@ func newProvider(
 	*EntriesProvider,
 	error,
 ) {
+	cleanDirName := filepath.Clean(dirName)
+
+	dirToSkip := len(
+		strings.Split(
+			cleanDirName,
+			string(filepath.Separator),
+		),
+	)
+
 	result := make(svalue.Values)
 
 	var errs PathErrors
 
 	_ = afero.Walk(
-		fs, dirName,
+		fs, cleanDirName,
 		func(path string, info os.FileInfo, err error) error {
 			// fmt.Println(path, info.Mode(), info.Sys(), err)
 
@@ -84,8 +94,14 @@ func newProvider(
 			}
 
 			result[strings.ToLower(info.Name())] = &svalue.Value{
-				Location: fmt.Sprintf("kfile[%s]", path),
-				Value:    string(fileContent),
+				Location: fmt.Sprintf(
+					"kfile[%s]:%s",
+					cleanDirName,
+					filepath.Join(
+						strings.Split(path, string(filepath.Separator))[dirToSkip:]...,
+					),
+				),
+				Value: string(fileContent),
 			}
 
 			return nil
@@ -104,7 +120,7 @@ func newProvider(
 		values: result,
 		name: fmt.Sprintf(
 			"kfile(%s)",
-			dirName,
+			cleanDirName,
 		),
 	}, nil
 }

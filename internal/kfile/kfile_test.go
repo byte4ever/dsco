@@ -205,19 +205,19 @@ func Test_scanDirectory(t *testing.T) {
 			{
 				v := values["k1"]
 				require.Equal(t, "content1", v.Value)
-				require.Equal(t, "kfile[/test/K1]", v.Location)
+				require.Equal(t, "kfile[/test]:K1", v.Location)
 			}
 
 			{
 				v := values["k2"]
 				require.Equal(t, "content2", v.Value)
-				require.Equal(t, "kfile[/test/K2]", v.Location)
+				require.Equal(t, "kfile[/test]:K2", v.Location)
 			}
 
 			{
 				v := values["k3"]
 				require.Equal(t, "content3", v.Value)
-				require.Equal(t, "kfile[/test/b/K3]", v.Location)
+				require.Equal(t, "kfile[/test]:b/K3", v.Location)
 			}
 		},
 	)

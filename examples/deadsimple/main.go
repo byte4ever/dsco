@@ -4,12 +4,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco"
+	"github.com/byte4ever/dsco/internal/kfile"
 )
 
 // RetryConfTmpl is a sample config.
@@ -27,13 +29,13 @@ type HTTPBasedConfTmpl struct {
 
 // AuthentServiceConf is a sample config.
 type AuthentServiceConf struct {
-	HTTPBasedConfTmpl `yaml:"http"`
+	HTTPBasedConfTmpl `yaml:",inline"`
 	AccessToken       *string `yaml:"access_token"`
 }
 
 // ClientAPIConf is a sample config.
 type ClientAPIConf struct {
-	HTTPBasedConfTmpl `yaml:"http"`
+	HTTPBasedConfTmpl `yaml:",inline"`
 	EnableSecurity    *bool `yaml:"enable_security"`
 }
 
@@ -42,9 +44,18 @@ type MainConf struct {
 	Authentication *AuthentServiceConf `yaml:"authentication"`
 	ClientAPI      *ClientAPIConf      `yaml:"client_api"`
 	PingDuration   *time.Duration      `yaml:"ping_duration"`
+	SecretKey1     *string             `yaml:"secret_key1"`
+	SecretKey2     *string             `yaml:"secret_key2"`
 }
 
 func main() {
+	// try to get some secrets from file system
+	secretProvider, err := kfile.NewEntriesProvider(
+		"examples/deadsimple/secrets")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// DSCO will try to fill (and allocate the config struct
 	var pp *MainConf
 	fillReport, err := dsco.Fill(
@@ -129,6 +140,7 @@ func main() {
 			},
 			"mutable", // <- this is the layer id
 		),
+		dsco.WithStringValueProvider(secretProvider),
 	)
 
 	// If structure fill fails because of missing value field then structure
