@@ -65,7 +65,7 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 	return newProvider(prefix, os.Environ())
 }
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,goconst // dgas
 var replacer = strings.NewReplacer(
 	"\\n", "\n",
 	"\\r", `\r`,

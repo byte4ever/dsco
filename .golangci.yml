@@ -1105,6 +1105,7 @@ linters-settings:
         disabled: false
         arguments:
           - nolint
+          - goland
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#confusing-naming
       - name: confusing-naming
         severity: warning
@@ -1369,6 +1370,9 @@ linters-settings:
       - name: useless-break
         severity: warning
         disabled: false
+      - name: use-any
+        severity: warning
+        disabled: true
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#waitgroup-by-value
       - name: waitgroup-by-value
         severity: warning
