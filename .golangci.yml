@@ -1100,6 +1100,11 @@ linters-settings:
         severity: warning
         disabled: true
         arguments: [7]
+      - name: comment-spacings
+        severity: warning
+        disabled: false
+        arguments:
+          - nolint
       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#confusing-naming
       - name: confusing-naming
         severity: warning

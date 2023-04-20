@@ -1,14 +1,12 @@
 package dsco
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
@@ -171,11 +169,7 @@ s3:
 				gotFv.Value.Interface(),
 			)
 
-			pp := gotFv.Value.Interface().(*Conf)
-			fmt.Println(pp)
-			kk, err := yaml.Marshal(pp)
 			require.NoError(t, err)
-			fmt.Println(string(kk))
 		},
 	)
 
