@@ -1,12 +1,14 @@
 package dsco
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
@@ -105,6 +107,112 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			require.IsType(
 				t,
 				[]int{1, 2, 3, 4, 5},
+				gotFv.Value.Interface(),
+			)
+		},
+	)
+
+	t.Run(
+		"success complex slice", func(t *testing.T) {
+			t.Parallel()
+
+			// S3MappingItem defines mapping from a S3 bucket.
+			type S3MappingItem struct {
+				// The ID of the S3 mapping.
+				ID *string `yaml:"id,omitempty"`
+
+				// Bucket name on S3.
+				BucketName *string `yaml:"bucket_name,omitempty"`
+
+				// prefix to apply to the object key.
+				Prefix *string `yaml:"prefix,omitempty"`
+			}
+
+			// S3MappingItems defines a list of single S3 mapping items.
+			type S3MappingItems []*S3MappingItem
+
+			type Conf struct {
+				S3 S3MappingItems `yaml:"s3,omitempty"`
+			}
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"some-path": {
+						Location: "loc1",
+						Value: `---
+s3:
+  - id: bolos
+    bucket_name: my_bucket
+    prefix: "p"
+`,
+					},
+				},
+			}
+
+			var v *Conf
+			pv := v
+
+			gotFv, err := sb.Get("Some.Path", reflect.TypeOf(pv))
+			require.NoError(t, err)
+			require.NotNil(t, gotFv)
+
+			require.Equal(t, "loc1", gotFv.Location)
+			require.Equal(
+				t,
+				&Conf{
+					S3MappingItems{
+						{
+							ID:         R("bolos"),
+							BucketName: R("my_bucket"),
+							Prefix:     R("p"),
+						},
+					},
+				},
+				gotFv.Value.Interface(),
+			)
+
+			pp := gotFv.Value.Interface().(*Conf)
+			fmt.Println(pp)
+			kk, err := yaml.Marshal(pp)
+			require.NoError(t, err)
+			fmt.Println(string(kk))
+		},
+	)
+
+	t.Run(
+		"success complex slice", func(t *testing.T) {
+			t.Parallel()
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"some-path": {
+						Location: "loc1",
+						Value:    "[{a: 123, b:123.32}]",
+					},
+				},
+			}
+
+			type ComplexItem struct {
+				A *int     `yaml:"a,omitempty"`
+				B *float64 `yaml:"b,omitempty"`
+			}
+
+			var v []*ComplexItem
+			pv := v
+
+			gotFv, err := sb.Get("Some.Path", reflect.TypeOf(pv))
+			require.NoError(t, err)
+			require.NotNil(t, gotFv)
+
+			require.Equal(t, "loc1", gotFv.Location)
+			require.IsType(
+				t,
+				[]*ComplexItem{
+					{
+						A: R(102),
+						B: R(3.14),
+					},
+				},
 				gotFv.Value.Interface(),
 			)
 		},

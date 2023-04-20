@@ -65,6 +65,15 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 	return newProvider(prefix, os.Environ())
 }
 
+//nolint:gochecknoglobals
+var replacer = strings.NewReplacer(
+	"\\n", "\n",
+	"\\r", `\r`,
+	"\\t", `\t`,
+	"\"", `"`,
+	"\\", `\`,
+)
+
 func extractStringValues(env []string, prefix string) (
 	svalue.Values, error,
 ) {
@@ -87,7 +96,7 @@ func extractStringValues(env []string, prefix string) (
 							prefix,
 							groups[1],
 						),
-						Value: groups[2],
+						Value: replacer.Replace(groups[2]),
 					}
 
 				continue

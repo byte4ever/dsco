@@ -49,7 +49,7 @@ type MainConf struct {
 }
 
 func main() {
-	// try to get some secrets from file system
+	// try to get some variable/secrets from file system
 	secretProvider, err := kfile.NewEntriesProvider(
 		"examples/deadsimple/secrets")
 	if err != nil {
@@ -140,6 +140,7 @@ func main() {
 			},
 			"mutable", // <- this is the layer id
 		),
+
 		dsco.WithStringValueProvider(secretProvider),
 	)
 
