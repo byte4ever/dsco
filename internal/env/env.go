@@ -66,13 +66,13 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 }
 
 //nolint:gochecknoglobals,goconst // dgas
-var replacer = strings.NewReplacer(
-	"\\n", "\n",
-	"\\r", `\r`,
-	"\\t", `\t`,
-	"\"", `"`,
-	"\\", `\`,
-)
+// var replacer = strings.NewReplacer(
+// 	"\\n", "\n",
+// 	"\\r", `\r`,
+// 	"\\t", `\t`,
+// 	"\"", `"`,
+// 	"\\", `\`,
+// )
 
 func extractStringValues(env []string, prefix string) (
 	svalue.Values, error,
