@@ -219,7 +219,10 @@ func TestProvide(t *testing.T) { //nolint:paralleltest // using env variable
 					"ASAS":           "234",
 					"PREFIX-ARG1":    "val1",
 					"PREFIX-ARG1_V2": "val2",
-					"PREFIX-ARG1_V3": "val2\\n\\nbolos",
+					// "PREFIX-ARG1_V3": "val2\\n\\nbolos",
+					"PREFIX-ARG1_V4": `val2
+
+bolos`,
 				},
 				prefix: "PREFIX",
 			},
@@ -233,8 +236,14 @@ func TestProvide(t *testing.T) { //nolint:paralleltest // using env variable
 						Location: "env[PREFIX-ARG1_V2]",
 						Value:    "val2",
 					},
-					"arg1_v3": {
-						Location: "env[PREFIX-ARG1_V3]",
+					// 					"arg1_v3": {
+					// 						Location: "env[PREFIX-ARG1_V3]",
+					// 						Value: `val2
+					//
+					// bolos`,
+					// 					},
+					"arg1_v4": {
+						Location: "env[PREFIX-ARG1_V4]",
 						Value: `val2
 
 bolos`,

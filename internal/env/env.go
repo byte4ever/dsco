@@ -28,7 +28,7 @@ var (
 )
 
 func getRePrefixed(prefix string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^%s([^=]+)=(.*)$", prefix))
+	return regexp.MustCompile(fmt.Sprintf("(?s)^%s([^=]+)=(.*)$", prefix))
 }
 
 func newProvider(
@@ -96,7 +96,8 @@ func extractStringValues(env []string, prefix string) (
 							prefix,
 							groups[1],
 						),
-						Value: replacer.Replace(groups[2]),
+						// Value: replacer.Replace(groups[2]),
+						Value: groups[2],
 					}
 
 				continue
