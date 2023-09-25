@@ -215,6 +215,8 @@ func (s *StringBasedBuilder) Get(
 	err error,
 ) {
 	convertedPath := convert(path)
+	fmt.Println("     Get Path :", path)
+	fmt.Println("Get Converted :", convertedPath)
 
 	// check for alias collisions
 	if _, found := s.internalOpts.aliases[convertedPath]; found {
