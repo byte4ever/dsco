@@ -311,7 +311,7 @@ func TestProvider_GetStringValues(t *testing.T) {
 	require.Equal(t, stringValues, p.GetStringValues())
 }
 
-func TestProvideKeySyntaxError(t *testing.T) {
+func TestProvideKeySyntaxError(t *testing.T) { //nolint:paralleltest //using env variable
 	t.Run(
 		"",
 		func(t *testing.T) {

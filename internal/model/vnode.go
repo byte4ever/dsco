@@ -68,4 +68,4 @@ func (n *ValueNode) BuildGetList(s *GetList) {
 	)
 }
 
-func (n *ValueNode) BuildExpandList(e *ExpandList) {}
+func (*ValueNode) BuildExpandList(*ExpandList) {}

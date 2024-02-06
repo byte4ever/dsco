@@ -49,14 +49,17 @@ type MainConf struct {
 }
 
 func main() {
-	os.Setenv("SRV-AUTHENTICATION", `---
-retry:
-  back_off_factor: 1.05
-  retry: 20
-url: "bozo url"
-verbose: false
-access_token: null
-`)
+	err := os.Setenv("SRV-AUTHENTICATION", `---
+	retry:
+	  back_off_factor: 1.05
+	  retry: 20
+	url: "bozo url"
+	verbose: false
+	access_token: null
+	`)
+	if err != nil {
+		panic(err)
+	}
 
 	// try to get some variable/secrets from file system
 	secretProvider, err := kfile.NewEntriesProvider(
@@ -68,24 +71,6 @@ access_token: null
 	// DSCO will try to fill (and allocate the config struct
 	var pp *MainConf
 
-	//authentication := &AuthentServiceConf{
-	//	HTTPBasedConfTmpl: HTTPBasedConfTmpl{
-	//		RetryConfTmpl: RetryConfTmpl{
-	//			BackOffFactor: dsco.R(1.2),
-	//			Retry:         dsco.R(5),
-	//		},
-	//		URL: dsco.R("is a sample config.is a sample config.http://perfect-authent.com"),
-	//	},
-	//}
-
-	//bb, err := yaml.Marshal(authentication)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println("========================================")
-	//fmt.Println(string(bb))
-	//fmt.Println("========================================")
-
 	fillReport, err := dsco.Fill(
 		// provide a ref
 		&pp,
@@ -96,7 +81,7 @@ access_token: null
 		// Authentication.AccessToken -> --authentication-access_token
 		//
 		// You can use aliases see next layer.
-		//dsco.WithCmdlineLayer(),
+		dsco.WithCmdlineLayer(),
 
 		// Matches any env var
 		//
@@ -114,18 +99,6 @@ access_token: null
 				},
 			),
 		),
-
-		// Matches the given go struct
-		//
-		// No values here can be overridden by the
-		// previous layer. Not even the previous env layer
-		//dsco.WithStrictStructLayer(
-		//	&MainConf{
-		//		 let say that authentication is hardcoded
-		//Authentication: authentication,
-		//},
-		//"immutable", // <- this is the layer id
-		//),
 
 		// This layer defines values that can be overridden by all previous
 		// layers.
@@ -165,10 +138,10 @@ access_token: null
 	)
 
 	// If structure fill fails because of missing value field then structure
-	// is partially filled (i.e pointer is not nil).
+	// is partially filled (i.e. pointer is not nil).
 	// This is might be useful for debugging purpose.
 	if pp != nil {
-		fmt.Println("filled structure ____________________")
+		fmt.Println(" filled structure ____________________")
 
 		s, _ := yaml.Marshal(pp)
 
@@ -180,7 +153,7 @@ access_token: null
 		os.Exit(1)
 	}
 
-	// pp is completely filled (i.e all fields are defined).
+	// pp is completely filled (i.e. all fields are defined).
 	fmt.Println("\nfill report for debugging purpose____")
 	fmt.Println(fillReport)
 	fillReport.Dump(os.Stdout)

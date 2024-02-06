@@ -5,14 +5,18 @@ import (
 	"strings"
 )
 
-const noSeqPanicMsg = "no sequence to format"
+const (
+	komaSpace     = ", "
+	andSpace      = " and "
+	noSeqPanicMsg = "no sequence to format"
+)
 
 // FormatIndexSequence formats nicely slice of integers.
 func FormatIndexSequence(indexes []int) string { //nolint:dupl // it's ok
 	const (
 		singleDigit     = "#%d"
-		comaSingleDigit = ", " + singleDigit
-		andSingleDigit  = " and " + singleDigit
+		comaSingleDigit = komaSpace + singleDigit
+		andSingleDigit  = andSpace + singleDigit
 	)
 
 	indexesLen := len(indexes)
@@ -44,8 +48,8 @@ func FormatIndexSequence(indexes []int) string { //nolint:dupl // it's ok
 func FormatStringSequence(values []string) string { //nolint:dupl // it's ok
 	const (
 		singleString     = `"%s"`
-		comaSingleString = ", " + singleString
-		andSingleString  = " and " + singleString
+		comaSingleString = komaSpace + singleString
+		andSingleString  = andSpace + singleString
 	)
 
 	indexesLen := len(values)

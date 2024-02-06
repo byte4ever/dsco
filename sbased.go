@@ -249,7 +249,7 @@ func (s *StringBasedBuilder) Expand(
 
 	model, err := model2.NewModel(_type)
 	if err != nil {
-		return err
+		return fmt.Errorf("when expanding: %w", err)
 	}
 
 	valuesFor := model.GetFieldValuesFor(entry.Location, tp)

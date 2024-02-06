@@ -48,7 +48,9 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 
 	getList := make(GetList, 0, maxUID)
 	expandList := make(ExpandList, 0, maxUID)
+
 	accelerator.BuildGetList(&getList)
+
 	accelerator.BuildExpandList(&expandList)
 
 	return &Model{

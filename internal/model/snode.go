@@ -12,8 +12,8 @@ import (
 
 type StructNode struct {
 	Type        reflect.Type
-	Index       IndexedSubNodes
 	VisiblePath string
+	Index       IndexedSubNodes
 }
 
 type StructNodeError struct {
@@ -107,13 +107,14 @@ func (n *StructNode) BuildGetList(s *GetList) {
 	}
 }
 
-func (n *StructNode) BuildExpandList(e *ExpandList) {
-	e.Push(
+func (n *StructNode) BuildExpandList(el *ExpandList) {
+	el.Push(
 		func(g internal.Expander) (err error) {
-			return g.Expand(n.VisiblePath, n.Type)
+			return g.Expand(n.VisiblePath, n.Type) //nolint:wrapcheck // dgas
 		},
 	)
+
 	for _, index := range n.Index {
-		index.Node.BuildExpandList(e)
+		index.Node.BuildExpandList(el)
 	}
 }

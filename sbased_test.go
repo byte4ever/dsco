@@ -1,7 +1,6 @@
 package dsco
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -752,37 +751,4 @@ func TestOverriddenKeyError_Is(t *testing.T) {
 
 	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
 	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
-}
-
-func TestStringBasedBuilder_Expand(t *testing.T) { //nolint:paralleltest
-	type S struct {
-		A *int     `yaml:"A,omitempty"`
-		B *float64 `yaml:"B,omitempty"`
-	}
-
-	s := StringBasedBuilder{
-		internalOpts: internalOpts{
-			aliases: nil,
-		},
-		values: svalue.Values{
-			"some-path": &svalue.Value{
-				Value: `---
-A: 123
-B: 123.123
-`,
-				Location: "some-location",
-			},
-		},
-		expandedValues: make(map[string]*fvalue.Value),
-	}
-
-	var p *S
-
-	err := s.Expand("Some.Path", reflect.TypeOf(p))
-
-	require.NoError(t, err)
-
-	for s2, value := range s.expandedValues {
-		fmt.Println(s2, value.Location, value.Path, value.Value.Interface())
-	}
 }
