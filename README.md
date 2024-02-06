@@ -1,6 +1,6 @@
 # dsco (pronounce /ˈdɪskoʊ/. Yes! as 70's music)
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/byte4ever/dsco/Go?style=flat-square)](https://github.com/byte4ever/dsco/actions?query=workflow%3AGo)
+[![Go](https://github.com/byte4ever/dsco/actions/workflows/go.yml/badge.svg)](https://github.com/byte4ever/dsco/actions/workflows/go.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/byte4ever/dsco.svg)](https://pkg.go.dev/github.com/byte4ever/dsco)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
 [![Go Report Card](https://goreportcard.com/badge/github.com/byte4ever/dsco?style=flat-square)](https://goreportcard.com/report/github.com/byte4ever/dsco)
