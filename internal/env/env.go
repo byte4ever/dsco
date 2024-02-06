@@ -136,10 +136,5 @@ func extractStringValues(env []string, prefix string) (
 
 // GetStringValues implements sbased2.Provider interface.
 func (e *EntriesProvider) GetStringValues() svalue.Values {
-	fmt.Println("dump vvvvvvvvvvvvvvvvvvvvvv")
-	for s, value := range e.stringValues {
-		fmt.Println(s, value)
-	}
-	fmt.Println("dump ^^^^^^^^^^^^^^^^^^^^^")
 	return e.stringValues
 }

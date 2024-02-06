@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
+	model2 "github.com/byte4ever/dsco/internal/model"
 	"github.com/byte4ever/dsco/registry"
 	"github.com/byte4ever/dsco/svalue"
 )
@@ -116,7 +118,8 @@ var ErrNilProvider = errors.New("nil provider")
 // StringBasedBuilder is a value bases builder depending on text values.
 type StringBasedBuilder struct {
 	internalOpts
-	values svalue.Values
+	values         svalue.Values
+	expandedValues map[string]*fvalue.Value
 }
 
 // ErrNoAliasesProvided represent an error where no aliases map was
@@ -182,14 +185,16 @@ func NewStringBasedBuilder(
 		return nil, err
 	}
 
+	values := provider.GetStringValues()
+
 	if len(internalOptions.aliases) == 0 {
 		return &StringBasedBuilder{
-			internalOpts: internalOptions,
-			values:       provider.GetStringValues(),
+			internalOpts:   internalOptions,
+			values:         values,
+			expandedValues: make(map[string]*fvalue.Value),
 		}, nil
 	}
 
-	values := provider.GetStringValues()
 	converted := make(svalue.Values, len(values))
 
 	for n, value := range values {
@@ -202,9 +207,57 @@ func NewStringBasedBuilder(
 	}
 
 	return &StringBasedBuilder{
-		internalOpts: internalOptions,
-		values:       converted,
+		internalOpts:   internalOptions,
+		values:         converted,
+		expandedValues: make(map[string]*fvalue.Value),
 	}, nil
+}
+
+func (s *StringBasedBuilder) Expand(
+	path string,
+	_type reflect.Type) (
+	err error,
+) {
+	convertedPath := convert(path)
+
+	// check for alias collisions
+	if _, found := s.internalOpts.aliases[convertedPath]; found {
+		return AliasCollisionError{
+			Path: path,
+		}
+	}
+
+	entry, found := s.values[convertedPath]
+	if !found {
+		return nil
+	}
+
+	delete(s.values, convertedPath)
+
+	tp := reflect.New(_type.Elem())
+
+	err = yaml.Unmarshal(
+		[]byte(entry.Value), tp.Interface(),
+	)
+	if err != nil {
+		return ParseError{
+			path,
+			_type,
+			entry.Location,
+		}
+	}
+
+	model, err := model2.NewModel(_type)
+	if err != nil {
+		return err
+	}
+
+	valuesFor := model.GetFieldValuesFor(entry.Location, tp)
+	for _, value := range valuesFor {
+		s.expandedValues[strings.Join([]string{path, value.Path}, ".")] = value
+	}
+
+	return nil
 }
 
 func (s *StringBasedBuilder) Get(
@@ -215,14 +268,18 @@ func (s *StringBasedBuilder) Get(
 	err error,
 ) {
 	convertedPath := convert(path)
-	fmt.Println("     Get Path :", path)
-	fmt.Println("Get Converted :", convertedPath)
 
 	// check for alias collisions
 	if _, found := s.internalOpts.aliases[convertedPath]; found {
 		return nil, AliasCollisionError{
 			Path: path,
 		}
+	}
+
+	expandedEntry, found := s.expandedValues[path]
+	if found {
+		delete(s.expandedValues, path)
+		return expandedEntry, nil
 	}
 
 	entry, found := s.values[convertedPath]
@@ -299,14 +356,27 @@ func (s *StringBasedBuilder) GetFieldValuesFrom(
 ) {
 	var errs GetError
 
-	result, e := model.ApplyOn(s)
+	if err := model.Expand(s); err != nil {
+		errs.Add(err)
+	}
 
+	result, e := model.ApplyOn(s)
 	if e != nil {
 		errs.Add(e)
 	}
 
 	var e2s UnboundedLocationErrors
+
 	for _, v := range s.values {
+		e2s = append(
+			e2s,
+			UnboundedLocationError{
+				Location: v.Location,
+			},
+		)
+	}
+
+	for _, v := range s.expandedValues {
 		e2s = append(
 			e2s,
 			UnboundedLocationError{

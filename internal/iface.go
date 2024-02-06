@@ -15,3 +15,10 @@ type Getter interface {
 		err error,
 	)
 }
+
+type Expander interface {
+	Expand(
+		path string,
+		_type reflect.Type,
+	) (err error)
+}

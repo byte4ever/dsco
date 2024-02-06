@@ -1,6 +1,7 @@
 package dsco
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -334,6 +335,13 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 				).
 				Once()
 
+			model.
+				On("Expand", sb).
+				Return(
+					nil,
+				).
+				Once()
+
 			gotFvs, gotErr := sb.GetFieldValuesFrom(model)
 			require.NoError(t, gotErr)
 			require.Equal(t, fvs, gotFvs)
@@ -341,7 +349,7 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 	)
 
 	t.Run(
-		"failures", func(t *testing.T) {
+		"failures from apply on", func(t *testing.T) {
 			t.Parallel()
 
 			fvs := fvalue.Values{
@@ -366,9 +374,91 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			model := NewMockModelInterface(t)
 			model.
-				On("ApplyOn", sb).
+				EXPECT().
+				Expand(sb).
 				Return(
-					fvs, errMocked1,
+					nil,
+				).
+				Once()
+
+			model.
+				EXPECT().
+				ApplyOn(sb).
+				Return(
+					fvs,
+					errMocked1,
+				).
+				Once()
+
+			gotFvs, gotErr := sb.GetFieldValuesFrom(model)
+			require.Nil(t, gotFvs)
+
+			var e GetError
+
+			require.ErrorAs(t, gotErr, &e)
+
+			require.Equal(t, 4, e.Count())
+
+			require.ErrorIs(t, e.MError[0], errMocked1)
+
+			for idx, expectedLoc := range []string{
+				"loc-a",
+				"loc-b",
+				"loc-c",
+			} {
+				var ue UnboundedLocationError
+
+				require.ErrorAs(t, e.MError[idx+1], &ue)
+				require.Equal(
+					t,
+					UnboundedLocationError{
+						Location: expectedLoc,
+					},
+					ue,
+				)
+			}
+		},
+	)
+
+	t.Run(
+		"failures from expand", func(t *testing.T) {
+			t.Parallel()
+
+			fvs := fvalue.Values{
+				uint(101): &fvalue.Value{
+					Location: "loc1",
+				},
+			}
+
+			sb := &StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"a": {
+						Location: "loc-a",
+					},
+					"b": {
+						Location: "loc-b",
+					},
+					"c": {
+						Location: "loc-c",
+					},
+				},
+			}
+
+			model := NewMockModelInterface(t)
+			model.
+				EXPECT().
+				Expand(sb).
+				Return(
+					errMocked1,
+				).
+				Once()
+
+			model.
+				EXPECT().
+				ApplyOn(sb).
+				Return(
+					fvs,
+					nil,
 				).
 				Once()
 
@@ -662,4 +752,37 @@ func TestOverriddenKeyError_Is(t *testing.T) {
 
 	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
 	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
+}
+
+func TestStringBasedBuilder_Expand(t *testing.T) { //nolint:paralleltest
+	type S struct {
+		A *int     `yaml:"A,omitempty"`
+		B *float64 `yaml:"B,omitempty"`
+	}
+
+	s := StringBasedBuilder{
+		internalOpts: internalOpts{
+			aliases: nil,
+		},
+		values: svalue.Values{
+			"some-path": &svalue.Value{
+				Value: `---
+A: 123
+B: 123.123
+`,
+				Location: "some-location",
+			},
+		},
+		expandedValues: make(map[string]*fvalue.Value),
+	}
+
+	var p *S
+
+	err := s.Expand("Some.Path", reflect.TypeOf(p))
+
+	require.NoError(t, err)
+
+	for s2, value := range s.expandedValues {
+		fmt.Println(s2, value.Location, value.Path, value.Value.Interface())
+	}
 }

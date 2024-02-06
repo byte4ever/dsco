@@ -54,6 +54,7 @@ func (n *ValueNode) FeedFieldValues(
 	fieldValues[n.UID] = &fvalue.Value{
 		Value:    value,
 		Location: fmt.Sprintf("struct[%s]:%s", srcID, n.VisiblePath),
+		Path:     n.VisiblePath,
 	}
 }
 
@@ -66,3 +67,5 @@ func (n *ValueNode) BuildGetList(s *GetList) {
 		},
 	)
 }
+
+func (n *ValueNode) BuildExpandList(e *ExpandList) {}

@@ -135,6 +135,7 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 				t, fvalue.Value{
 					Value:    vpi,
 					Location: "struct[srcID]:the.path",
+					Path:     "the.path",
 				},
 				*fvs[uint(50)],
 			)

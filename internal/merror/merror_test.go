@@ -68,8 +68,8 @@ func TestError_As(t *testing.T) {
 	t.Parallel()
 
 	te := newMockTestError(t)
-	te.
-		On("Error").
+	te.EXPECT().
+		Error().
 		Return("mocked1").
 		Once()
 

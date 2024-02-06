@@ -1,0 +1,13 @@
+all: True
+dir: "{{.InterfaceDir}}"
+disable-version-string: True
+filename: "mock_{{.InterfaceName}}_test.go"
+inpackage: True
+outpkg: "{{.PackageName}}"
+with-expecter: true
+mockname: "{{.Mock}}{{.InterfaceName| camelcase | firstUpper}}"
+
+packages:
+  github.com/byte4ever/dsco: ~
+  github.com/byte4ever/dsco/internal/merror: ~
+  github.com/byte4ever/dsco/internal/model: ~

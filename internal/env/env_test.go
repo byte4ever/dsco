@@ -312,11 +312,10 @@ func TestProvider_GetStringValues(t *testing.T) {
 }
 
 func TestProvideKeySyntaxError(t *testing.T) {
-	t.Parallel()
-
 	t.Run(
 		"",
 		func(t *testing.T) {
+
 			keys := []string{
 				"PREFIX-1A-B",
 				"PREFIX-A-1B",

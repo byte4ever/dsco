@@ -16,6 +16,7 @@ import (
 type Model struct {
 	accelerator Node
 	getList     GetListInterface
+	expandList  ExpandListInterface
 	typeName    string
 	fieldCount  uint
 }
@@ -46,18 +47,25 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}
 
 	getList := make(GetList, 0, maxUID)
+	expandList := make(ExpandList, 0, maxUID)
 	accelerator.BuildGetList(&getList)
+	accelerator.BuildExpandList(&expandList)
 
 	return &Model{
 		fieldCount:  maxUID,
 		typeName:    registry.LongTypeName(inputModelType),
 		accelerator: accelerator,
 		getList:     &getList,
+		expandList:  &expandList,
 	}, nil
 }
 
 func (m *Model) ApplyOn(g internal.Getter) (fvalue.Values, error) {
 	return m.getList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
+}
+
+func (m *Model) Expand(g internal.Expander) error {
+	return m.expandList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 
 func (m *Model) GetFieldValuesFor(

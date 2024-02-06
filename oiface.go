@@ -16,6 +16,7 @@ type FieldValuesGetter interface {
 type ModelInterface interface {
 	TypeName() string
 	ApplyOn(g internal.Getter) (fvalue.Values, error)
+	Expand(g internal.Expander) error
 	GetFieldValuesFor(id string, v reflect.Value) fvalue.Values
 	Fill(
 		inputModelValue reflect.Value,

@@ -52,8 +52,6 @@ func newProvider(
 	_ = afero.Walk(
 		fs, cleanDirName,
 		func(path string, info os.FileInfo, err error) error {
-			// fmt.Println(path, info.Mode(), info.Sys(), err)
-
 			if err != nil {
 				if !opt.silentFileErrors {
 					errs = append(

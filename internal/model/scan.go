@@ -28,7 +28,8 @@ func scan(
 		var errs merror.MError
 
 		structNode := &StructNode{
-			Type: _type,
+			Type:        _type,
+			VisiblePath: path,
 		}
 
 		visibleFields, lErrs := getVisibleFieldList(path, _type)

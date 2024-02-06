@@ -82,7 +82,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub1Type,
+							VisiblePath: "S1",
+							Type:        sub1Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{
@@ -114,7 +115,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub2Type,
+							VisiblePath: "S2",
+							Type:        sub2Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{
@@ -261,7 +263,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub1Type,
+							VisiblePath: "S1",
+							Type:        sub1Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{
@@ -293,7 +296,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub2Type,
+							VisiblePath: "S2",
+							Type:        sub2Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{
@@ -411,7 +415,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub1Type,
+							VisiblePath: "S1",
+							Type:        sub1Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{
@@ -443,7 +448,8 @@ func Test_scan(t *testing.T) {
 					},
 					&IndexedSubNode{
 						Node: &StructNode{
-							Type: sub2Type,
+							VisiblePath: "S2",
+							Type:        sub2Type,
 							Index: IndexedSubNodes{
 								&IndexedSubNode{
 									Node: &ValueNode{

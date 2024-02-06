@@ -4,14 +4,16 @@ import (
 	"errors"
 	"reflect"
 
+	"github.com/byte4ever/dsco/internal"
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/merror"
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
 type StructNode struct {
-	Type  reflect.Type
-	Index IndexedSubNodes
+	Type        reflect.Type
+	Index       IndexedSubNodes
+	VisiblePath string
 }
 
 type StructNodeError struct {
@@ -102,5 +104,16 @@ func (n *StructNode) PushSubNodes(index []int, scanned Node) {
 func (n *StructNode) BuildGetList(s *GetList) {
 	for _, index := range n.Index {
 		index.Node.BuildGetList(s)
+	}
+}
+
+func (n *StructNode) BuildExpandList(e *ExpandList) {
+	e.Push(
+		func(g internal.Expander) (err error) {
+			return g.Expand(n.VisiblePath, n.Type)
+		},
+	)
+	for _, index := range n.Index {
+		index.Node.BuildExpandList(e)
 	}
 }
