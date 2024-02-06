@@ -167,18 +167,18 @@ func Test_scan(t *testing.T) {
 
 			type InvalidStruct struct{}
 
-			type E2 struct {
-				E2Invalid InvalidStruct
+			type E2 struct { //nolint:govet // dgas
 				E2X       *string
+				E2Invalid InvalidStruct
 			}
 
 			e2xType := reflect.TypeOf(ref.R(""))
 			e2invalidType := reflect.TypeOf(InvalidStruct{})
 
-			type Sub1 struct {
-				Sub1X *float32
-				Sub1Y *float64
+			type Sub1 struct { //nolint:govet // dgas
 				E1
+				Sub1X   *float32
+				Sub1Y   *float64
 				Invalid int
 			}
 
@@ -187,10 +187,10 @@ func Test_scan(t *testing.T) {
 			sub1invalidType := reflect.TypeOf(0)
 			sub1Type := reflect.TypeOf(&Sub1{})
 
-			type Sub2 struct {
-				Sub2X *time.Duration
-				Sub2Y *time.Time
+			type Sub2 struct { //nolint:govet // dgas
 				E2
+				Sub2X   *time.Duration
+				Sub2Y   *time.Time
 				Invalid float64
 			}
 
@@ -200,10 +200,10 @@ func Test_scan(t *testing.T) {
 			sub2Type := reflect.TypeOf(&Sub2{})
 
 			type Root struct { //nolint:govet // dgas
-				S1 *Sub1
-				S2 *Sub2
 				E1
 				E2
+				S1 *Sub1
+				S2 *Sub2
 			}
 			var maxUID uint
 			vType := reflect.TypeOf(&Root{})
