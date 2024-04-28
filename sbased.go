@@ -12,7 +12,7 @@ import (
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
 	"github.com/byte4ever/dsco/internal/merror"
-	model2 "github.com/byte4ever/dsco/internal/model"
+	"github.com/byte4ever/dsco/internal/model"
 	"github.com/byte4ever/dsco/registry"
 	"github.com/byte4ever/dsco/svalue"
 )
@@ -227,7 +227,7 @@ func (s *StringBasedBuilder) Expand(
 		}
 	}
 
-	entry, found := s.values[convertedPath]
+	entryToExpand, found := s.values[convertedPath]
 	if !found {
 		return nil
 	}
@@ -236,25 +236,30 @@ func (s *StringBasedBuilder) Expand(
 
 	tp := reflect.New(_type.Elem())
 
-	err = yaml.Unmarshal(
-		[]byte(entry.Value), tp.Interface(),
-	)
-	if err != nil {
-		return ParseError{
+	// parse yaml for expandable type
+	if err = yaml.Unmarshal(
+		[]byte(entryToExpand.Value), tp.Interface(),
+	); err != nil {
+		return &ParseError{
 			path,
 			_type,
-			entry.Location,
+			entryToExpand.Location,
 		}
 	}
 
-	model, err := model2.NewModel(_type)
+	extractedModel, err := model.NewModel(_type)
 	if err != nil {
 		return fmt.Errorf("when expanding: %w", err)
 	}
 
-	valuesFor := model.GetFieldValuesFor(entry.Location, tp)
-	for _, value := range valuesFor {
-		s.expandedValues[strings.Join([]string{path, value.Path}, ".")] = value
+	for _, value := range extractedModel.GetFieldValuesFor(
+		entryToExpand.Location,
+		tp,
+	) {
+		s.expandedValues[strings.Join([]string{
+			path,
+			value.Path,
+		}, ".")] = value
 	}
 
 	return nil

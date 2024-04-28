@@ -1,6 +1,7 @@
 package dsco
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -751,4 +752,133 @@ func TestOverriddenKeyError_Is(t *testing.T) {
 
 	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
 	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
+}
+
+func TestStringBasedBuilder_Expand(t *testing.T) {
+	t.Parallel()
+
+	type SomeStruct struct {
+		A *int     `yaml:"a"`
+		B *float64 `yaml:"b"`
+		C *struct {
+			X *int     `yaml:"x"`
+			Y *float64 `yaml:"y"`
+		} `yaml:"c"`
+	}
+
+	t.Run(
+		"success", func(t *testing.T) {
+			t.Parallel()
+
+			var p *SomeStruct
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"p-t": {
+						Location: "",
+						Value: `---
+a: 123
+b: 123.412
+c:
+  x: 2332
+  y: 123.234`,
+					},
+				},
+				expandedValues: make(map[string]*fvalue.Value),
+			}
+
+			err := sb.Expand("P.T", reflect.TypeOf(p))
+			require.NoError(t, err)
+
+			require.Contains(t, sb.expandedValues, "P.T.A")
+			require.Equal(t, R(123), sb.expandedValues["P.T.A"].Value.Interface())
+			require.Contains(t, sb.expandedValues, "P.T.B")
+			require.Equal(t, R(123.412), sb.expandedValues["P.T.B"].Value.Interface())
+			require.Contains(t, sb.expandedValues, "P.T.C.X")
+			require.Equal(t, R(2332), sb.expandedValues["P.T.C.X"].Value.Interface())
+			require.Contains(t, sb.expandedValues, "P.T.C.Y")
+			require.Equal(t, R(123.234), sb.expandedValues["P.T.C.Y"].Value.Interface())
+		},
+	)
+
+	t.Run(
+		"partial success", func(t *testing.T) {
+			t.Parallel()
+
+			var p *SomeStruct
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"p-t": {
+						Location: "",
+						Value: `---
+a: 123
+c:
+  x: 2332
+  y: 123.234`,
+					},
+				},
+				expandedValues: make(map[string]*fvalue.Value),
+			}
+
+			err := sb.Expand("P.T", reflect.TypeOf(p))
+			require.NoError(t, err)
+
+			require.Contains(t, sb.expandedValues, "P.T.A")
+			require.Equal(t, R(123), sb.expandedValues["P.T.A"].Value.Interface())
+			require.Contains(t, sb.expandedValues, "P.T.C.X")
+			require.Equal(t, R(2332), sb.expandedValues["P.T.C.X"].Value.Interface())
+			require.Contains(t, sb.expandedValues, "P.T.C.Y")
+			require.Equal(t, R(123.234), sb.expandedValues["P.T.C.Y"].Value.Interface())
+		},
+	)
+
+	t.Run(
+		"no string value", func(t *testing.T) {
+			t.Parallel()
+
+			var p *SomeStruct
+
+			sb := StringBasedBuilder{
+				values:         map[string]*svalue.Value{},
+				expandedValues: make(map[string]*fvalue.Value),
+			}
+
+			err := sb.Expand("P.T", reflect.TypeOf(p))
+			require.NoError(t, err)
+			require.Empty(t, sb.values)
+			require.Empty(t, sb.expandedValues)
+		},
+	)
+
+	t.Run(
+		"parse error", func(t *testing.T) {
+			t.Parallel()
+
+			var p *SomeStruct
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"p-t": {
+						Location: "",
+						Value: `---
+a: 123
+b: 123.412
+c:
+  x: bad-int
+  y: 123.234`,
+					},
+				},
+				expandedValues: make(map[string]*fvalue.Value),
+			}
+
+			err := sb.Expand("P.T", reflect.TypeOf(p))
+			require.ErrorIs(t, err, &ParseError{})
+			var parseErr *ParseError
+			errors.As(err, &parseErr)
+			require.Equal(t, "P.T", parseErr.Path)
+			require.Equal(t, reflect.TypeOf(p), parseErr.Type)
+			require.Empty(t, parseErr.Location)
+		},
+	)
 }
