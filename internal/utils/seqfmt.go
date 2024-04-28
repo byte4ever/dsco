@@ -6,50 +6,42 @@ import (
 )
 
 const (
-	komaSpace     = ", "
-	andSpace      = " and "
 	noSeqPanicMsg = "no sequence to format"
 )
 
 // FormatIndexSequence formats nicely slice of integers.
 func FormatIndexSequence(indexes []int) string { //nolint:dupl // it's ok
 	const (
-		singleDigit     = "#%d"
-		comaSingleDigit = komaSpace + singleDigit
-		andSingleDigit  = andSpace + singleDigit
+		singleDigit = "#%d"
 	)
 
-	indexesLen := len(indexes)
-
-	if indexesLen == 0 {
-		panic(noSeqPanicMsg)
+	l := make([]string, len(indexes))
+	for i, idx := range indexes {
+		l[i] = fmt.Sprintf(singleDigit, idx)
 	}
 
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf(singleDigit, indexes[0]))
-
-	if indexesLen == 1 {
-		return sb.String()
-	}
-
-	if indexesLen > 2 {
-		for _, idx := range indexes[1 : indexesLen-1] {
-			sb.WriteString(fmt.Sprintf(comaSingleDigit, idx))
-		}
-	}
-
-	sb.WriteString(fmt.Sprintf(andSingleDigit, indexes[indexesLen-1]))
-
-	return sb.String()
+	return formatSequence(l)
 }
 
 // FormatStringSequence formats nicely slice of strings.
 func FormatStringSequence(values []string) string { //nolint:dupl // it's ok
 	const (
-		singleString     = `"%s"`
-		comaSingleString = komaSpace + singleString
-		andSingleString  = andSpace + singleString
+		singleString = "%q"
+	)
+
+	l := make([]string, len(values))
+	for i, idx := range values {
+		l[i] = fmt.Sprintf(singleString, idx)
+	}
+
+	return formatSequence(l)
+}
+
+// formatSequence formats nicely slice of strings.
+func formatSequence(values []string) string { //nolint:dupl // it's ok
+	const (
+		comaSingleString = `, %s`
+		andSingleString  = ` and %s`
 	)
 
 	indexesLen := len(values)
@@ -60,7 +52,7 @@ func FormatStringSequence(values []string) string { //nolint:dupl // it's ok
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(singleString, values[0]))
+	sb.WriteString(values[0])
 
 	if indexesLen == 1 {
 		return sb.String()
