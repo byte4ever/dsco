@@ -23,7 +23,7 @@ func (_m *MockGetListInterface) EXPECT() *MockGetListInterface_Expecter {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockGetListInterface) ApplyOn(g internal.Getter) (fvalue.Values, error) {
+func (_m *MockGetListInterface) ApplyOn(g internal.ValueGetter) (fvalue.Values, error) {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -32,10 +32,10 @@ func (_m *MockGetListInterface) ApplyOn(g internal.Getter) (fvalue.Values, error
 
 	var r0 fvalue.Values
 	var r1 error
-	if rf, ok := ret.Get(0).(func(internal.Getter) (fvalue.Values, error)); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) (fvalue.Values, error)); ok {
 		return rf(g)
 	}
-	if rf, ok := ret.Get(0).(func(internal.Getter) fvalue.Values); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) fvalue.Values); ok {
 		r0 = rf(g)
 	} else {
 		if ret.Get(0) != nil {
@@ -43,7 +43,7 @@ func (_m *MockGetListInterface) ApplyOn(g internal.Getter) (fvalue.Values, error
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(internal.Getter) error); ok {
+	if rf, ok := ret.Get(1).(func(internal.ValueGetter) error); ok {
 		r1 = rf(g)
 	} else {
 		r1 = ret.Error(1)
@@ -58,14 +58,14 @@ type MockGetListInterface_ApplyOn_Call struct {
 }
 
 // ApplyOn is a helper method to define mock.On call
-//   - g internal.Getter
+//   - g internal.ValueGetter
 func (_e *MockGetListInterface_Expecter) ApplyOn(g interface{}) *MockGetListInterface_ApplyOn_Call {
 	return &MockGetListInterface_ApplyOn_Call{Call: _e.mock.On("ApplyOn", g)}
 }
 
-func (_c *MockGetListInterface_ApplyOn_Call) Run(run func(g internal.Getter)) *MockGetListInterface_ApplyOn_Call {
+func (_c *MockGetListInterface_ApplyOn_Call) Run(run func(g internal.ValueGetter)) *MockGetListInterface_ApplyOn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Getter))
+		run(args[0].(internal.ValueGetter))
 	})
 	return _c
 }
@@ -75,7 +75,7 @@ func (_c *MockGetListInterface_ApplyOn_Call) Return(_a0 fvalue.Values, _a1 error
 	return _c
 }
 
-func (_c *MockGetListInterface_ApplyOn_Call) RunAndReturn(run func(internal.Getter) (fvalue.Values, error)) *MockGetListInterface_ApplyOn_Call {
+func (_c *MockGetListInterface_ApplyOn_Call) RunAndReturn(run func(internal.ValueGetter) (fvalue.Values, error)) *MockGetListInterface_ApplyOn_Call {
 	_c.Call.Return(run)
 	return _c
 }

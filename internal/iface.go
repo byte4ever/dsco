@@ -6,7 +6,7 @@ import (
 	"github.com/byte4ever/dsco/internal/fvalue"
 )
 
-type Getter interface {
+type ValueGetter interface {
 	Get(
 		path string,
 		_type reflect.Type,
@@ -16,8 +16,8 @@ type Getter interface {
 	)
 }
 
-type Expander interface {
-	Expand(
+type StructExpander interface {
+	ExpandStruct(
 		path string,
 		_type reflect.Type,
 	) (err error)

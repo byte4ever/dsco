@@ -20,7 +20,7 @@ func TestGetList_Push(t *testing.T) {
 
 			var l GetList
 
-			f1 := func(g internal.Getter) (
+			f1 := func(g internal.ValueGetter) (
 				uid uint,
 				fieldValue *fvalue.Value,
 				err error,
@@ -46,7 +46,7 @@ func TestGetList_Push(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			f1 := func(g internal.Getter) (
+			f1 := func(g internal.ValueGetter) (
 				uid uint,
 				fieldValue *fvalue.Value,
 				err error,
@@ -57,7 +57,7 @@ func TestGetList_Push(t *testing.T) {
 
 			l := GetList{f1}
 
-			f2 := func(g internal.Getter) (
+			f2 := func(g internal.ValueGetter) (
 				uid uint,
 				fieldValue *fvalue.Value,
 				err error,
@@ -117,28 +117,28 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			l := GetList{
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f0.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f1.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f2.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
@@ -206,28 +206,28 @@ func TestGetList_ApplyOn(t *testing.T) {
 			)
 
 			l := GetList{
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f0.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f1.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,
 				) {
 					return f2.Execute(g)
 				},
-				func(g internal.Getter) (
+				func(g internal.ValueGetter) (
 					uid uint,
 					fieldValue *fvalue.Value,
 					err error,

@@ -24,7 +24,7 @@ func (ApplyError) Is(err error) bool {
 	return errors.Is(err, ErrApply)
 }
 
-func (s GetList) ApplyOn(g internal.Getter) (fvalue.Values, error) {
+func (s GetList) ApplyOn(g internal.ValueGetter) (fvalue.Values, error) {
 	var errs ApplyError
 
 	res := make(fvalue.Values, len(s))

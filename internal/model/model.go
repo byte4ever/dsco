@@ -62,11 +62,11 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 	}, nil
 }
 
-func (m *Model) ApplyOn(g internal.Getter) (fvalue.Values, error) {
+func (m *Model) ApplyOn(g internal.ValueGetter) (fvalue.Values, error) {
 	return m.getList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 
-func (m *Model) Expand(g internal.Expander) error {
+func (m *Model) Expand(g internal.StructExpander) error {
 	return m.expandList.ApplyOn(g) //nolint:wrapcheck // don't wrap it
 }
 

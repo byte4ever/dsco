@@ -11,6 +11,7 @@ import (
 
 	"github.com/byte4ever/dsco/internal/fvalue"
 	"github.com/byte4ever/dsco/internal/ierror"
+	"github.com/byte4ever/dsco/internal/model"
 	"github.com/byte4ever/dsco/svalue"
 )
 
@@ -304,6 +305,31 @@ s3:
 			require.ErrorIs(t, err, ErrInvalidType)
 		},
 	)
+
+	t.Run(
+		"success expand", func(t *testing.T) {
+			t.Parallel()
+
+			sb := StringBasedBuilder{
+				expandedValues: map[string]*fvalue.Value{
+					"Some.Path": {
+						Value:    reflect.ValueOf(R(123)),
+						Location: "loc1",
+					},
+				},
+			}
+
+			var v int
+			pv := &v
+
+			gotFv, err := sb.Get("Some.Path", reflect.TypeOf(pv))
+			require.NoError(t, err)
+			require.NotNil(t, gotFv)
+
+			require.Equal(t, "loc1", gotFv.Location)
+			require.IsType(t, 123, gotFv.Value.Elem().Interface())
+		},
+	)
 }
 
 func TestGetError_Is(t *testing.T) {
@@ -442,6 +468,17 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 						Location: "loc-c",
 					},
 				},
+				expandedValues: map[string]*fvalue.Value{
+					"exp-a": {
+						Location: "exp-loc-a",
+					},
+					"exp-b": {
+						Location: "exp-loc-b",
+					},
+					"exp-c": {
+						Location: "exp-loc-c",
+					},
+				},
 			}
 
 			model := NewMockModelInterface(t)
@@ -469,14 +506,14 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			require.ErrorAs(t, gotErr, &e)
 
-			require.Equal(t, 4, e.Count())
+			require.Equal(t, 7, e.Count())
 
 			require.ErrorIs(t, e.MError[0], errMocked1)
 
 			for idx, expectedLoc := range []string{
-				"loc-a",
-				"loc-b",
-				"loc-c",
+				"exp-loc-a",
+				"exp-loc-b",
+				"exp-loc-c",
 			} {
 				var ue UnboundedLocationError
 
@@ -489,6 +526,24 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 					ue,
 				)
 			}
+
+			for idx, expectedLoc := range []string{
+				"loc-a",
+				"loc-b",
+				"loc-c",
+			} {
+				var ue UnboundedLocationError
+
+				require.ErrorAs(t, e.MError[idx+1+3], &ue)
+				require.Equal(
+					t,
+					UnboundedLocationError{
+						Location: expectedLoc,
+					},
+					ue,
+				)
+			}
+
 		},
 	)
 }
@@ -731,6 +786,42 @@ func TestNewStringBasedBuilder(t *testing.T) {
 			)
 		},
 	)
+
+	t.Run(
+		"with alias option", func(t *testing.T) {
+			t.Parallel()
+			p := NewMockStringValuesProvider(t)
+			p.EXPECT().GetStringValues().Return(
+				svalue.Values{
+					"aliaskey": {
+						Location: "l1",
+						Value:    "v1",
+					},
+					"key": {
+						Location: "l2",
+						Value:    "v2",
+					},
+				},
+			)
+
+			b, err := NewStringBasedBuilder(p, WithAliases(map[string]string{
+				"aliaskey": "actual-key",
+			}))
+
+			require.NoError(t, err)
+
+			require.Equal(t, b.values, svalue.Values{
+				"actual-key": {
+					Location: "l1",
+					Value:    "v1",
+				},
+				"key": {
+					Location: "l2",
+					Value:    "v2",
+				},
+			})
+		},
+	)
 }
 
 func TestOverriddenKeyError_Error(t *testing.T) {
@@ -754,7 +845,7 @@ func TestOverriddenKeyError_Is(t *testing.T) {
 	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
 }
 
-func TestStringBasedBuilder_Expand(t *testing.T) {
+func TestStringBasedBuilder_ExpandStruct(t *testing.T) {
 	t.Parallel()
 
 	type SomeStruct struct {
@@ -787,7 +878,7 @@ c:
 				expandedValues: make(map[string]*fvalue.Value),
 			}
 
-			err := sb.Expand("P.T", reflect.TypeOf(p))
+			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.NoError(t, err)
 
 			require.Contains(t, sb.expandedValues, "P.T.A")
@@ -821,7 +912,7 @@ c:
 				expandedValues: make(map[string]*fvalue.Value),
 			}
 
-			err := sb.Expand("P.T", reflect.TypeOf(p))
+			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.NoError(t, err)
 
 			require.Contains(t, sb.expandedValues, "P.T.A")
@@ -844,7 +935,7 @@ c:
 				expandedValues: make(map[string]*fvalue.Value),
 			}
 
-			err := sb.Expand("P.T", reflect.TypeOf(p))
+			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.NoError(t, err)
 			require.Empty(t, sb.values)
 			require.Empty(t, sb.expandedValues)
@@ -872,13 +963,72 @@ c:
 				expandedValues: make(map[string]*fvalue.Value),
 			}
 
-			err := sb.Expand("P.T", reflect.TypeOf(p))
+			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.ErrorIs(t, err, &ParseError{})
 			var parseErr *ParseError
 			errors.As(err, &parseErr)
 			require.Equal(t, "P.T", parseErr.Path)
 			require.Equal(t, reflect.TypeOf(p), parseErr.Type)
 			require.Empty(t, parseErr.Location)
+		},
+	)
+
+	t.Run(
+		"alias collision", func(t *testing.T) {
+			t.Parallel()
+
+			var p *SomeStruct
+
+			sb := StringBasedBuilder{
+				internalOpts: internalOpts{
+					aliases: map[string]string{
+						"alias": "aliased-key",
+					},
+				},
+			}
+
+			err := sb.ExpandStruct("Alias", reflect.TypeOf(p))
+
+			var asErr *AliasCollisionError
+			require.ErrorAs(t, err, &asErr)
+			require.Equal(t, "Alias", asErr.Path)
+		},
+	)
+
+	t.Run(
+		"model failure", func(t *testing.T) {
+			t.Parallel()
+
+			type SomeBadStruct struct {
+				A int      `yaml:"a"`
+				B *float64 `yaml:"b"`
+				C *struct {
+					X *int     `yaml:"x"`
+					Y *float64 `yaml:"y"`
+				} `yaml:"c"`
+			}
+
+			var p *SomeBadStruct
+
+			sb := StringBasedBuilder{
+				values: map[string]*svalue.Value{
+					"p-t": {
+						Location: "",
+						Value: `---
+a: 123
+b: 123.412
+c:
+  x: 2332
+  y: 123.234`,
+					},
+				},
+				expandedValues: make(map[string]*fvalue.Value),
+			}
+
+			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
+
+			var asErr model.UnsupportedTypeError
+			require.ErrorAs(t, err, &asErr)
 		},
 	)
 }

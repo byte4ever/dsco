@@ -21,7 +21,7 @@ func (_m *MockExpandOp) EXPECT() *MockExpandOp_Expecter {
 }
 
 // Execute provides a mock function with given fields: g
-func (_m *MockExpandOp) Execute(g internal.Expander) error {
+func (_m *MockExpandOp) Execute(g internal.StructExpander) error {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -29,7 +29,7 @@ func (_m *MockExpandOp) Execute(g internal.Expander) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(internal.Expander) error); ok {
+	if rf, ok := ret.Get(0).(func(internal.StructExpander) error); ok {
 		r0 = rf(g)
 	} else {
 		r0 = ret.Error(0)
@@ -44,14 +44,14 @@ type MockExpandOp_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
-//   - g internal.Expander
+//   - g internal.StructExpander
 func (_e *MockExpandOp_Expecter) Execute(g interface{}) *MockExpandOp_Execute_Call {
 	return &MockExpandOp_Execute_Call{Call: _e.mock.On("Execute", g)}
 }
 
-func (_c *MockExpandOp_Execute_Call) Run(run func(g internal.Expander)) *MockExpandOp_Execute_Call {
+func (_c *MockExpandOp_Execute_Call) Run(run func(g internal.StructExpander)) *MockExpandOp_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Expander))
+		run(args[0].(internal.StructExpander))
 	})
 	return _c
 }
@@ -61,7 +61,7 @@ func (_c *MockExpandOp_Execute_Call) Return(err error) *MockExpandOp_Execute_Cal
 	return _c
 }
 
-func (_c *MockExpandOp_Execute_Call) RunAndReturn(run func(internal.Expander) error) *MockExpandOp_Execute_Call {
+func (_c *MockExpandOp_Execute_Call) RunAndReturn(run func(internal.StructExpander) error) *MockExpandOp_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

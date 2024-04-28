@@ -21,7 +21,7 @@ func (_m *MockExpandListInterface) EXPECT() *MockExpandListInterface_Expecter {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockExpandListInterface) ApplyOn(g internal.Expander) error {
+func (_m *MockExpandListInterface) ApplyOn(g internal.StructExpander) error {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -29,7 +29,7 @@ func (_m *MockExpandListInterface) ApplyOn(g internal.Expander) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(internal.Expander) error); ok {
+	if rf, ok := ret.Get(0).(func(internal.StructExpander) error); ok {
 		r0 = rf(g)
 	} else {
 		r0 = ret.Error(0)
@@ -44,14 +44,14 @@ type MockExpandListInterface_ApplyOn_Call struct {
 }
 
 // ApplyOn is a helper method to define mock.On call
-//   - g internal.Expander
+//   - g internal.StructExpander
 func (_e *MockExpandListInterface_Expecter) ApplyOn(g interface{}) *MockExpandListInterface_ApplyOn_Call {
 	return &MockExpandListInterface_ApplyOn_Call{Call: _e.mock.On("ApplyOn", g)}
 }
 
-func (_c *MockExpandListInterface_ApplyOn_Call) Run(run func(g internal.Expander)) *MockExpandListInterface_ApplyOn_Call {
+func (_c *MockExpandListInterface_ApplyOn_Call) Run(run func(g internal.StructExpander)) *MockExpandListInterface_ApplyOn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Expander))
+		run(args[0].(internal.StructExpander))
 	})
 	return _c
 }
@@ -61,7 +61,7 @@ func (_c *MockExpandListInterface_ApplyOn_Call) Return(_a0 error) *MockExpandLis
 	return _c
 }
 
-func (_c *MockExpandListInterface_ApplyOn_Call) RunAndReturn(run func(internal.Expander) error) *MockExpandListInterface_ApplyOn_Call {
+func (_c *MockExpandListInterface_ApplyOn_Call) RunAndReturn(run func(internal.StructExpander) error) *MockExpandListInterface_ApplyOn_Call {
 	_c.Call.Return(run)
 	return _c
 }

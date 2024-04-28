@@ -60,7 +60,7 @@ func (n *ValueNode) FeedFieldValues(
 
 func (n *ValueNode) BuildGetList(s *GetList) {
 	s.Push(
-		func(g internal.Getter) (uint, *fvalue.Value, error) {
+		func(g internal.ValueGetter) (uint, *fvalue.Value, error) {
 			fieldValue, err := g.Get(n.VisiblePath, n.Type)
 
 			return n.UID, fieldValue, err //nolint:wrapcheck // don't wan to wrap

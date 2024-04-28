@@ -109,8 +109,8 @@ func (n *StructNode) BuildGetList(s *GetList) {
 
 func (n *StructNode) BuildExpandList(el *ExpandList) {
 	el.Push(
-		func(g internal.Expander) (err error) {
-			return g.Expand(n.VisiblePath, n.Type) //nolint:wrapcheck // dgas
+		func(g internal.StructExpander) (err error) {
+			return g.ExpandStruct(n.VisiblePath, n.Type) //nolint:wrapcheck // dgas
 		},
 	)
 

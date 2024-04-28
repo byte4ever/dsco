@@ -213,7 +213,7 @@ func NewStringBasedBuilder(
 	}, nil
 }
 
-func (s *StringBasedBuilder) Expand(
+func (s *StringBasedBuilder) ExpandStruct(
 	path string,
 	_type reflect.Type) (
 	err error,
@@ -222,7 +222,7 @@ func (s *StringBasedBuilder) Expand(
 
 	// check for alias collisions
 	if _, found := s.internalOpts.aliases[convertedPath]; found {
-		return AliasCollisionError{
+		return &AliasCollisionError{
 			Path: path,
 		}
 	}
@@ -236,7 +236,7 @@ func (s *StringBasedBuilder) Expand(
 
 	tp := reflect.New(_type.Elem())
 
-	// parse yaml for expandable type
+	// parse yaml struct
 	if err = yaml.Unmarshal(
 		[]byte(entryToExpand.Value), tp.Interface(),
 	); err != nil {

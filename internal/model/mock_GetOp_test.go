@@ -23,7 +23,7 @@ func (_m *MockGetOp) EXPECT() *MockGetOp_Expecter {
 }
 
 // Execute provides a mock function with given fields: g
-func (_m *MockGetOp) Execute(g internal.Getter) (uint, *fvalue.Value, error) {
+func (_m *MockGetOp) Execute(g internal.ValueGetter) (uint, *fvalue.Value, error) {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -33,16 +33,16 @@ func (_m *MockGetOp) Execute(g internal.Getter) (uint, *fvalue.Value, error) {
 	var r0 uint
 	var r1 *fvalue.Value
 	var r2 error
-	if rf, ok := ret.Get(0).(func(internal.Getter) (uint, *fvalue.Value, error)); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) (uint, *fvalue.Value, error)); ok {
 		return rf(g)
 	}
-	if rf, ok := ret.Get(0).(func(internal.Getter) uint); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) uint); ok {
 		r0 = rf(g)
 	} else {
 		r0 = ret.Get(0).(uint)
 	}
 
-	if rf, ok := ret.Get(1).(func(internal.Getter) *fvalue.Value); ok {
+	if rf, ok := ret.Get(1).(func(internal.ValueGetter) *fvalue.Value); ok {
 		r1 = rf(g)
 	} else {
 		if ret.Get(1) != nil {
@@ -50,7 +50,7 @@ func (_m *MockGetOp) Execute(g internal.Getter) (uint, *fvalue.Value, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(internal.Getter) error); ok {
+	if rf, ok := ret.Get(2).(func(internal.ValueGetter) error); ok {
 		r2 = rf(g)
 	} else {
 		r2 = ret.Error(2)
@@ -65,14 +65,14 @@ type MockGetOp_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
-//   - g internal.Getter
+//   - g internal.ValueGetter
 func (_e *MockGetOp_Expecter) Execute(g interface{}) *MockGetOp_Execute_Call {
 	return &MockGetOp_Execute_Call{Call: _e.mock.On("Execute", g)}
 }
 
-func (_c *MockGetOp_Execute_Call) Run(run func(g internal.Getter)) *MockGetOp_Execute_Call {
+func (_c *MockGetOp_Execute_Call) Run(run func(g internal.ValueGetter)) *MockGetOp_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Getter))
+		run(args[0].(internal.ValueGetter))
 	})
 	return _c
 }
@@ -82,7 +82,7 @@ func (_c *MockGetOp_Execute_Call) Return(uid uint, fieldValue *fvalue.Value, err
 	return _c
 }
 
-func (_c *MockGetOp_Execute_Call) RunAndReturn(run func(internal.Getter) (uint, *fvalue.Value, error)) *MockGetOp_Execute_Call {
+func (_c *MockGetOp_Execute_Call) RunAndReturn(run func(internal.ValueGetter) (uint, *fvalue.Value, error)) *MockGetOp_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

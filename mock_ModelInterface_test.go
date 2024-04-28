@@ -27,7 +27,7 @@ func (_m *MockModelInterface) EXPECT() *MockModelInterface_Expecter {
 }
 
 // ApplyOn provides a mock function with given fields: g
-func (_m *MockModelInterface) ApplyOn(g internal.Getter) (fvalue.Values, error) {
+func (_m *MockModelInterface) ApplyOn(g internal.ValueGetter) (fvalue.Values, error) {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -36,10 +36,10 @@ func (_m *MockModelInterface) ApplyOn(g internal.Getter) (fvalue.Values, error) 
 
 	var r0 fvalue.Values
 	var r1 error
-	if rf, ok := ret.Get(0).(func(internal.Getter) (fvalue.Values, error)); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) (fvalue.Values, error)); ok {
 		return rf(g)
 	}
-	if rf, ok := ret.Get(0).(func(internal.Getter) fvalue.Values); ok {
+	if rf, ok := ret.Get(0).(func(internal.ValueGetter) fvalue.Values); ok {
 		r0 = rf(g)
 	} else {
 		if ret.Get(0) != nil {
@@ -47,7 +47,7 @@ func (_m *MockModelInterface) ApplyOn(g internal.Getter) (fvalue.Values, error) 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(internal.Getter) error); ok {
+	if rf, ok := ret.Get(1).(func(internal.ValueGetter) error); ok {
 		r1 = rf(g)
 	} else {
 		r1 = ret.Error(1)
@@ -62,14 +62,14 @@ type MockModelInterface_ApplyOn_Call struct {
 }
 
 // ApplyOn is a helper method to define mock.On call
-//   - g internal.Getter
+//   - g internal.ValueGetter
 func (_e *MockModelInterface_Expecter) ApplyOn(g interface{}) *MockModelInterface_ApplyOn_Call {
 	return &MockModelInterface_ApplyOn_Call{Call: _e.mock.On("ApplyOn", g)}
 }
 
-func (_c *MockModelInterface_ApplyOn_Call) Run(run func(g internal.Getter)) *MockModelInterface_ApplyOn_Call {
+func (_c *MockModelInterface_ApplyOn_Call) Run(run func(g internal.ValueGetter)) *MockModelInterface_ApplyOn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Getter))
+		run(args[0].(internal.ValueGetter))
 	})
 	return _c
 }
@@ -79,13 +79,13 @@ func (_c *MockModelInterface_ApplyOn_Call) Return(_a0 fvalue.Values, _a1 error) 
 	return _c
 }
 
-func (_c *MockModelInterface_ApplyOn_Call) RunAndReturn(run func(internal.Getter) (fvalue.Values, error)) *MockModelInterface_ApplyOn_Call {
+func (_c *MockModelInterface_ApplyOn_Call) RunAndReturn(run func(internal.ValueGetter) (fvalue.Values, error)) *MockModelInterface_ApplyOn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Expand provides a mock function with given fields: g
-func (_m *MockModelInterface) Expand(g internal.Expander) error {
+func (_m *MockModelInterface) Expand(g internal.StructExpander) error {
 	ret := _m.Called(g)
 
 	if len(ret) == 0 {
@@ -93,7 +93,7 @@ func (_m *MockModelInterface) Expand(g internal.Expander) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(internal.Expander) error); ok {
+	if rf, ok := ret.Get(0).(func(internal.StructExpander) error); ok {
 		r0 = rf(g)
 	} else {
 		r0 = ret.Error(0)
@@ -108,14 +108,14 @@ type MockModelInterface_Expand_Call struct {
 }
 
 // Expand is a helper method to define mock.On call
-//   - g internal.Expander
+//   - g internal.StructExpander
 func (_e *MockModelInterface_Expecter) Expand(g interface{}) *MockModelInterface_Expand_Call {
 	return &MockModelInterface_Expand_Call{Call: _e.mock.On("Expand", g)}
 }
 
-func (_c *MockModelInterface_Expand_Call) Run(run func(g internal.Expander)) *MockModelInterface_Expand_Call {
+func (_c *MockModelInterface_Expand_Call) Run(run func(g internal.StructExpander)) *MockModelInterface_Expand_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(internal.Expander))
+		run(args[0].(internal.StructExpander))
 	})
 	return _c
 }
@@ -125,7 +125,7 @@ func (_c *MockModelInterface_Expand_Call) Return(_a0 error) *MockModelInterface_
 	return _c
 }
 
-func (_c *MockModelInterface_Expand_Call) RunAndReturn(run func(internal.Expander) error) *MockModelInterface_Expand_Call {
+func (_c *MockModelInterface_Expand_Call) RunAndReturn(run func(internal.StructExpander) error) *MockModelInterface_Expand_Call {
 	_c.Call.Return(run)
 	return _c
 }

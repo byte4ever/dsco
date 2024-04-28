@@ -23,23 +23,23 @@ type Node interface {
 }
 
 type GetListInterface interface {
-	ApplyOn(g internal.Getter) (fvalue.Values, error)
+	ApplyOn(g internal.ValueGetter) (fvalue.Values, error)
 	Push(o GetOp)
 	Count() int
 }
 
 type ExpandListInterface interface {
-	ApplyOn(g internal.Expander) error
+	ApplyOn(g internal.StructExpander) error
 	Push(o ExpandOp)
 	Count() int
 }
 
-type GetOp func(g internal.Getter) (
+type GetOp func(g internal.ValueGetter) (
 	uid uint,
 	fieldValue *fvalue.Value,
 	err error,
 )
 
-type ExpandOp func(g internal.Expander) (
+type ExpandOp func(g internal.StructExpander) (
 	err error,
 )
