@@ -20,6 +20,8 @@ const (
 var (
 	reFileName = regexp.MustCompile(fileNameExp)
 
+	// ErrInvalidFileName represents an error indicating that the file name is
+	// invalid.
 	ErrInvalidFileName = errors.New("invalid kfile name")
 )
 
@@ -51,59 +53,7 @@ func newProvider(
 
 	_ = afero.Walk(
 		fs, cleanDirName,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				if !opt.silentFileErrors {
-					errs = append(
-						errs, &pathError{
-							path: path,
-							err:  err,
-						},
-					)
-				}
-				return nil
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			if !reFileName.MatchString(info.Name()) {
-				errs = append(
-					errs,
-					&pathError{
-						path: path,
-						err:  ErrInvalidFileName,
-					},
-				)
-				return nil
-			}
-
-			fileContent, err := afero.ReadFile(fs, path)
-			if err != nil {
-				errs = append(
-					errs,
-					&pathError{
-						path: path,
-						err:  err,
-					},
-				)
-				return nil
-			}
-
-			result[strings.ToLower(info.Name())] = &svalue.Value{
-				Location: fmt.Sprintf(
-					"kfile[%s]:%s",
-					cleanDirName,
-					filepath.Join(
-						strings.Split(path, string(filepath.Separator))[dirToSkip:]...,
-					),
-				),
-				Value: string(fileContent),
-			}
-
-			return nil
-		},
+		walkFunc(fs, opt, &errs, result, cleanDirName, dirToSkip),
 	)
 
 	if len(errs) > 0 {
@@ -121,6 +71,69 @@ func newProvider(
 			cleanDirName,
 		),
 	}, nil
+}
+
+func walkFunc(
+	fs afero.Fs,
+	opt *options,
+	errs *PathErrors,
+	result svalue.Values,
+	cleanDirName string,
+	dirToSkip int,
+) func(
+	path string,
+	info os.FileInfo,
+	err error,
+) error {
+	appendError := func(path string, err error) {
+		*errs = append(
+			*errs,
+			&pathError{
+				path: path,
+				err:  err,
+			},
+		)
+	}
+
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			if !opt.silentFileErrors {
+				appendError(path, err)
+			}
+
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if !reFileName.MatchString(info.Name()) {
+			appendError(path, ErrInvalidFileName)
+
+			return nil
+		}
+
+		fileContent, err := afero.ReadFile(fs, path)
+		if err != nil {
+			appendError(path, err)
+
+			return nil
+		}
+
+		result[strings.ToLower(info.Name())] = &svalue.Value{
+			Location: fmt.Sprintf(
+				"kfile[%s]:%s",
+				cleanDirName,
+				filepath.Join(
+					strings.Split(path, string(filepath.Separator))[dirToSkip:]...,
+				),
+			),
+			Value: string(fileContent),
+		}
+
+		return nil
+	}
 }
 
 type EntriesProvider struct {
