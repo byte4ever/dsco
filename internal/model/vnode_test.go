@@ -179,9 +179,12 @@ func TestValueNode_BuildGetList(t *testing.T) {
 
 			someType := reflect.TypeOf(123)
 			someValue := reflect.ValueOf(345)
-			const path = "the.path"
-			const expectedUID = uint(50)
-			const location = "some-loc"
+
+			const (
+				path        = "the.path"
+				expectedUID = uint(50)
+				location    = "some-loc"
+			)
 
 			n := &ValueNode{
 				Type:        someType,

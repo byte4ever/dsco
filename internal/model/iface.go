@@ -44,6 +44,8 @@ type ExpandOp func(g internal.StructExpander) (
 	err error,
 )
 
+//nolint:unused // for mocking purpose only
+//goland:noinspection GoUnusedType
 type structExpander interface {
 	ExpandStruct(
 		path string,

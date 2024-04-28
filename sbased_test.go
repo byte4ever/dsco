@@ -49,6 +49,7 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			require.ErrorIs(t, err, ErrAliasCollision)
 
 			var e AliasCollisionError
+
 			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t, AliasCollisionError{
@@ -236,8 +237,8 @@ s3:
 			require.ErrorIs(t, err, ErrParse)
 
 			var e ParseError
-			require.ErrorAs(t, err, &e)
 
+			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t, ParseError{
 					Path:     "Some.Path",
@@ -270,8 +271,8 @@ s3:
 			require.ErrorIs(t, err, ErrParse)
 
 			var e ParseError
-			require.ErrorAs(t, err, &e)
 
+			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t, ParseError{
 					Path:     "Some.Path",
@@ -543,7 +544,6 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 					ue,
 				)
 			}
-
 		},
 	)
 }
@@ -772,11 +772,12 @@ func TestNewStringBasedBuilder(t *testing.T) {
 				Once()
 
 			b, err := NewStringBasedBuilder(p, o1, o2)
+
 			require.Nil(t, b)
 
 			var e ierror.IError
-			require.ErrorAs(t, err, &e)
 
+			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t, ierror.IError{
 					Index: 1,
@@ -965,7 +966,9 @@ c:
 
 			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.ErrorIs(t, err, &ParseError{})
+
 			var parseErr *ParseError
+
 			errors.As(err, &parseErr)
 			require.Equal(t, "P.T", parseErr.Path)
 			require.Equal(t, reflect.TypeOf(p), parseErr.Type)
@@ -990,6 +993,7 @@ c:
 			err := sb.ExpandStruct("Alias", reflect.TypeOf(p))
 
 			var asErr *AliasCollisionError
+
 			require.ErrorAs(t, err, &asErr)
 			require.Equal(t, "Alias", asErr.Path)
 		},
@@ -1028,6 +1032,7 @@ c:
 			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 
 			var asErr model.UnsupportedTypeError
+
 			require.ErrorAs(t, err, &asErr)
 		},
 	)

@@ -27,16 +27,17 @@ func TestExpandList_Count(t *testing.T) {
 		{
 			name: "2 items",
 			s: ExpandList{
-				func(g internal.StructExpander) (err error) {
+				func(internal.StructExpander) (err error) {
 					return nil
 				},
-				func(g internal.StructExpander) (err error) {
+				func(internal.StructExpander) (err error) {
 					return nil
 				},
 			},
 			want: 2,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, tt.s.Count(), "Count()")
@@ -60,7 +61,7 @@ func TestExpandList_Push(t *testing.T) {
 			name: "",
 			s:    nil,
 			args: args{
-				o: func(g internal.StructExpander) (err error) {
+				o: func(internal.StructExpander) (err error) {
 					return nil
 				},
 			},
@@ -70,7 +71,9 @@ func TestExpandList_Push(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			sizeBefore := len(tt.s)
+
 			tt.s.Push(tt.args.o)
 			require.Equal(t, sizeBefore+1, len(tt.s))
 		})
@@ -87,11 +90,13 @@ func TestExpandList_ApplyOn(t *testing.T) {
 				EXPECT().
 				Execute(expand).
 				Return(errMocked1)
+
 			op2 := NewMockExpandOp(t)
 			op2.
 				EXPECT().
 				Execute(expand).
 				Return(nil)
+
 			op3 := NewMockExpandOp(t)
 			op3.
 				EXPECT().
@@ -107,6 +112,7 @@ func TestExpandList_ApplyOn(t *testing.T) {
 			err := expandList.ApplyOn(expand)
 
 			var asErr ApplyError
+
 			require.ErrorAs(t, err, &asErr)
 			require.Equal(t, asErr.MError, merror.MError([]error{
 				errMocked1,
@@ -120,16 +126,21 @@ func TestExpandList_ApplyOn(t *testing.T) {
 			expand := newMockStructExpander(t)
 
 			op1 := NewMockExpandOp(t)
+
 			op1.
 				EXPECT().
 				Execute(expand).
 				Return(nil)
+
 			op2 := NewMockExpandOp(t)
+
 			op2.
 				EXPECT().
 				Execute(expand).
 				Return(nil)
+
 			op3 := NewMockExpandOp(t)
+
 			op3.
 				EXPECT().
 				Execute(expand).
@@ -142,6 +153,7 @@ func TestExpandList_ApplyOn(t *testing.T) {
 			}
 
 			err := expandList.ApplyOn(expand)
+
 			require.NoError(t, err)
 		},
 	)

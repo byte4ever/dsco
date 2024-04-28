@@ -65,6 +65,7 @@ func TestNewStructBuilder(t *testing.T) {
 			require.Nil(t, sb)
 
 			var e InvalidInputError
+
 			require.ErrorAs(t, err, &e)
 			require.Equal(t, reflect.TypeOf(v), e.Type)
 		},
@@ -84,7 +85,9 @@ func TestNewStructBuilder(t *testing.T) {
 			require.Nil(t, sb)
 
 			var e InvalidInputError
+
 			require.ErrorAs(t, err, &e)
+
 			require.Equal(t, reflect.TypeOf(v), e.Type)
 		},
 	)

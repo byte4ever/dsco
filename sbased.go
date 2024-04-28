@@ -354,18 +354,18 @@ func (GetError) Is(err error) bool {
 
 // GetBaseFor creates the bases.
 func (s *StringBasedBuilder) GetFieldValuesFrom(
-	model ModelInterface,
+	_model ModelInterface,
 ) (
 	fvalue.Values,
 	error,
 ) {
 	var errs GetError
 
-	if err := model.Expand(s); err != nil {
+	if err := _model.Expand(s); err != nil {
 		errs.Add(err)
 	}
 
-	result, e := model.ApplyOn(s)
+	result, e := _model.ApplyOn(s)
 	if e != nil {
 		errs.Add(e)
 	}

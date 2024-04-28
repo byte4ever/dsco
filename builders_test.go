@@ -152,6 +152,7 @@ func TestLayers_GetPolicies(t *testing.T) {
 				{errMocked2, 2},
 			} {
 				var ie ierror.IError
+
 				require.ErrorAs(t, expectedErr.MError[idx], &ie)
 				require.Equal(t, et.ie, ie.Index)
 				require.Equal(t, et.e, ie.Err)
@@ -268,6 +269,7 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				var e CmdlineAlreadyUsedError
+
 				require.ErrorAs(t, err, &e)
 				require.Len(t, lb.builders, 0)
 				require.Equal(t, 101, e.Index)
@@ -332,6 +334,7 @@ func TestEnvLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				var e DuplicateEnvPrefixError
+
 				require.ErrorAs(t, err, &e)
 				require.Len(t, lb.builders, 0)
 				require.Equal(t, 101, e.Index)
@@ -343,7 +346,9 @@ func TestEnvLayer_register(t *testing.T) {
 			fmt.Sprintf("%s env error", x.name),
 			func(t *testing.T) {
 				t.Setenv("API-123123-_d--__/", "value")
+
 				lb := newLayerBuilder(1)
+
 				require.Error(t, x.layer.register(lb))
 			},
 		)
@@ -419,6 +424,7 @@ func TestStructLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				var e DuplicateStructIDError
+
 				require.ErrorAs(t, err, &e)
 				require.Len(t, lb.builders, 0)
 				require.Equal(t, 101, e.Index)
@@ -441,6 +447,7 @@ func TestStructLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				var e DuplicateInputStructError
+
 				require.ErrorAs(t, err, &e)
 				require.Len(t, lb.builders, 0)
 				require.Equal(t, 101, e.Index)
@@ -573,6 +580,7 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 			require.Len(t, lb.builders, 0)
 
 			var e DuplicateStringProviderError
+
 			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t,
@@ -618,6 +626,7 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 			err := x.register(lb)
 
 			var e ierror.IError
+
 			require.ErrorAs(t, err, &e)
 			require.ErrorIs(t, e.Err, errMocked1)
 			require.Equal(t, 0, e.Index)
@@ -688,6 +697,7 @@ func TestStringProviderLayer_register(t *testing.T) {
 			require.Len(t, lb.builders, 0)
 
 			var e DuplicateStringProviderError
+
 			require.ErrorAs(t, err, &e)
 			require.Equal(
 				t,
@@ -731,6 +741,7 @@ func TestStringProviderLayer_register(t *testing.T) {
 			err := x.register(lb)
 
 			var e ierror.IError
+
 			require.ErrorAs(t, err, &e)
 			require.ErrorIs(t, e.Err, errMocked1)
 			require.Equal(t, 0, e.Index)

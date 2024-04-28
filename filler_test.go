@@ -494,6 +494,7 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 			require.Len(t, c.err.MError, 1)
 
 			var e OverriddenKeyError
+
 			require.ErrorAs(t, c.err.MError[0], &e)
 			require.Equal(
 				t, OverriddenKeyError{

@@ -67,8 +67,8 @@ func TestStructNode_Fill(t *testing.T) {
 				Once()
 
 			type SType struct {
-				A interface{}
-				B interface{}
+				A any
+				B any
 			}
 
 			var i *SType
@@ -175,8 +175,8 @@ func TestStructNode_Fill(t *testing.T) {
 				Once()
 
 			type SType struct {
-				A interface{}
-				B interface{}
+				A any
+				B any
 			}
 
 			var i *SType
