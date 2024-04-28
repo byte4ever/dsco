@@ -43,3 +43,10 @@ type GetOp func(g internal.ValueGetter) (
 type ExpandOp func(g internal.StructExpander) (
 	err error,
 )
+
+type structExpander interface {
+	ExpandStruct(
+		path string,
+		_type reflect.Type,
+	) (err error)
+}

@@ -568,6 +568,26 @@ func TestModel_ApplyOn(t *testing.T) {
 	require.Equal(t, errMocked1, err)
 }
 
+func TestModel_Expand(t *testing.T) {
+	t.Parallel()
+
+	structExpander := newMockStructExpander(t)
+
+	expandList := NewMockExpandListInterface(t)
+	expandList.
+		EXPECT().
+		ApplyOn(structExpander).
+		Return(errMocked1).Once()
+
+	m := &Model{
+		expandList: expandList,
+	}
+
+	err := m.Expand(structExpander)
+
+	require.Equal(t, errMocked1, err)
+}
+
 func TestModel_Fill(t *testing.T) {
 	t.Parallel()
 
