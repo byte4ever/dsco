@@ -1,0 +1,133 @@
+package hit
+
+import (
+	"crypto/sha256"
+	"reflect"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func ref[T any](v T) *T {
+	return &v
+}
+
+func Test_hdlAnyInt(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		sig    []byte
+		values []reflect.Value
+	}
+
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "nil pointer",
+			args: args{
+				sig: []byte{
+					0xa9, 0xc0, 0xe4, 0xc2, 0x7c, 0x13, 0xf5, 0x29,
+					0x74, 0xcc, 0x9, 0xf6, 0x7, 0xfe, 0xc1, 0xec,
+					0x9f, 0x94, 0x94, 0x8d, 0x40, 0x57, 0xd8, 0x7f,
+					0x1c, 0x0, 0xcf, 0x46, 0xaa, 0x12, 0xa2, 0xd4,
+				},
+				values: []reflect.Value{
+					reflect.ValueOf((*int)(nil)),
+					reflect.ValueOf((*int8)(nil)),
+					reflect.ValueOf((*int16)(nil)),
+					reflect.ValueOf((*int32)(nil)),
+					reflect.ValueOf((*int64)(nil)),
+				},
+			},
+		},
+		{
+			name: "0 value",
+			args: args{
+				sig: []byte{
+					0x96, 0x20, 0xae, 0xaa, 0x27, 0xd5, 0x2a, 0xd0,
+					0x2, 0xd6, 0xba, 0x0, 0x51, 0xee, 0xd7, 0x53,
+					0x64, 0xcf, 0x5b, 0x29, 0xaa, 0x6b, 0x82, 0x49,
+					0xfd, 0x1d, 0x34, 0x67, 0xd1, 0x65, 0x84, 0x8c,
+				},
+				values: []reflect.Value{
+					reflect.ValueOf(0),
+					reflect.ValueOf((int8)(0)),
+					reflect.ValueOf((int16)(0)),
+					reflect.ValueOf((int32)(0)),
+					reflect.ValueOf((int64)(0)),
+				},
+			},
+		},
+		{
+			name: "0 ref value",
+			args: args{
+				sig: []byte{
+					0x96, 0x20, 0xae, 0xaa, 0x27, 0xd5, 0x2a, 0xd0,
+					0x2, 0xd6, 0xba, 0x0, 0x51, 0xee, 0xd7, 0x53,
+					0x64, 0xcf, 0x5b, 0x29, 0xaa, 0x6b, 0x82, 0x49,
+					0xfd, 0x1d, 0x34, 0x67, 0xd1, 0x65, 0x84, 0x8c,
+				},
+				values: []reflect.Value{
+					reflect.ValueOf(ref(0)),
+					reflect.ValueOf(ref((int8)(0))),
+					reflect.ValueOf(ref((int16)(0))),
+					reflect.ValueOf(ref((int32)(0))),
+					reflect.ValueOf(ref((int64)(0))),
+				},
+			},
+		},
+		{
+			name: "101 value",
+			args: args{
+				sig: []byte{
+					0x15, 0xb4, 0xdd, 0x37, 0xee, 0x99, 0xda, 0x36,
+					0x68, 0xb2, 0xfb, 0x88, 0x87, 0x17, 0x34, 0xaf,
+					0x9d, 0x37, 0x22, 0xd8, 0x99, 0x13, 0x9d, 0x75,
+					0x2e, 0x31, 0xf7, 0x98, 0xde, 0xef, 0x79, 0x9a,
+				},
+				values: []reflect.Value{
+					reflect.ValueOf(101),
+					reflect.ValueOf((int8)(101)),
+					reflect.ValueOf((int16)(101)),
+					reflect.ValueOf((int32)(101)),
+					reflect.ValueOf((int64)(101)),
+				},
+			},
+		},
+		{
+			name: "101 ref value",
+			args: args{
+				sig: []byte{
+					0x15, 0xb4, 0xdd, 0x37, 0xee, 0x99, 0xda, 0x36,
+					0x68, 0xb2, 0xfb, 0x88, 0x87, 0x17, 0x34, 0xaf,
+					0x9d, 0x37, 0x22, 0xd8, 0x99, 0x13, 0x9d, 0x75,
+					0x2e, 0x31, 0xf7, 0x98, 0xde, 0xef, 0x79, 0x9a,
+				},
+				values: []reflect.Value{
+					reflect.ValueOf(ref(101)),
+					reflect.ValueOf(ref((int8)(101))),
+					reflect.ValueOf(ref((int16)(101))),
+					reflect.ValueOf(ref((int32)(101))),
+					reflect.ValueOf(ref((int64)(101))),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			h := sha256.New()
+
+			for _, value := range tt.args.values {
+				hdlAnyInt(h, value)
+				require.Equal(t, tt.args.sig, h.Sum(nil))
+				h.Reset()
+			}
+		})
+	}
+}
