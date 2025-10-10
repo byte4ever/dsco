@@ -21,6 +21,7 @@ sur des structures avec validation stricte.
 ## Table des matières
 
 - [Présentation](#présentation)
+- [Motivations du projet](#motivations-du-projet)
 - [Fonctionnalités clés](#fonctionnalités-clés)
 - [Installation](#installation)
 - [Démarrage rapide](#démarrage-rapide)
@@ -40,6 +41,158 @@ de configuration (ligne de commande, variables d'environnement, fichiers,
 structures) sont organisées en couches avec une précédence configurable. 
 Les couches ultérieures remplacent les précédentes, avec un mode strict 
 optionnel pour la détection des conflits.
+
+## Motivations du projet
+
+### Configuration sécurisée pour les microservices
+
+dsco a été spécifiquement conçu pour répondre aux défis critiques de sécurité 
+de configuration dans les environnements de microservices où une mauvaise 
+configuration peut conduire à des vulnérabilités de sécurité, des pannes de 
+service ou une corruption de données.
+
+#### Le problème avec la configuration traditionnelle
+
+Les approches de configuration Go traditionnelles souffrent souvent de :
+
+- **Défauts silencieux** : Valeurs qui semblent configurées mais utilisent 
+  en réalité des valeurs par défaut cachées
+- **Configuration partielle** : Services démarrant avec une configuration 
+  incomplète, conduisant à des échecs d'exécution
+- **État ambiguë** : Aucune distinction claire entre "non configuré" et 
+  "configuré avec une valeur par défaut"
+- **Dérive de configuration** : Différents environnements ayant des 
+  configurations subtilement différentes en raison de valeurs explicites 
+  manquantes
+
+#### La conception de sécurité basée sur les pointeurs
+
+dsco impose une **configuration explicite** à travers des champs basés sur 
+des pointeurs :
+
+```go
+type DatabaseConfig struct {
+    Host     *string `yaml:"host"`     // nil = non configuré
+    Port     *int    `yaml:"port"`     // nil = non configuré  
+    Timeout  *int    `yaml:"timeout"`  // nil = non configuré
+}
+
+// SÛRE : Toutes les valeurs sont explicitement fournies
+config := &DatabaseConfig{
+    Host:    dsco.R("localhost"),
+    Port:    dsco.R(5432),
+    Timeout: dsco.R(30),
+}
+
+// DANGEREUSE : Provoquerait une erreur de validation - pas d'ambiguïté
+config := &DatabaseConfig{
+    Host: dsco.R("localhost"),
+    // Port et Timeout sont nil - clairement non configurés
+}
+```
+
+**Pourquoi les pointeurs sont importants :**
+
+1. **Explicite vs Implicite** : `nil` signifie clairement "non configuré", 
+   tandis qu'une valeur signifie "explicitement configuré"
+2. **Pas de défauts cachés** : Les valeurs zéro (0, "", false) ne masquent 
+   pas la configuration manquante
+3. **Clarté de validation** : Le système peut identifier définitivement la 
+   configuration requise manquante
+4. **Sécurité microservice** : Les services échouent rapidement avec des 
+   messages d'erreur clairs plutôt que de fonctionner avec des défauts 
+   dangereux
+
+#### Exigence de configuration complète
+
+dsco impose que **toute la configuration soit complète et explicite** :
+
+```go
+// Ceci ÉCHOUERA à la validation - configuration incomplète
+var config *ServiceConfig
+dsco.Fill(&config, 
+    dsco.WithEnvLayer("SERVICE"),
+    // Les champs requis manquants provoqueront un échec de démarrage
+)
+
+// Ceci RÉUSSIRA - tous les champs requis explicitement fournis
+dsco.Fill(&config,
+    dsco.WithEnvLayer("SERVICE"),
+    dsco.WithStructLayer(&ServiceConfig{
+        // Défauts explicites pour tous les champs requis
+        Database: &DatabaseConfig{
+            Host:    dsco.R("localhost"),
+            Port:    dsco.R(5432),
+            Timeout: dsco.R(30),
+        },
+        Server: &ServerConfig{
+            Port:    dsco.R(8080),
+            Timeout: dsco.R(60),
+        },
+    }, "defaults"),
+)
+```
+
+#### Avantages de sécurité pour les microservices
+
+1. **Démarrage à échec rapide** : Les services ne peuvent pas démarrer avec 
+   une configuration incomplète
+2. **Parité d'environnement** : Tous les environnements doivent avoir une 
+   configuration explicitement définie
+3. **Piste d'audit** : Chaque valeur de configuration a une source et un 
+   emplacement clairs
+4. **Pas d'échecs silencieux** : La configuration manquante provoque des 
+   erreurs immédiates et claires
+5. **Validation de configuration** : La validation intégrée assure la 
+   complétude de la configuration
+6. **Remplacements en couches** : Les règles de précédence sûres empêchent 
+   les conflits de configuration accidentels
+
+#### Exemple concret : Sécurité de connexion à la base de données
+
+```go
+type DatabaseConfig struct {
+    Host     *string `yaml:"host"`
+    Port     *int    `yaml:"port"`
+    Username *string `yaml:"username"`
+    Password *string `yaml:"password"`
+    Database *string `yaml:"database"`
+    SSLMode  *string `yaml:"ssl_mode"`
+}
+
+// Démarrage du service de production
+_, err := dsco.Fill(&dbConfig,
+    // Remplacements spécifiques à l'environnement (priorité la plus élevée)
+    dsco.WithStrictEnvLayer("DB"),
+    
+    // Système de gestion des secrets
+    dsco.WithStringValueProvider(secretProvider),
+    
+    // Configuration de base requise (priorité la plus faible)
+    dsco.WithStrictStructLayer(&DatabaseConfig{
+        Host:     dsco.R("postgres.prod.internal"),
+        Port:     dsco.R(5432),
+        Database: dsco.R("servicedb"),
+        SSLMode:  dsco.R("require"),
+        // Username et Password doivent venir des couches supérieures
+        // ou le service échoue au démarrage - pas de défauts silencieux !
+    }, "base-config"),
+)
+
+if err != nil {
+    // Le service échoue au démarrage avec une erreur claire :
+    // "le champ 'username' n'est pas configuré"
+    // "le champ 'password' n'est pas configuré"
+    log.Fatal("Configuration incomplète :", err)
+}
+
+// Le service ne démarre qu'avec une configuration complète et explicite
+```
+
+Cette approche garantit que les microservices dans les environnements de 
+production ne peuvent pas démarrer avec une configuration critique manquante, 
+empêchant les problèmes de sécurité et les échecs d'exécution qui pourraient 
+affecter l'ensemble du système.
 
 ## Fonctionnalités clés
 
