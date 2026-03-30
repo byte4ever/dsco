@@ -31,7 +31,6 @@ func (s GetList) ApplyOn(g internal.ValueGetter) (fvalue.Values, error) {
 
 	for _, op := range s {
 		uid, fieldValue, err := op(g)
-
 		if err != nil {
 			errs.Add(err)
 			continue

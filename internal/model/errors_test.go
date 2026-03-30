@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errMocked1 = errors.New("error mocked 1")
-var errMocked2 = errors.New("error mocked 2")
+var (
+	errMocked1 = errors.New("error mocked 1")
+	errMocked2 = errors.New("error mocked 2")
+)
 
 type Mocked1Error struct{}
 
@@ -25,7 +27,11 @@ func checkAsMockedError1(
 
 	var me Mocked1Error
 
-	require.ErrorAs(t, err, &me)
+	require.ErrorAs(
+		t,
+		err,
+		&me,
+	)
 }
 
 type Mocked2Error struct{}
@@ -42,7 +48,11 @@ func checkAsMockedError2(
 
 	var me Mocked2Error
 
-	require.ErrorAs(t, err, &me)
+	require.ErrorAs(
+		t,
+		err,
+		&me,
+	)
 }
 
 func TestFieldNameCollisionError_Error(t *testing.T) {

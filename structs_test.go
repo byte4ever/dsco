@@ -29,8 +29,16 @@ func TestNewStructBuilder(t *testing.T) {
 			sb, err := NewStructBuilder(v, id)
 			require.NoError(t, err)
 			require.NotNil(t, sb)
-			require.Equal(t, id, sb.id)
-			require.Equal(t, v, sb.value.Interface())
+			require.Equal(
+				t,
+				id,
+				sb.id,
+			)
+			require.Equal(
+				t,
+				v,
+				sb.value.Interface(),
+			)
 		},
 	)
 
@@ -43,7 +51,11 @@ func TestNewStructBuilder(t *testing.T) {
 
 			sb, err := NewStructBuilder(nil, id)
 			require.Nil(t, sb)
-			require.ErrorIs(t, err, ErrNilInput)
+			require.ErrorIs(
+				t,
+				err,
+				ErrNilInput,
+			)
 		},
 	)
 
@@ -66,8 +78,16 @@ func TestNewStructBuilder(t *testing.T) {
 
 			var e InvalidInputError
 
-			require.ErrorAs(t, err, &e)
-			require.Equal(t, reflect.TypeOf(v), e.Type)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
+			require.Equal(
+				t,
+				reflect.TypeOf(v),
+				e.Type,
+			)
 		},
 	)
 
@@ -86,9 +106,17 @@ func TestNewStructBuilder(t *testing.T) {
 
 			var e InvalidInputError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 
-			require.Equal(t, reflect.TypeOf(v), e.Type)
+			require.Equal(
+				t,
+				reflect.TypeOf(v),
+				e.Type,
+			)
 		},
 	)
 }
@@ -113,7 +141,11 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			gotVfs, err := sb.GetFieldValuesFrom(model)
 
-			require.ErrorIs(t, err, ErrStructTypeDiffer)
+			require.ErrorIs(
+				t,
+				err,
+				ErrStructTypeDiffer,
+			)
 			require.Nil(t, gotVfs)
 		},
 	)
@@ -137,7 +169,11 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 				Once()
 
 			model.
-				On("GetFieldValuesFor", id, value).
+				On(
+					"GetFieldValuesFor",
+					id,
+					value,
+				).
 				Return(fvsOut).
 				Once()
 
@@ -149,7 +185,11 @@ func TestStructBuilder_GetFieldValuesFrom(t *testing.T) {
 			gotVfs, err := sb.GetFieldValuesFrom(model)
 
 			require.NoError(t, err)
-			require.Equal(t, fvsOut, gotVfs)
+			require.Equal(
+				t,
+				fvsOut,
+				gotVfs,
+			)
 		},
 	)
 }

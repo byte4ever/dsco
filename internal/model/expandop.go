@@ -15,7 +15,6 @@ func (s ExpandList) ApplyOn(g internal.StructExpander) error {
 
 	for _, op := range s {
 		err := op(g)
-
 		if err != nil {
 			errs.Add(err)
 			continue

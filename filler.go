@@ -1,3 +1,6 @@
+// Package dsco provides configuration processing using layered sources.
+// This file contains the core filling logic that orchestrates the
+// configuration process from source layers to final struct population.
 package dsco
 
 import (
@@ -11,6 +14,9 @@ import (
 	"github.com/byte4ever/dsco/internal/plocation"
 )
 
+// dscoContext encapsulates the state and orchestrates the configuration
+// filling process across multiple phases: model generation, builder
+// creation, field value extraction, struct filling, and validation.
 type dscoContext struct {
 	inputModelRef any
 	err           FillerErrors
@@ -24,16 +30,23 @@ type dscoContext struct {
 	pathLocations    plocation.Locations
 }
 
+// FillerErrors aggregates multiple errors that can occur during the
+// configuration filling process across different layers and validation steps.
 type FillerErrors struct {
 	merror.MError
 }
 
+// ErrFiller is the sentinel error for configuration filling failures.
 var ErrFiller = errors.New("")
 
+// Is implements error matching for FillerErrors, allowing error.Is checks
+// against ErrFiller to detect filling-related errors.
 func (FillerErrors) Is(err error) bool {
 	return errors.Is(err, ErrFiller)
 }
 
+// newDSCOContext creates a new configuration filling context with the
+// target struct reference and source layers to process.
 func newDSCOContext(
 	inputModelRef any,
 	layers Layers,
@@ -59,8 +72,8 @@ func (c *dscoContext) generateModel() {
 func (c *dscoContext) generateBuilders() {
 	if c.err.None() {
 		var err error
-		c.builders, err = c.layers.GetPolicies()
 
+		c.builders, err = c.layers.GetPolicies()
 		if err != nil {
 			c.err.Add(err)
 		}

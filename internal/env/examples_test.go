@@ -35,7 +35,6 @@ func Example_newEntriesProvider_2() {
 	}
 
 	err = os.Setenv("API-SOME-KEY3", "value3")
-
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +48,6 @@ func Example_newEntriesProvider_2() {
 	// with the provided prefix.
 
 	provider, err := NewEntriesProvider("API")
-
 	if err != nil {
 		panic(err)
 	}

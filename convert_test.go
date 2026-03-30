@@ -56,7 +56,11 @@ func Test_convert(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				require.Equal(t, tt.want, convert(tt.args.s))
+				require.Equal(
+					t,
+					tt.want,
+					convert(tt.args.s),
+				)
 			},
 		)
 	}

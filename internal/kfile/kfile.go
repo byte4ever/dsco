@@ -53,7 +53,14 @@ func newProvider(
 
 	_ = afero.Walk(
 		fs, cleanDirName,
-		walkFunc(fs, opt, &errs, result, cleanDirName, dirToSkip),
+		walkFunc(
+			fs,
+			opt,
+			&errs,
+			result,
+			cleanDirName,
+			dirToSkip,
+		),
 	)
 
 	if len(errs) > 0 {

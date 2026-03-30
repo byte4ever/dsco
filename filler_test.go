@@ -26,8 +26,16 @@ func Test_newDSCOContext(t *testing.T) {
 		layers,
 	)
 
-	require.Equal(t, v, c.inputModelRef)
-	require.Equal(t, layers, c.layers)
+	require.Equal(
+		t,
+		v,
+		c.inputModelRef,
+	)
+	require.Equal(
+		t,
+		layers,
+		c.layers,
+	)
 }
 
 func Test_dscoContext_generateModel(t *testing.T) {
@@ -133,7 +141,11 @@ func Test_dscoContext_generateBuilders(t *testing.T) {
 			}
 
 			c.generateBuilders()
-			require.Equal(t, builders, c.builders)
+			require.Equal(
+				t,
+				builders,
+				c.builders,
+			)
 			require.True(t, c.err.None())
 		},
 	)
@@ -156,8 +168,16 @@ func Test_dscoContext_generateBuilders(t *testing.T) {
 			c.generateBuilders()
 			require.Nil(t, c.builders)
 			require.False(t, c.err.None())
-			require.Len(t, c.err.MError, 1)
-			require.ErrorIs(t, c.err.MError[0], errMocked1)
+			require.Len(
+				t,
+				c.err.MError,
+				1,
+			)
+			require.ErrorIs(
+				t,
+				c.err.MError[0],
+				errMocked1,
+			)
 		},
 	)
 }
@@ -301,8 +321,16 @@ func Test_dscoContext_generateFieldValues(t *testing.T) {
 				c.mustBeUsed,
 			)
 			require.False(t, c.err.None())
-			require.Len(t, c.err.MError, 1)
-			require.ErrorIs(t, c.err.MError[0], errMocked1)
+			require.Len(
+				t,
+				c.err.MError,
+				1,
+			)
+			require.ErrorIs(
+				t,
+				c.err.MError[0],
+				errMocked1,
+			)
 		},
 	)
 }
@@ -369,7 +397,11 @@ func Test_dscoContext_fillIt(t *testing.T) {
 
 			model := NewMockModelInterface(t)
 			model.
-				On("Fill", ve, base).
+				On(
+					"Fill",
+					ve,
+					base,
+				).
 				Return(ploc, nil).
 				Once()
 
@@ -381,7 +413,11 @@ func Test_dscoContext_fillIt(t *testing.T) {
 
 			c.fillIt()
 			require.True(t, c.err.None())
-			require.Equal(t, ploc, c.pathLocations)
+			require.Equal(
+				t,
+				ploc,
+				c.pathLocations,
+			)
 		},
 	)
 
@@ -417,7 +453,11 @@ func Test_dscoContext_fillIt(t *testing.T) {
 
 			model := NewMockModelInterface(t)
 			model.
-				On("Fill", ve, base).
+				On(
+					"Fill",
+					ve,
+					base,
+				).
 				Return(nil, errMocked1).
 				Once()
 
@@ -430,8 +470,16 @@ func Test_dscoContext_fillIt(t *testing.T) {
 			c.fillIt()
 			require.Nil(t, c.pathLocations)
 			require.False(t, c.err.None())
-			require.Len(t, c.err.MError, 1)
-			require.ErrorIs(t, c.err.MError[0], errMocked1)
+			require.Len(
+				t,
+				c.err.MError,
+				1,
+			)
+			require.ErrorIs(
+				t,
+				c.err.MError[0],
+				errMocked1,
+			)
 		},
 	)
 }
@@ -491,11 +539,19 @@ func Test_dscoContext_checkUnused(t *testing.T) {
 
 			c.checkUnused()
 			require.False(t, c.err.None())
-			require.Len(t, c.err.MError, 1)
+			require.Len(
+				t,
+				c.err.MError,
+				1,
+			)
 
 			var e OverriddenKeyError
 
-			require.ErrorAs(t, c.err.MError[0], &e)
+			require.ErrorAs(
+				t,
+				c.err.MError[0],
+				&e,
+			)
 			require.Equal(
 				t, OverriddenKeyError{
 					Path:             "path1",
@@ -587,7 +643,6 @@ func TestFill(t *testing.T) {
 	t.Run(
 		"success",
 		func(t *testing.T) {
-
 			type Sub struct {
 				FirstName    *string
 				LastName     *string
@@ -664,7 +719,6 @@ func TestFill(t *testing.T) {
 	t.Run(
 		"failure",
 		func(t *testing.T) {
-
 			type Sub struct {
 				FirstName    *string
 				TrainingTime *time.Duration
@@ -733,5 +787,9 @@ func TestFill(t *testing.T) {
 func TestFillerErrors_Is(t *testing.T) {
 	t.Parallel()
 
-	require.ErrorIs(t, FillerErrors{}, ErrFiller)
+	require.ErrorIs(
+		t,
+		FillerErrors{},
+		ErrFiller,
+	)
 }

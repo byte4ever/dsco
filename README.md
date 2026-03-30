@@ -1,212 +1,66 @@
-# dsco (pronounce /ˈdɪskoʊ/. Yes! as 70's music)
+# dsco
+
+**Stop deploying microservices with broken configuration.**
+
+dsco is a Go configuration library that makes misconfiguration impossible.
+No more silent defaults. No more "it works on my machine." No more 3 AM pages
+because someone forgot to set `DATABASE_PASSWORD` in production.
+
+```go
+// 30 seconds to bulletproof configuration
+var config *Config
+dsco.Fill(&config,
+    dsco.WithStructLayer(defaults, "defaults"),  // Dev defaults baked in
+    dsco.WithEnvLayer("MYAPP"),                  // Container/K8s config
+    dsco.WithCmdlineLayer(),                     // Quick local overrides
+)
+// Missing config? App won't start. You'll know immediately.
+```
 
 [![Go](https://github.com/byte4ever/dsco/actions/workflows/go.yml/badge.svg)](https://github.com/byte4ever/dsco/actions/workflows/go.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/byte4ever/dsco.svg)](https://pkg.go.dev/github.com/byte4ever/dsco)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.21-61CFDD.svg?style=flat-square)
 [![Go Report Card](https://goreportcard.com/badge/github.com/byte4ever/dsco?style=flat-square)](https://goreportcard.com/report/github.com/byte4ever/dsco)
-
-[![Maintainability](https://api.codeclimate.com/v1/badges/c64776c8e19d20057719/maintainability)](https://codeclimate.com/github/byte4ever/dsco/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c64776c8e19d20057719/test_coverage)](https://codeclimate.com/github/byte4ever/dsco/test_coverage)
-[![codecov](https://codecov.io/gh/byte4ever/dsco/branch/master/graph/badge.svg?token=E5OURNE56X)](https://codecov.io/gh/byte4ever/dsco)
-
-[![Scc Count Badge](https://sloc.xyz/github/byte4ever/dsco)](https://github.com/byte4ever/dsco/)
 
 [Français](README_fr.md) | English
 
-A powerful Go configuration library that provides a layered configuration 
-system supporting command line arguments, environment variables, YAML files, 
-and struct-based configurations with strict validation.
+---
 
-## Table of Contents
+## Why dsco?
 
-- [Overview](#overview)
-- [Project Motivations](#project-motivations)
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Architecture Overview](#architecture-overview)
-- [Layer Types](#layer-types)
-- [Configuration Struct Patterns](#configuration-struct-patterns)
-- [Error Handling](#error-handling)
-- [Advanced Usage](#advanced-usage)
-- [API Reference](#api-reference)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-dsco implements a layered configuration system where different configuration 
-sources (command line, environment variables, files, structs) are organized 
-into layers with configurable precedence. Later layers override earlier ones,
-with optional strict mode for conflict detection.
-
-## Project Motivations
-
-### Safe Microservices Configuration
-
-dsco was specifically designed to address critical configuration safety 
-challenges in microservices environments where misconfiguration can lead to 
-security vulnerabilities, service outages, or data corruption.
-
-#### The Problem with Traditional Configuration
-
-Traditional Go configuration approaches often suffer from:
-
-- **Silent Defaults**: Values that appear configured but are actually using 
-  hidden default values
-- **Partial Configuration**: Services starting with incomplete configuration, 
-  leading to runtime failures
-- **Ambiguous State**: No clear distinction between "not configured" and 
-  "configured with default value"
-- **Configuration Drift**: Different environments having subtly different 
-  configurations due to missing explicit values
-
-#### The Pointer-Based Safety Design
-
-dsco enforces **explicit configuration** through pointer-based fields:
+**Traditional Go configuration is dangerous:**
 
 ```go
-type DatabaseConfig struct {
-    Host     *string `yaml:"host"`     // nil = not configured
-    Port     *int    `yaml:"port"`     // nil = not configured  
-    Timeout  *int    `yaml:"timeout"`  // nil = not configured
-}
-
-// SAFE: All values are explicitly provided
-config := &DatabaseConfig{
-    Host:    dsco.R("localhost"),
-    Port:    dsco.R(5432),
-    Timeout: dsco.R(30),
-}
-
-// UNSAFE: Would cause validation error - no ambiguity
-config := &DatabaseConfig{
-    Host: dsco.R("localhost"),
-    // Port and Timeout are nil - clearly not configured
+type Config struct {
+    Host string  // Is "" intentional or did someone forget to set it?
+    Port int     // Is 0 a valid port or a missing value?
 }
 ```
 
-**Why Pointers Matter:**
-
-1. **Explicit vs Implicit**: `nil` clearly means "not configured", while a 
-   value means "explicitly configured"
-2. **No Hidden Defaults**: Zero values (0, "", false) don't mask missing 
-   configuration
-3. **Validation Clarity**: The system can definitively identify missing 
-   required configuration
-4. **Microservice Safety**: Services fail fast with clear error messages 
-   rather than running with dangerous defaults
-
-#### Complete Configuration Requirement
-
-dsco enforces that **all configuration must be complete and explicit**:
+**dsco makes intent explicit:**
 
 ```go
-// This will FAIL validation - incomplete configuration
-var config *ServiceConfig
-dsco.Fill(&config, 
-    dsco.WithEnvLayer("SERVICE"),
-    // Missing required fields will cause startup failure
-)
-
-// This will SUCCEED - all required fields explicitly provided
-dsco.Fill(&config,
-    dsco.WithEnvLayer("SERVICE"),
-    dsco.WithStructLayer(&ServiceConfig{
-        // Explicit defaults for all required fields
-        Database: &DatabaseConfig{
-            Host:    dsco.R("localhost"),
-            Port:    dsco.R(5432),
-            Timeout: dsco.R(30),
-        },
-        Server: &ServerConfig{
-            Port:    dsco.R(8080),
-            Timeout: dsco.R(60),
-        },
-    }, "defaults"),
-)
+type Config struct {
+    Host *string `yaml:"host"`  // nil = not configured (fail fast)
+    Port *int    `yaml:"port"`  // nil = not configured (fail fast)
+}
 ```
 
-#### Microservice Safety Benefits
+| Problem | dsco Solution |
+|---------|---------------|
+| Service starts with missing DB password | Fails immediately with clear error |
+| Zero value `0` masks missing port config | `nil` explicitly means "not set" |
+| Config works locally, breaks in prod | Same validation everywhere |
+| "Which env var overrode what?" | Full audit trail with source tracking |
 
-1. **Fail-Fast Startup**: Services cannot start with incomplete configuration
-2. **Environment Parity**: All environments must have explicitly defined 
-   configuration
-3. **Audit Trail**: Every configuration value has a clear source and location
-4. **No Silent Failures**: Missing configuration causes immediate, clear errors
-5. **Configuration Validation**: Built-in validation ensures configuration 
-   completeness
-6. **Layered Overrides**: Safe precedence rules prevent accidental 
-   configuration conflicts
+---
 
-#### Real-World Example: Database Connection Safety
-
-```go
-type DatabaseConfig struct {
-    Host     *string `yaml:"host"`
-    Port     *int    `yaml:"port"`
-    Username *string `yaml:"username"`
-    Password *string `yaml:"password"`
-    Database *string `yaml:"database"`
-    SSLMode  *string `yaml:"ssl_mode"`
-}
-
-// Production service startup
-_, err := dsco.Fill(&dbConfig,
-    // Environment-specific overrides (highest priority)
-    dsco.WithStrictEnvLayer("DB"),
-    
-    // Secret management system
-    dsco.WithStringValueProvider(secretProvider),
-    
-    // Required base configuration (lowest priority)
-    dsco.WithStrictStructLayer(&DatabaseConfig{
-        Host:     dsco.R("postgres.prod.internal"),
-        Port:     dsco.R(5432),
-        Database: dsco.R("servicedb"),
-        SSLMode:  dsco.R("require"),
-        // Username and Password must come from higher layers
-        // or service fails to start - no silent defaults!
-    }, "base-config"),
-)
-
-if err != nil {
-    // Service fails to start with clear error:
-    // "field 'username' is not configured"
-    // "field 'password' is not configured"
-    log.Fatal("Configuration incomplete:", err)
-}
-
-// Service only starts with complete, explicit configuration
-```
-
-This approach ensures that microservices in production environments cannot 
-start with missing critical configuration, preventing security issues and 
-runtime failures that could affect the entire system.
-
-## Key Features
-
-- **Multi-source Configuration**: Command line args, environment variables, 
-  YAML/JSON files, Go structs, and custom providers
-- **Layered Priority System**: Configurable precedence with override control
-- **Strict Mode**: Detect unused configuration values and conflicts
-- **Type Safety**: Automatic type conversion with validation
-- **Reflection-based**: Works with any Go struct using tags
-- **Alias Support**: Define shortcuts for complex field paths
-- **Error Aggregation**: Comprehensive error reporting with location tracking
-- **Zero Dependencies**: Pure Go with minimal external requirements
-
-## Installation
+## Quick Start
 
 ```bash
 go get github.com/byte4ever/dsco
 ```
-
-Requires Go 1.21 or later.
-
-## Quick Start
-
-### Basic Example
 
 ```go
 package main
@@ -214,61 +68,443 @@ package main
 import (
     "fmt"
     "log"
-    "time"
 
     "github.com/byte4ever/dsco"
 )
 
-// Configuration struct with pointer fields
 type Config struct {
-    Host     *string        `yaml:"host"`
-    Port     *int           `yaml:"port"`
-    Timeout  *time.Duration `yaml:"timeout"`
-    Verbose  *bool          `yaml:"verbose"`
+    Host *string `yaml:"host"`
+    Port *int    `yaml:"port"`
 }
 
 func main() {
     var config *Config
 
-    // Fill configuration from multiple sources
-    _, err := dsco.Fill(
-        &config,
-        dsco.WithCmdlineLayer(),
-        dsco.WithEnvLayer("MYAPP"),
+    _, err := dsco.Fill(&config,
+        // Layer 1: defaults (lowest priority)
         dsco.WithStructLayer(&Config{
-            Host:    dsco.R("localhost"),
-            Port:    dsco.R(8080),
-            Timeout: dsco.R(30 * time.Second),
-            Verbose: dsco.R(false),
+            Host: dsco.R("localhost"),
+            Port: dsco.R(8080),
         }, "defaults"),
+        // Layer 2: environment variables
+        dsco.WithEnvLayer("MYAPP"),
+        // Layer 3: command line (highest priority)
+        dsco.WithCmdlineLayer(),
     )
-
     if err != nil {
-        log.Fatal(err)
+        log.Fatal(err)  // Missing config? Crash here, not in production.
     }
 
     fmt.Printf("Server: %s:%d\n", *config.Host, *config.Port)
-    fmt.Printf("Timeout: %v\n", *config.Timeout)
-    fmt.Printf("Verbose: %t\n", *config.Verbose)
 }
 ```
 
-### Usage Examples
-
 ```bash
-# Command line arguments
-./myapp --host=production.com --port=9000
+# Just works with defaults
+./myapp
 
-# Environment variables
-MYAPP_HOST=production.com MYAPP_PORT=9000 ./myapp
+# Override via environment (Kubernetes/Docker)
+MYAPP-HOST=api.prod.internal MYAPP-PORT=9000 ./myapp
 
-# Combined (command line takes precedence)
-MYAPP_HOST=staging.com ./myapp --host=production.com
+# Override via command line (local dev)
+./myapp --host=staging.example.com --port=9000
 ```
 
-## Architecture Overview
+**New to dsco?** The [Quick Start Guide](QUICKSTART.md) covers all concepts
+step-by-step.
 
-The dsco library implements a sophisticated layered configuration system:
+---
+
+## Table of Contents
+
+- [Key Features](#key-features)
+- [The Safety Design](#the-safety-design)
+- [You're In Control](#youre-in-control)
+- [Layer Types](#layer-types)
+- [Environment Variables](#environment-variables)
+- [Architecture](#architecture)
+- [Configuration Patterns](#configuration-patterns)
+- [Error Handling](#error-handling)
+- [Advanced Usage](#advanced-usage)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Contributing](#contributing)
+
+---
+
+## Key Features
+
+| Feature | Benefit |
+|---------|---------|
+| **Layered Priority** | Struct defaults → env vars → cmdline. Later wins. |
+| **Pointer-Based Safety** | `nil` = not configured. No silent zero values. |
+| **Strict Mode** | Catch typos and unwanted overrides immediately. |
+| **Source Tracking** | Know exactly where every value came from. |
+| **Multi-Source** | Cmdline, env vars, files, structs, custom providers. |
+| **Type Safety** | Automatic conversion with clear parse errors. |
+| **Alias Support** | `--db-host` instead of `--database-host`. |
+| **Minimal Deps** | Only `yaml.v3` and `afero`. |
+
+---
+
+## The Safety Design
+
+### Why Pointers?
+
+```go
+// DANGEROUS: Is Port 0 intentional or missing?
+type Config struct {
+    Port int
+}
+
+// SAFE: nil clearly means "not configured"
+type Config struct {
+    Port *int `yaml:"port"`
+}
+```
+
+**The `dsco.R()` helper makes pointer creation painless:**
+
+```go
+config := &Config{
+    Host:    dsco.R("localhost"),   // dsco.R[T](v T) *T
+    Port:    dsco.R(8080),
+    Timeout: dsco.R(30 * time.Second),
+}
+```
+
+### Fail-Fast Guarantee
+
+dsco ensures **all configuration is complete before your app starts**:
+
+```go
+// This FAILS - Password is nil
+dsco.Fill(&config,
+    dsco.WithStructLayer(&DatabaseConfig{
+        Host: dsco.R("localhost"),
+        Port: dsco.R(5432),
+        // Password not set - nil
+    }, "defaults"),
+)
+// Error: "password" is not configured
+
+// This SUCCEEDS - all fields explicitly set
+dsco.Fill(&config,
+    dsco.WithEnvLayer("DB"),  // DB-PASSWORD must be set
+    dsco.WithStructLayer(&DatabaseConfig{
+        Host: dsco.R("localhost"),
+        Port: dsco.R(5432),
+    }, "defaults"),
+)
+```
+
+### Production Example
+
+```go
+type DatabaseConfig struct {
+    Host     *string `yaml:"host"`
+    Port     *int    `yaml:"port"`
+    Username *string `yaml:"username"`
+    Password *string `yaml:"password"`
+    SSLMode  *string `yaml:"ssl_mode"`
+}
+
+_, err := dsco.Fill(&dbConfig,
+    // Secrets from Vault/external system
+    dsco.WithStringValueProvider(secretProvider),
+    // Environment overrides
+    dsco.WithStrictEnvLayer("DB"),
+    // Base configuration
+    dsco.WithStructLayer(&DatabaseConfig{
+        Host:    dsco.R("postgres.prod.internal"),
+        Port:    dsco.R(5432),
+        SSLMode: dsco.R("require"),
+        // Username/Password MUST come from higher layers
+    }, "base"),
+)
+
+if err != nil {
+    // Clear error: "username is not configured"
+    log.Fatal("Configuration incomplete:", err)
+}
+```
+
+---
+
+## You're In Control
+
+dsco gives you **complete control** over what's configurable, when, and by whom.
+
+### The Progressive Exposure Pattern
+
+Start with everything hardcoded, then progressively expose parameters as needed:
+
+**Phase 1: All defaults in code**
+
+```go
+// Initial deployment - everything hardcoded, nothing external
+dsco.Fill(&config,
+    dsco.WithStructLayer(&Config{
+        Host:       dsco.R("api.internal"),
+        Port:       dsco.R(8080),
+        MaxRetries: dsco.R(3),
+        Timeout:    dsco.R(30 * time.Second),
+        BatchSize:  dsco.R(100),
+    }, "defaults"),
+)
+```
+
+Your service runs perfectly. No external configuration needed. No environment
+variables to forget. No config files to deploy.
+
+**Phase 2: Expose what matters**
+
+Later, you realize `Timeout` needs adjustment per environment:
+
+```go
+// Now Timeout can be overridden via environment, everything else stays fixed
+dsco.Fill(&config,
+    dsco.WithStructLayer(&Config{
+        Host:       dsco.R("api.internal"),
+        Port:       dsco.R(8080),
+        MaxRetries: dsco.R(3),
+        Timeout:    dsco.R(30 * time.Second),  // Default, but overridable
+        BatchSize:  dsco.R(100),
+    }, "defaults"),
+    dsco.WithEnvLayer("MYSERVICE"),  // Only MYSERVICE-TIMEOUT needs to exist
+)
+```
+
+**No recompilation required.** The code didn't change - you just added an env
+layer. Operations can now tune `MYSERVICE-TIMEOUT=60s` without touching the
+binary.
+
+**Phase 3: Protect critical values**
+
+Some defaults should **never** be overridden in production:
+
+```go
+dsco.Fill(&config,
+    // Operational overrides allowed
+    dsco.WithEnvLayer("MYSERVICE"),
+    dsco.WithCmdlineLayer(),
+
+    // These values are LOCKED - highest priority, strict enforcement
+    dsco.WithStrictStructLayer(&Config{
+        APIEndpoint: dsco.R("https://api.production.com"),
+        AuditMode:   dsco.R(true),
+    }, "immutable"),
+)
+```
+
+Even if someone sets `MYSERVICE-API-ENDPOINT`, the strict struct layer wins
+**and** raises an error about the attempted override.
+
+### Why This Matters
+
+| Traditional Approach | dsco Approach |
+|---------------------|---------------|
+| Expose everything upfront "just in case" | Start minimal, expose on demand |
+| Config sprawl - hundreds of env vars | Only what's actually needed |
+| No protection - any value can be overridden | Lock critical values with strict layers |
+| Must redeploy to change exposure | Add layers without code changes |
+| "What's the default?" - check docs/code | Defaults visible in layer definition |
+
+### Real-World Scenarios
+
+**Scenario 1: New service deployment**
+
+```go
+// Week 1: Ship with safe defaults, zero external config
+dsco.Fill(&config, dsco.WithStructLayer(productionDefaults, "defaults"))
+```
+
+**Scenario 2: Ops needs to tune performance**
+
+```go
+// Week 3: Add env layer - ops can now adjust without new release
+dsco.Fill(&config,
+    dsco.WithStructLayer(productionDefaults, "defaults"),
+    dsco.WithEnvLayer("SVC"),
+)
+// Ops sets SVC-CONNECTION-POOL-SIZE=50
+```
+
+**Scenario 3: Prevent accidental security misconfiguration**
+
+```go
+// Security audit: ensure TLS and audit logging can't be disabled
+dsco.Fill(&config,
+    dsco.WithEnvLayer("SVC"),
+    dsco.WithStrictStructLayer(&Config{
+        TLSEnabled:    dsco.R(true),
+        AuditLogging:  dsco.R(true),
+        MinTLSVersion: dsco.R("1.3"),
+    }, "security"),
+)
+```
+
+**You decide** what's flexible and what's fixed. dsco enforces your decisions.
+
+---
+
+## Layer Types
+
+### Struct Layers (Defaults)
+
+```go
+dsco.WithStructLayer(&Config{
+    Host: dsco.R("localhost"),
+    Port: dsco.R(8080),
+}, "defaults")
+
+// Strict: errors if values are overridden
+dsco.WithStrictStructLayer(&Config{
+    APIEndpoint: dsco.R("https://api.prod.com"),
+}, "immutable")
+```
+
+**Local development pattern** - zero config to start:
+
+```go
+dsco.Fill(&config,
+    dsco.WithStructLayer(devDefaults, "dev"),
+    dsco.WithCmdlineLayer(),
+)
+```
+
+```bash
+./myapp                    # Just works
+./myapp --port=9000        # Quick override
+./myapp --database-host=staging-db
+```
+
+### Command Line Layers
+
+```go
+dsco.WithCmdlineLayer()
+dsco.WithStrictCmdlineLayer()  // Error on unknown flags
+
+// With aliases
+dsco.WithCmdlineLayer(
+    dsco.WithAliases(map[string]string{
+        "v": "verbose",
+        "p": "port",
+    }),
+)
+```
+
+**Format**: `--key=value` (lowercase, hyphens for nested fields)
+
+```bash
+./myapp --host=localhost --database-port=5432
+```
+
+### Environment Variable Layers
+
+```go
+dsco.WithEnvLayer("MYAPP")
+dsco.WithStrictEnvLayer("MYAPP")  // Error on unmatched vars
+```
+
+### Custom Providers
+
+```go
+type SecretProvider struct{}
+
+func (s SecretProvider) GetName() string { return "vault" }
+func (s SecretProvider) GetStringValues() svalue.Values {
+    return svalue.Values{
+        "database-password": &svalue.Value{
+            Value:    fetchFromVault("db-password"),
+            Location: "vault:db-password",
+        },
+    }
+}
+
+dsco.WithStringValueProvider(&SecretProvider{})
+```
+
+---
+
+## Environment Variables
+
+### Why Prefixes Matter
+
+**Multi-container pods (Kubernetes):**
+
+All containers in a pod share environment variables. Prefixes target specific
+containers:
+
+```yaml
+env:
+  - name: FRONTEND-PORT
+    value: "8080"
+  - name: BACKEND-PORT
+    value: "3000"
+```
+
+**Avoid conflicts:**
+
+Prevents collision with `PATH`, `HOME`, `HTTP_PROXY`, `DATABASE_URL`, etc.
+
+**Multiple instances:**
+
+```bash
+WORKER1-QUEUE=high-priority ./worker &
+WORKER2-QUEUE=low-priority ./worker &
+```
+
+### Choosing Good Prefixes
+
+**Avoid generic prefixes** that cause confusion:
+
+```bash
+# BAD: Too generic
+APP-HOST=...       # Which app?
+SERVER-PORT=...    # Which server?
+SERVICE-URL=...    # Meaningless
+```
+
+**Use specific, role-based prefixes:**
+
+```bash
+# GOOD: Clear and distinguishable
+ORDERAPI-HOST=...           # Order API service
+PAYMENTWORKER-TIMEOUT=...   # Payment background worker
+EVENTCONSUMER-BATCH=...     # Event queue consumer
+```
+
+This makes debugging easier ("check INDEXER config"), Kubernetes manifests
+self-documenting, and prevents cross-contamination in shared environments.
+
+### Format
+
+```
+PREFIX-KEY=value
+│      │
+│      └─ UPPERCASE key (hyphens/underscores allowed)
+└─ UPPERCASE prefix
+```
+
+### Mapping Examples
+
+| Struct Field | YAML Tag | Environment Variable |
+|--------------|----------|---------------------|
+| `Host` | `host` | `MYAPP-HOST` |
+| `MaxRetry` | `max_retry` | `MYAPP-MAX_RETRY` |
+| `Database.Host` | `database.host` | `MYAPP-DATABASE-HOST` |
+| `Database.PoolSize` | `database.pool_size` | `MYAPP-DATABASE-POOL_SIZE` |
+
+**Rules:**
+- Prefix and keys: UPPERCASE
+- Prefix-to-key separator: hyphen (`-`)
+- Nested struct separator: hyphen (`-`)
+- Underscores in yaml tags: preserved
+
+---
+
+## Architecture
 
 ```mermaid
 graph TB
@@ -280,209 +516,87 @@ graph TB
     F --> G[Validation]
     G --> H[Struct Filling]
 
-    A1[Command Line Args] --> B1[CmdlineLayer]
-    A2[Environment Variables] --> B2[EnvLayer]
-    A3[YAML/JSON Files] --> B3[FileLayer]
-    A4[Go Structs] --> B4[StructLayer]
-    A5[Custom Providers] --> B5[StringProviderLayer]
+    A1[Command Line] --> B1[CmdlineLayer]
+    A2[Environment] --> B2[EnvLayer]
+    A3[Files] --> B3[FileLayer]
+    A4[Structs] --> B4[StructLayer]
+    A5[Custom] --> B5[StringProviderLayer]
 
     B1 --> B
     B2 --> B
     B3 --> B
     B4 --> B
     B5 --> B
-
-    subgraph "Layer Processing"
-        D1[Field Value Extraction]
-        D2[Location Tracking]
-        D3[Alias Resolution]
-    end
-
-    D --> D1
-    D1 --> D2
-    D2 --> D3
 ```
 
-### Configuration Flow
+**Flow:**
+1. **Layer Registration** - Sources register as layers
+2. **Model Generation** - Struct analyzed via reflection
+3. **Value Collection** - Each layer provides values
+4. **Precedence Resolution** - Later layers override earlier
+5. **Type Conversion** - Strings → target types via YAML
+6. **Validation** - Required fields checked
+7. **Struct Filling** - Target populated with resolved values
 
-1. **Layer Registration**: Different configuration sources register as layers
-2. **Model Generation**: Target struct is analyzed via reflection
-3. **Value Collection**: Each layer provides field values from its source
-4. **Precedence Resolution**: Later layers override earlier ones
-5. **Type Conversion**: String values converted to target types via YAML
-6. **Validation**: Required fields and custom validation applied
-7. **Struct Filling**: Target struct populated with resolved values
+---
 
-## Layer Types
+## Configuration Patterns
 
-### Command Line Layers
-
-```go
-// Normal mode - unused flags ignored
-dsco.WithCmdlineLayer()
-
-// Strict mode - all flags must be used
-dsco.WithStrictCmdlineLayer()
-
-// With aliases
-dsco.WithCmdlineLayer(
-    dsco.WithAliases(map[string]string{
-        "v": "verbose",
-        "p": "port",
-    }),
-)
-```
-
-### Environment Variable Layers
-
-```go
-// Normal mode with prefix
-dsco.WithEnvLayer("MYAPP")
-
-// Strict mode - all matching env vars must be used
-dsco.WithStrictEnvLayer("MYAPP")
-
-// Multiple prefixes allowed
-dsco.WithEnvLayer("MYAPP"),
-dsco.WithEnvLayer("GLOBAL"),
-```
-
-**Environment Variable Mapping**:
-- Field `Authentication.AccessToken` → `MYAPP_AUTHENTICATION_ACCESS_TOKEN`
-- Nested structs use underscore separation
-- Array indices: `Items[0].Name` → `MYAPP_ITEMS_0_NAME`
-
-### Struct Layers
-
-```go
-// Default values (can be overridden)
-dsco.WithStructLayer(&Config{
-    Host: dsco.R("localhost"),
-    Port: dsco.R(8080),
-}, "defaults")
-
-// Immutable values (strict mode)
-dsco.WithStrictStructLayer(&Config{
-    Host: dsco.R("production.com"),
-}, "immutable")
-```
-
-### String Provider Layers
-
-```go
-// Custom provider implementation
-type SecretProvider struct{}
-
-func (s SecretProvider) GetName() string {
-    return "secrets"
-}
-
-func (s SecretProvider) GetStringValues() svalue.Values {
-    return svalue.Values{
-        "database.password": svalue.Value{
-            Value:    getSecretFromVault("db-password"),
-            Location: svalue.NewLocation("vault", "db-password"),
-        },
-    }
-}
-
-// Usage
-dsco.WithStringValueProvider(&SecretProvider{})
-```
-
-## Configuration Struct Patterns
-
-Based on project conventions, configuration structs must follow specific 
-patterns:
-
-### Field Declaration Rules
+### Field Rules
 
 ```go
 type DatabaseConfig struct {
-    // All fields must be pointers (except slices/maps)
-    Host     *string `yaml:"host" json:"host,omitempty"`
-    Port     *int    `yaml:"port" json:"port,omitempty"`
+    // Pointers for scalar types
+    Host    *string `yaml:"host"`
+    Port    *int    `yaml:"port"`
+    Timeout *int    `yaml:"timeout"`
 
-    // Slices and maps can be non-pointer
-    Tables   []string          `yaml:"tables" json:"tables,omitempty"`
-    Options  map[string]string `yaml:"options" json:"options,omitempty"`
-
-    // Extensive documentation required
-    // Timeout specifies the maximum connection duration in seconds.
-    // If nil, defaults to 30 seconds.
-    // Example: 10
-    Timeout *int `yaml:"timeout" json:"timeout,omitempty"`
+    // Slices and maps: non-pointer OK
+    Tables  []string          `yaml:"tables"`
+    Options map[string]string `yaml:"options"`
 }
 ```
 
-### Provider Function Pattern
+### Validation Pattern
+
+dsco fills structs; you validate:
 
 ```go
-func NewDatabasePool(config *DatabaseConfig) (*DatabasePool, error) {
-    // 1. Validate configuration
-    if err := validateConfig(config); err != nil {
-        return nil, fmt.Errorf("invalid config: %w", err)
+func (c *Config) Validate() error {
+    if c.Port == nil {
+        return errors.New("port is required")
     }
-
-    // 2. Create component
-    pool := &DatabasePool{}
-
-    // 3. Copy config if provided (embed, not pointer)
-    if config != nil {
-        pool.DatabaseConfig = *config
-    }
-
-    return pool, nil
-}
-
-func validateConfig(cfg *DatabaseConfig) error {
-    if cfg == nil {
-        return errors.New("config is nil")
-    }
-    if cfg.Host == nil {
-        return errors.New("host must be defined")
-    }
-    if cfg.Port == nil || *cfg.Port < 1 || *cfg.Port > 65535 {
-        return errors.New("port must be between 1 and 65535")
+    if *c.Port < 1 || *c.Port > 65535 {
+        return errors.New("port must be 1-65535")
     }
     return nil
 }
+
+// Usage
+_, err := dsco.Fill(&config, layers...)
+if err != nil {
+    log.Fatal(err)
+}
+if err := config.Validate(); err != nil {
+    log.Fatal("validation:", err)
+}
 ```
+
+---
 
 ## Error Handling
 
 ### Error Types
 
-dsco provides comprehensive error types with location information:
+| Error | Cause |
+|-------|-------|
+| `LayerErrors` | Layer registration issues |
+| `FillerErrors` | Struct filling issues |
+| `InvalidInputError` | Target not `*Config` pointer |
+| `CmdlineAlreadyUsedError` | Multiple cmdline layers |
+| `OverriddenKeyError` | Strict layer value overridden |
 
-```go
-// Layer registration errors
-type LayerErrors struct {
-    merror.MError
-}
-
-// Field value errors
-type FillerErrors struct {
-    merror.MError
-}
-
-// Specific error types
-type InvalidInputError struct {
-    Type reflect.Type
-}
-
-type CmdlineAlreadyUsedError struct {
-    Index int
-}
-
-type OverriddenKeyError struct {
-    Path             string
-    Location         svalue.Location
-    OverrideLocation svalue.Location
-}
-```
-
-### Error Checking
+### Checking Errors
 
 ```go
 _, err := dsco.Fill(&config, layers...)
@@ -490,134 +604,106 @@ if err != nil {
     var layerErr LayerErrors
     if errors.As(err, &layerErr) {
         for _, e := range layerErr.Errors() {
-            fmt.Printf("Layer error: %v\n", e)
-        }
-    }
-
-    var fillerErr FillerErrors
-    if errors.As(err, &fillerErr) {
-        for _, e := range fillerErr.Errors() {
-            fmt.Printf("Fill error: %v\n", e)
+            log.Printf("Layer: %v", e)
         }
     }
 }
 ```
+
+---
 
 ## Advanced Usage
 
-### Strict Mode Example
+### Strict Mode
+
+Strict layers error when values are **not consumed**:
+
+1. Value doesn't match any field (typo detection)
+2. Value overridden by later layer (override detection)
 
 ```go
-// All command line flags must be used
-_, err := dsco.Fill(
-    &config,
-    dsco.WithStrictCmdlineLayer(),
-    dsco.WithStrictEnvLayer("MYAPP"),
+_, err := dsco.Fill(&config,
+    dsco.WithStrictEnvLayer("MYAPP"),  // Strict
+    dsco.WithCmdlineLayer(),            // Can override
 )
-
-// Will error if unused flags/env vars are present
-if err != nil {
-    var overriddenErr OverriddenKeyError
-    if errors.As(err, &overriddenErr) {
-        fmt.Printf("Unused value at %s\n", overriddenErr.Path)
-    }
-}
+// MYAPP-PORT=8080 + --port=9000 → Error!
+// Env value was overridden.
 ```
 
-### Complex Configuration with Aliases
+### Aliases
 
 ```go
-type ComplexConfig struct {
-    Database *DatabaseConfig `yaml:"database"`
-    Server   *ServerConfig   `yaml:"server"`
-    Logging  *LogConfig      `yaml:"logging"`
-}
-
-_, err := dsco.Fill(
-    &config,
-    dsco.WithCmdlineLayer(
-        dsco.WithAliases(map[string]string{
-            "db-host": "database.host",
-            "db-port": "database.port",
-            "port":    "server.port",
-            "v":       "logging.verbose",
-        }),
-    ),
-    dsco.WithEnvLayer("MYAPP"),
-    dsco.WithStructLayer(defaults, "defaults"),
+dsco.WithCmdlineLayer(
+    dsco.WithAliases(map[string]string{
+        "db-host": "database.host",
+        "db-port": "database.port",
+        "v":       "verbose",
+    }),
 )
 ```
 
-### File-based Configuration
-
-```go
-// Using kfile provider for YAML files
-fileProvider, err := kfile.NewEntriesProvider("config.yaml")
-if err != nil {
-    log.Fatal(err)
-}
-
-_, err = dsco.Fill(
-    &config,
-    dsco.WithStringValueProvider(fileProvider),
-    dsco.WithCmdlineLayer(), // Override file values
-)
+```bash
+./myapp --db-host=localhost --v=true
+# Instead of: --database-host=localhost --verbose=true
 ```
 
-### Custom Validation
+### File-Based Configuration
 
 ```go
-type ValidatedConfig struct {
-    Port *int `yaml:"port" validate:"min=1,max=65535"`
-    URL  *string `yaml:"url" validate:"required,url"`
+type FileProvider struct {
+    name   string
+    values svalue.Values
 }
 
-func (c *ValidatedConfig) Validate() error {
-    if c.Port != nil && (*c.Port < 1 || *c.Port > 65535) {
-        return errors.New("port must be between 1 and 65535")
+func NewFileProvider(path string) (*FileProvider, error) {
+    data, _ := os.ReadFile(path)
+    var raw map[string]string
+    yaml.Unmarshal(data, &raw)
+
+    values := make(svalue.Values)
+    for k, v := range raw {
+        values[k] = &svalue.Value{Value: v, Location: "file:" + path}
     }
-    if c.URL != nil && !isValidURL(*c.URL) {
-        return errors.New("invalid URL format")
-    }
-    return nil
+    return &FileProvider{name: path, values: values}, nil
 }
+
+func (f *FileProvider) GetName() string              { return f.name }
+func (f *FileProvider) GetStringValues() svalue.Values { return f.values }
 ```
+
+---
 
 ## API Reference
 
-### Core Functions
+### Core
 
-- `Fill(target any, layers ...Layer) (plocation.Locations, error)`
-  - Main function to fill a configuration struct from layers
+```go
+Fill(target any, layers ...Layer) (plocation.Locations, error)
+```
 
 ### Layer Builders
 
-- `WithCmdlineLayer(options ...Option) *CmdlineLayer`
-- `WithStrictCmdlineLayer(options ...Option) *StrictCmdlineLayer`
-- `WithEnvLayer(prefix string, options ...Option) *EnvLayer`
-- `WithStrictEnvLayer(prefix string, options ...Option) *StrictEnvLayer`
-- `WithStructLayer(input any, id string) *StructLayer`
-- `WithStrictStructLayer(input any, id string) *StrictStructLayer`
-- `WithStringValueProvider(provider NamedStringValuesProvider, options ...Option) *StringProviderLayer`
-- `WithStrictStringValueProvider(provider NamedStringValuesProvider, options ...Option) *StrictStringProviderLayer`
+| Function | Description |
+|----------|-------------|
+| `WithCmdlineLayer(opts...)` | Command line arguments |
+| `WithStrictCmdlineLayer(opts...)` | Strict command line |
+| `WithEnvLayer(prefix, opts...)` | Environment variables |
+| `WithStrictEnvLayer(prefix, opts...)` | Strict environment |
+| `WithStructLayer(input, id)` | Struct defaults |
+| `WithStrictStructLayer(input, id)` | Immutable struct values |
+| `WithStringValueProvider(provider, opts...)` | Custom provider |
+| `WithStrictStringValueProvider(provider, opts...)` | Strict custom provider |
 
-### Options
+### Helpers
 
-- `WithAliases(aliases map[string]string) Option`
-  - Define field path aliases
-
-### Utility Functions
-
-- `R[T any](value T) *T`
-  - Helper to create pointer to value
+```go
+R[T any](value T) *T              // Create pointer
+WithAliases(map[string]string)    // Define aliases
+```
 
 ### Interfaces
 
 ```go
-type Layer interface {
-    register(to *layerBuilder) error
-}
-
 type StringValuesProvider interface {
     GetStringValues() svalue.Values
 }
@@ -628,42 +714,38 @@ type NamedStringValuesProvider interface {
 }
 ```
 
-For complete API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/byte4ever/dsco).
+Full API docs: [pkg.go.dev/github.com/byte4ever/dsco](https://pkg.go.dev/github.com/byte4ever/dsco)
+
+---
 
 ## Examples
 
-Check the [examples](examples/) directory for complete working examples:
+- **[Quick Start Guide](QUICKSTART.md)** - Step-by-step tutorial
+- **[examples/deadsimple](examples/deadsimple/)** - Basic multi-layer config
+- **[examples/simplemain](examples/simplemain/)** - Command-line application
 
-- [deadsimple](examples/deadsimple/): Basic multi-layer configuration
-- [simplemain](examples/simplemain/): Command-line application example
+---
 
 ## Contributing
 
-Contributions are welcome! Please:
-
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes following the project's coding standards
-4. Add tests for new functionality
-5. Run the full test suite: `go test -race -cover ./...`
-6. Run linting: `golangci-lint run`
-7. Submit a pull request
-
-### Development Commands
+3. Follow project coding standards
+4. Add tests
+5. Run `go test -race -cover ./...`
+6. Run `golangci-lint run`
+7. Submit PR
 
 ```bash
-# Build and test
 go build ./...
 go test -race -cover ./...
-
-# Linting and formatting
 golangci-lint run
 gofumpt -w .
 golines --max-len=80 --base-formatter=gofumpt -w .
 ```
 
+---
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) 
-file for details.
-
+MIT License - see [LICENSE](LICENSE)

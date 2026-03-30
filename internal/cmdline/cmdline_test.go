@@ -201,9 +201,17 @@ func TestProvide(t *testing.T) {
 					require.Nil(t, provider)
 					// check for error
 					var pe *ParamError
-					require.ErrorAs(t, err, &pe)
+					require.ErrorAs(
+						t,
+						err,
+						&pe,
+					)
 
-					require.Equal(t, tt.wantErrorPositions, pe.Positions)
+					require.Equal(
+						t,
+						tt.wantErrorPositions,
+						pe.Positions,
+					)
 
 					for i, subError := range tt.wantErrorIs {
 						require.ErrorIsf(
@@ -232,8 +240,11 @@ func TestProvide(t *testing.T) {
 
 				require.NoError(t, err)
 				require.NotNil(t, provider)
-				require.EqualValues(t, tt.want, provider)
-
+				require.EqualValues(
+					t,
+					tt.want,
+					provider,
+				)
 			},
 		)
 	}
@@ -257,5 +268,9 @@ func TestProvider_GetStringValues(t *testing.T) {
 		stringValues: entries,
 	}
 
-	require.Equal(t, entries, p.GetStringValues())
+	require.Equal(
+		t,
+		entries,
+		p.GetStringValues(),
+	)
 }

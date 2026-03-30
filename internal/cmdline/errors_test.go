@@ -7,9 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errMocked1 = errors.New("mocked err 1")
-var errMocked2 = errors.New("mocked err 2")
-var errMocked3 = errors.New("mocked err 3")
+var (
+	errMocked1 = errors.New("mocked err 1")
+	errMocked2 = errors.New("mocked err 2")
+	errMocked3 = errors.New("mocked err 3")
+)
 
 func TestParamError_Error(t *testing.T) {
 	t.Parallel()

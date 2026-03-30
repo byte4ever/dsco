@@ -22,20 +22,20 @@ type RetryConfTmpl struct {
 
 // HTTPBasedConfTmpl is a sample config.
 type HTTPBasedConfTmpl struct {
-	RetryConfTmpl `yaml:"retry"`
+	RetryConfTmpl `        yaml:"retry"`
 	URL           *string `yaml:"url"`
 	Verbose       *bool   `yaml:"verbose"`
 }
 
 // AuthentServiceConf is a sample config.
 type AuthentServiceConf struct {
-	HTTPBasedConfTmpl `yaml:",inline"`
+	HTTPBasedConfTmpl `        yaml:",inline"`
 	AccessToken       *string `yaml:"access_token"`
 }
 
 // ClientAPIConf is a sample config.
 type ClientAPIConf struct {
-	HTTPBasedConfTmpl `yaml:",inline"`
+	HTTPBasedConfTmpl `      yaml:",inline"`
 	EnableSecurity    *bool `yaml:"enable_security"`
 }
 
@@ -58,6 +58,7 @@ func main() {
 
 	// DSCO will try to fill (and allocate the config struct
 	var pp *MainConf
+
 	fillReport, err := dsco.Fill(
 		// provide a ref
 		&pp,
@@ -100,7 +101,9 @@ func main() {
 							BackOffFactor: dsco.R(1.2),
 							Retry:         dsco.R(5),
 						},
-						URL: dsco.R("is a sample config.is a sample config.http://perfect-authent.com"),
+						URL: dsco.R(
+							"is a sample config.is a sample config.http://perfect-authent.com",
+						),
 					},
 				},
 			},

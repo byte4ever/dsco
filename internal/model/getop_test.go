@@ -33,7 +33,11 @@ func TestGetList_Push(t *testing.T) {
 				f1,
 			)
 
-			require.Len(t, l, 1)
+			require.Len(
+				t,
+				l,
+				1,
+			)
 			require.Equal(
 				t, reflect.ValueOf(f1).Pointer(),
 				reflect.ValueOf(l[0]).Pointer(),
@@ -70,7 +74,11 @@ func TestGetList_Push(t *testing.T) {
 				f2,
 			)
 
-			require.Len(t, l, 2)
+			require.Len(
+				t,
+				l,
+				2,
+			)
 			require.Equal(
 				t, reflect.ValueOf(f2).Pointer(),
 				reflect.ValueOf(l[1]).Pointer(),
@@ -158,7 +166,6 @@ func TestGetList_ApplyOn(t *testing.T) {
 					2: fv2,
 				},
 			)
-
 		},
 	)
 
@@ -247,7 +254,6 @@ func TestGetList_ApplyOn(t *testing.T) {
 					3: fv3,
 				},
 			)
-
 		},
 	)
 }
@@ -255,6 +261,14 @@ func TestGetList_ApplyOn(t *testing.T) {
 func TestApplyError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrApply)
-	require.ErrorIs(t, ApplyError{}, ErrApply)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrApply,
+	)
+	require.ErrorIs(
+		t,
+		ApplyError{},
+		ErrApply,
+	)
 }

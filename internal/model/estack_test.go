@@ -20,8 +20,16 @@ func Test_stackEmbed_push(t *testing.T) {
 
 			s.push(v)
 			require.True(t, s.more())
-			require.Len(t, s, 1)
-			require.Equal(t, v, s[0])
+			require.Len(
+				t,
+				s,
+				1,
+			)
+			require.Equal(
+				t,
+				v,
+				s[0],
+			)
 		},
 	)
 
@@ -37,8 +45,16 @@ func Test_stackEmbed_push(t *testing.T) {
 
 			s.push(v)
 			require.True(t, s.more())
-			require.Len(t, s, 2)
-			require.Equal(t, v, s[1])
+			require.Len(
+				t,
+				s,
+				2,
+			)
+			require.Equal(
+				t,
+				v,
+				s[1],
+			)
 		},
 	)
 }
@@ -57,8 +73,16 @@ func Test_stackEmbed_pop(t *testing.T) {
 
 			got := s.pop()
 			require.False(t, s.more())
-			require.Len(t, s, 0)
-			require.Equal(t, v, got)
+			require.Len(
+				t,
+				s,
+				0,
+			)
+			require.Equal(
+				t,
+				v,
+				got,
+			)
 		},
 	)
 
@@ -74,8 +98,16 @@ func Test_stackEmbed_pop(t *testing.T) {
 
 			got := s.pop()
 			require.True(t, s.more())
-			require.Len(t, s, 1)
-			require.Equal(t, v, got)
+			require.Len(
+				t,
+				s,
+				1,
+			)
+			require.Equal(
+				t,
+				v,
+				got,
+			)
 		},
 	)
 }

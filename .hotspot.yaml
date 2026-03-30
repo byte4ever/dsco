@@ -1,0 +1,39 @@
+# Hotspot Analyzer Configuration
+# Place this file in your repository root as .hotspot.yaml
+
+ci:
+    baseline_ref: ""
+    fail_threshold: 0
+    fail_on_new_hotspots: false
+analysis:
+    time_window: 24m
+    exclude_patterns:
+        - '**/vendor/**'
+        - '**/*_generated.go'
+        - '**/mocks/**'
+    mi_threshold: 50
+    churn_threshold: 5
+    include_tests: false
+cache:
+    directory: .hotspot-cache
+    ttl_hours: 168
+    enabled: true
+output:
+    format: text
+    limit: 20
+    tree: false
+    color: true
+churn:
+    decay_preset: moderate
+    half_life_days: 0
+    beta_full: 1
+    beta_partial: 0.5
+    full_change_threshold: 0.5
+risk:
+    maintainability_weight: 1
+    churn_weight: 1
+    coverage_weight: 0.5
+similarity:
+    threshold: 0.7
+    token_weight: 0.4
+    ast_weight: 0.6

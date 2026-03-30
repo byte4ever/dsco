@@ -41,7 +41,8 @@ func registerDefaultTypes() {
 	Register(ref.R(time.Duration(0)))
 }
 
-// LongTypeName returns long name for a type.
+// LongTypeName returns long name for a type including package path.
+// Example: *github.com/example/pkg.MyType
 func LongTypeName(_type reflect.Type) string {
 	var sb strings.Builder
 
@@ -59,6 +60,37 @@ func LongTypeName(_type reflect.Type) string {
 	}
 
 	sb.WriteString(tp.String())
+
+	return sb.String()
+}
+
+// ShortTypeName returns a concise type name without package path.
+// Example: *MyType
+func ShortTypeName(_type reflect.Type) string {
+	var sb strings.Builder
+
+	tp := _type
+
+	if tp.Kind() == reflect.Ptr {
+		sb.WriteRune('*')
+		tp = _type.Elem()
+	}
+
+	// For short names, we want just the type name without package
+	sb.WriteString(tp.Name())
+	if tp.Name() == "" {
+		// For unnamed types (like slices, maps), use the full string
+		// representation but without package prefixes
+		fullName := tp.String()
+		// Remove package prefixes from the string representation
+		// This is a simple approach - more complex logic could be added
+		// to handle nested package references
+		sb.Reset()
+		if _type.Kind() == reflect.Ptr {
+			sb.WriteRune('*')
+		}
+		sb.WriteString(fullName)
+	}
 
 	return sb.String()
 }

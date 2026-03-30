@@ -50,13 +50,13 @@ type MainConf struct {
 
 func main() {
 	err := os.Setenv("SRV-AUTHENTICATION", `---
-	retry:
-	  back_off_factor: 1.05
-	  retry: 20
-	url: "bozo url"
-	verbose: false
-	access_token: null
-	`)
+retry:
+  back_off_factor: 1.05
+  retry: 20
+url: "bozo url"
+verbose: false
+access_token: null
+`)
 	if err != nil {
 		panic(err)
 	}

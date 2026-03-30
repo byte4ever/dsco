@@ -30,7 +30,11 @@ func FuzzNewEntriesProvider(f *testing.F) {
 			t.Log(vr)
 			p, err := NewEntriesProvider(vr)
 			if p != nil && err != nil {
-				t.Errorf("%v %v", p, err)
+				t.Errorf(
+					"%v %v",
+					p,
+					err,
+				)
 			}
 		},
 	)

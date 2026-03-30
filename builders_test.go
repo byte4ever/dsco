@@ -76,8 +76,16 @@ func TestLayers_GetPolicies(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, clp)
-			require.Len(t, clp, 0)
-			require.Equal(t, 4, cap(clp))
+			require.Len(
+				t,
+				clp,
+				0,
+			)
+			require.Equal(
+				t,
+				4,
+				cap(clp),
+			)
 		},
 	)
 
@@ -142,7 +150,11 @@ func TestLayers_GetPolicies(t *testing.T) {
 
 			var expectedErr LayerErrors
 
-			require.ErrorAs(t, err, &expectedErr)
+			require.ErrorAs(
+				t,
+				err,
+				&expectedErr,
+			)
 
 			for idx, et := range []struct {
 				e  error
@@ -153,9 +165,21 @@ func TestLayers_GetPolicies(t *testing.T) {
 			} {
 				var ie ierror.IError
 
-				require.ErrorAs(t, expectedErr.MError[idx], &ie)
-				require.Equal(t, et.ie, ie.Index)
-				require.Equal(t, et.e, ie.Err)
+				require.ErrorAs(
+					t,
+					expectedErr.MError[idx],
+					&ie,
+				)
+				require.Equal(
+					t,
+					et.ie,
+					ie.Index,
+				)
+				require.Equal(
+					t,
+					et.e,
+					ie.Err,
+				)
 			}
 		},
 	)
@@ -169,8 +193,16 @@ func TestWithStrictStructLayer(t *testing.T) {
 
 	k := WithStrictStructLayer(v, id)
 
-	require.Equal(t, v, k.input)
-	require.Equal(t, id, k.id)
+	require.Equal(
+		t,
+		v,
+		k.input,
+	)
+	require.Equal(
+		t,
+		id,
+		k.id,
+	)
 }
 
 func TestWithStructLayer(t *testing.T) {
@@ -181,8 +213,16 @@ func TestWithStructLayer(t *testing.T) {
 
 	k := WithStructLayer(v, id)
 
-	require.Equal(t, v, k.input)
-	require.Equal(t, id, k.id)
+	require.Equal(
+		t,
+		v,
+		k.input,
+	)
+	require.Equal(
+		t,
+		id,
+		k.id,
+	)
 }
 
 func TestWithEnvLayer(t *testing.T) {
@@ -192,7 +232,11 @@ func TestWithEnvLayer(t *testing.T) {
 
 	k := WithEnvLayer(prefix)
 
-	require.Equal(t, prefix, k.prefix)
+	require.Equal(
+		t,
+		prefix,
+		k.prefix,
+	)
 }
 
 func TestWithStrictEnvLayer(t *testing.T) {
@@ -202,7 +246,11 @@ func TestWithStrictEnvLayer(t *testing.T) {
 
 	k := WithStrictEnvLayer(prefix)
 
-	require.Equal(t, prefix, k.prefix)
+	require.Equal(
+		t,
+		prefix,
+		k.prefix,
+	)
 }
 
 func TestWithCmdlineLayer(t *testing.T) {
@@ -213,7 +261,11 @@ func TestWithCmdlineLayer(t *testing.T) {
 
 	k := WithCmdlineLayer(o1, o2)
 
-	require.Equal(t, []Option{o1, o2}, k.options)
+	require.Equal(
+		t,
+		[]Option{o1, o2},
+		k.options,
+	)
 }
 
 func TestWithStrictCmdlineLayer(t *testing.T) {
@@ -224,7 +276,11 @@ func TestWithStrictCmdlineLayer(t *testing.T) {
 
 	k := WithStrictCmdlineLayer(o1, o2)
 
-	require.Equal(t, []Option{o1, o2}, k.options)
+	require.Equal(
+		t,
+		[]Option{o1, o2},
+		k.options,
+	)
 }
 
 //nolint:paralleltest // using global variable
@@ -253,9 +309,21 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				require.NoError(t, err)
-				require.Len(t, lb.builders, 1)
-				require.Equal(t, x.strict, lb.builders[0].isStrict())
-				require.Contains(t, lb.idDedup, "cmdLine")
+				require.Len(
+					t,
+					lb.builders,
+					1,
+				)
+				require.Equal(
+					t,
+					x.strict,
+					lb.builders[0].isStrict(),
+				)
+				require.Contains(
+					t,
+					lb.idDedup,
+					"cmdLine",
+				)
 			},
 		)
 
@@ -270,9 +338,21 @@ func TestStrictCmdlineLayer_register(t *testing.T) {
 
 				var e CmdlineAlreadyUsedError
 
-				require.ErrorAs(t, err, &e)
-				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
+				require.ErrorAs(
+					t,
+					err,
+					&e,
+				)
+				require.Len(
+					t,
+					lb.builders,
+					0,
+				)
+				require.Equal(
+					t,
+					101,
+					e.Index,
+				)
 			},
 		)
 
@@ -319,9 +399,21 @@ func TestEnvLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				require.NoError(t, err)
-				require.Len(t, lb.builders, 1)
-				require.Equal(t, x.strict, lb.builders[0].isStrict())
-				require.Contains(t, lb.idDedup, "env(API)")
+				require.Len(
+					t,
+					lb.builders,
+					1,
+				)
+				require.Equal(
+					t,
+					x.strict,
+					lb.builders[0].isStrict(),
+				)
+				require.Contains(
+					t,
+					lb.idDedup,
+					"env(API)",
+				)
 			},
 		)
 
@@ -335,10 +427,26 @@ func TestEnvLayer_register(t *testing.T) {
 
 				var e DuplicateEnvPrefixError
 
-				require.ErrorAs(t, err, &e)
-				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
-				require.Equal(t, "API", e.Prefix)
+				require.ErrorAs(
+					t,
+					err,
+					&e,
+				)
+				require.Len(
+					t,
+					lb.builders,
+					0,
+				)
+				require.Equal(
+					t,
+					101,
+					e.Index,
+				)
+				require.Equal(
+					t,
+					"API",
+					e.Prefix,
+				)
 			},
 		)
 
@@ -397,8 +505,16 @@ func TestStructLayer_register(t *testing.T) {
 				err := x.layer.register(lb)
 
 				require.NoError(t, err)
-				require.Len(t, lb.builders, 1)
-				require.Equal(t, x.strict, lb.builders[0].isStrict())
+				require.Len(
+					t,
+					lb.builders,
+					1,
+				)
+				require.Equal(
+					t,
+					x.strict,
+					lb.builders[0].isStrict(),
+				)
 				require.Contains(
 					t,
 					lb.idDedup,
@@ -425,10 +541,26 @@ func TestStructLayer_register(t *testing.T) {
 
 				var e DuplicateStructIDError
 
-				require.ErrorAs(t, err, &e)
-				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
-				require.Equal(t, "default", e.ID)
+				require.ErrorAs(
+					t,
+					err,
+					&e,
+				)
+				require.Len(
+					t,
+					lb.builders,
+					0,
+				)
+				require.Equal(
+					t,
+					101,
+					e.Index,
+				)
+				require.Equal(
+					t,
+					"default",
+					e.ID,
+				)
 			},
 		)
 
@@ -448,9 +580,21 @@ func TestStructLayer_register(t *testing.T) {
 
 				var e DuplicateInputStructError
 
-				require.ErrorAs(t, err, &e)
-				require.Len(t, lb.builders, 0)
-				require.Equal(t, 101, e.Index)
+				require.ErrorAs(
+					t,
+					err,
+					&e,
+				)
+				require.Len(
+					t,
+					lb.builders,
+					0,
+				)
+				require.Equal(
+					t,
+					101,
+					e.Index,
+				)
 			},
 		)
 	}
@@ -485,7 +629,11 @@ func TestStructLayer_register2(t *testing.T) {
 				lb := newLayerBuilder(1)
 				err := x.layer.register(lb)
 				require.Error(t, err)
-				require.Len(t, lb.builders, 0)
+				require.Len(
+					t,
+					lb.builders,
+					0,
+				)
 			},
 		)
 	}
@@ -499,8 +647,16 @@ func TestWithStringValueProvider(t *testing.T) {
 
 	l := WithStringValueProvider(p, options...)
 
-	require.Equal(t, options, l.options)
-	require.Equal(t, p, l.provider)
+	require.Equal(
+		t,
+		options,
+		l.options,
+	)
+	require.Equal(
+		t,
+		p,
+		l.provider,
+	)
 }
 
 func TestWithStrictStringValueProvider(t *testing.T) {
@@ -511,8 +667,16 @@ func TestWithStrictStringValueProvider(t *testing.T) {
 
 	l := WithStrictStringValueProvider(p, options...)
 
-	require.Equal(t, options, l.options)
-	require.Equal(t, p, l.provider)
+	require.Equal(
+		t,
+		options,
+		l.options,
+	)
+	require.Equal(
+		t,
+		p,
+		l.provider,
+	)
 }
 
 func TestStrictStringProviderLayer_register(t *testing.T) {
@@ -550,9 +714,17 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 			err := x.register(lb)
 
 			require.NoError(t, err)
-			require.Len(t, lb.builders, 1)
+			require.Len(
+				t,
+				lb.builders,
+				1,
+			)
 			require.True(t, lb.builders[0].isStrict())
-			require.Contains(t, lb.idDedup, "stringProvider(name)")
+			require.Contains(
+				t,
+				lb.idDedup,
+				"stringProvider(name)",
+			)
 		},
 	)
 
@@ -577,11 +749,19 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 			lb.idDedup["stringProvider(name)"] = 101
 			err := x.register(lb)
 
-			require.Len(t, lb.builders, 0)
+			require.Len(
+				t,
+				lb.builders,
+				0,
+			)
 
 			var e DuplicateStringProviderError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t,
 				DuplicateStringProviderError{
@@ -590,7 +770,11 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 				},
 				e,
 			)
-			require.Len(t, lb.idDedup, 1)
+			require.Len(
+				t,
+				lb.idDedup,
+				1,
+			)
 		},
 	)
 
@@ -627,11 +811,31 @@ func TestStrictStringProviderLayer_register(t *testing.T) {
 
 			var e ierror.IError
 
-			require.ErrorAs(t, err, &e)
-			require.ErrorIs(t, e.Err, errMocked1)
-			require.Equal(t, 0, e.Index)
-			require.Len(t, lb.builders, 0)
-			require.Len(t, lb.idDedup, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
+			require.ErrorIs(
+				t,
+				e.Err,
+				errMocked1,
+			)
+			require.Equal(
+				t,
+				0,
+				e.Index,
+			)
+			require.Len(
+				t,
+				lb.builders,
+				0,
+			)
+			require.Len(
+				t,
+				lb.idDedup,
+				1,
+			)
 		},
 	)
 }
@@ -669,9 +873,17 @@ func TestStringProviderLayer_register(t *testing.T) {
 			err := x.register(lb)
 
 			require.NoError(t, err)
-			require.Len(t, lb.builders, 1)
+			require.Len(
+				t,
+				lb.builders,
+				1,
+			)
 			require.False(t, lb.builders[0].isStrict())
-			require.Contains(t, lb.idDedup, "stringProvider(name)")
+			require.Contains(
+				t,
+				lb.idDedup,
+				"stringProvider(name)",
+			)
 		},
 	)
 
@@ -694,11 +906,19 @@ func TestStringProviderLayer_register(t *testing.T) {
 			lb.idDedup["stringProvider(name)"] = 101
 			err := x.register(lb)
 
-			require.Len(t, lb.builders, 0)
+			require.Len(
+				t,
+				lb.builders,
+				0,
+			)
 
 			var e DuplicateStringProviderError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t,
 				DuplicateStringProviderError{
@@ -707,7 +927,11 @@ func TestStringProviderLayer_register(t *testing.T) {
 				},
 				e,
 			)
-			require.Len(t, lb.idDedup, 1)
+			require.Len(
+				t,
+				lb.idDedup,
+				1,
+			)
 		},
 	)
 
@@ -742,11 +966,31 @@ func TestStringProviderLayer_register(t *testing.T) {
 
 			var e ierror.IError
 
-			require.ErrorAs(t, err, &e)
-			require.ErrorIs(t, e.Err, errMocked1)
-			require.Equal(t, 0, e.Index)
-			require.Len(t, lb.builders, 0)
-			require.Len(t, lb.idDedup, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
+			require.ErrorIs(
+				t,
+				e.Err,
+				errMocked1,
+			)
+			require.Equal(
+				t,
+				0,
+				e.Index,
+			)
+			require.Len(
+				t,
+				lb.builders,
+				0,
+			)
+			require.Len(
+				t,
+				lb.idDedup,
+				1,
+			)
 		},
 	)
 }

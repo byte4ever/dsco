@@ -7,9 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errMocked1 = errors.New("mocked error 1")
-var errMocked2 = errors.New("mocked error 2")
-var errMocked3 = errors.New("mocked error 3")
+var (
+	errMocked1 = errors.New("mocked error 1")
+	errMocked2 = errors.New("mocked error 2")
+	errMocked3 = errors.New("mocked error 3")
+)
 
 func TestError_Error(t *testing.T) {
 	t.Parallel()
@@ -23,7 +25,11 @@ func TestError_Error(t *testing.T) {
 		expectedString := `mocked error 1
 mocked error 2`
 
-		require.Equal(t, expectedString, k.Error())
+		require.Equal(
+			t,
+			expectedString,
+			k.Error(),
+		)
 	}
 	{
 		k := MError{
@@ -32,21 +38,33 @@ mocked error 2`
 
 		expectedString := `mocked error 1`
 
-		require.Equal(t, expectedString, k.Error())
+		require.Equal(
+			t,
+			expectedString,
+			k.Error(),
+		)
 	}
 	{
 		k := MError{}
 
 		expectedString := ``
 
-		require.Equal(t, expectedString, k.Error())
+		require.Equal(
+			t,
+			expectedString,
+			k.Error(),
+		)
 	}
 	{
 		k := MError(nil)
 
 		expectedString := ``
 
-		require.Equal(t, expectedString, k.Error())
+		require.Equal(
+			t,
+			expectedString,
+			k.Error(),
+		)
 	}
 }
 
@@ -55,7 +73,11 @@ func TestError_Is(t *testing.T) {
 
 	var e MError
 
-	require.ErrorIs(t, e, Err)
+	require.ErrorIs(
+		t,
+		e,
+		Err,
+	)
 }
 
 type dummyError struct{}
@@ -81,8 +103,16 @@ func TestError_As(t *testing.T) {
 
 	var toFind testError
 
-	require.ErrorAs(t, k, &toFind)
-	require.ErrorContains(t, toFind, "mocked1")
+	require.ErrorAs(
+		t,
+		k,
+		&toFind,
+	)
+	require.ErrorContains(
+		t,
+		toFind,
+		"mocked1",
+	)
 
 	var toFindFailure dummyError
 
@@ -134,18 +164,42 @@ func TestError_CascadingEffect(t *testing.T) {
 
 	var root RootError
 
-	require.ErrorAs(t, toTest, &root)
-	require.Equal(t, re, root)
+	require.ErrorAs(
+		t,
+		toTest,
+		&root,
+	)
+	require.Equal(
+		t,
+		re,
+		root,
+	)
 
 	var sub SubError
 
-	require.ErrorAs(t, toTest, &sub)
-	require.Equal(t, se, sub)
+	require.ErrorAs(
+		t,
+		toTest,
+		&sub,
+	)
+	require.Equal(
+		t,
+		se,
+		sub,
+	)
 
 	var toFind testError
 
-	require.ErrorAs(t, toTest, &toFind)
-	require.ErrorContains(t, toFind, "mocked1")
+	require.ErrorAs(
+		t,
+		toTest,
+		&toFind,
+	)
+	require.ErrorContains(
+		t,
+		toFind,
+		"mocked1",
+	)
 
 	var toFindFailure dummyError
 
@@ -184,7 +238,11 @@ func TestError_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt.beforeState.Add(tt.args.err)
-		require.Equal(t, tt.afterState, tt.beforeState)
+		require.Equal(
+			t,
+			tt.afterState,
+			tt.beforeState,
+		)
 	}
 }
 
@@ -203,9 +261,17 @@ func TestMError_Count(t *testing.T) {
 
 	var e MError
 
-	require.Equal(t, 0, e.Count())
+	require.Equal(
+		t,
+		0,
+		e.Count(),
+	)
 
 	e2 := MError{}
 
-	require.Equal(t, 0, e2.Count())
+	require.Equal(
+		t,
+		0,
+		e2.Count(),
+	)
 }

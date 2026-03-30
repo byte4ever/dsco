@@ -28,7 +28,11 @@ func (n *ValueNode) Fill(
 
 			var pl plocation.Locations
 
-			pl.Report(n.UID, n.VisiblePath, fieldValue.Location)
+			pl.Report(
+				n.UID,
+				n.VisiblePath,
+				fieldValue.Location,
+			)
 
 			return pl, nil
 		}
@@ -52,9 +56,13 @@ func (n *ValueNode) FeedFieldValues(
 	}
 
 	fieldValues[n.UID] = &fvalue.Value{
-		Value:    value,
-		Location: fmt.Sprintf("struct[%s]:%s", srcID, n.VisiblePath),
-		Path:     n.VisiblePath,
+		Value: value,
+		Location: fmt.Sprintf(
+			"struct[%s]:%s",
+			srcID,
+			n.VisiblePath,
+		),
+		Path: n.VisiblePath,
 	}
 }
 

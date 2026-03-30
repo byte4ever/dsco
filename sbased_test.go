@@ -46,11 +46,19 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 
 			gotFv, err := sb.Get("Some.Path", nil)
 			require.Nil(t, gotFv)
-			require.ErrorIs(t, err, ErrAliasCollision)
+			require.ErrorIs(
+				t,
+				err,
+				ErrAliasCollision,
+			)
 
 			var e AliasCollisionError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t, AliasCollisionError{
 					Path: "Some.Path",
@@ -79,8 +87,16 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, gotFv)
 
-			require.Equal(t, "loc1", gotFv.Location)
-			require.IsType(t, 123, gotFv.Value.Elem().Interface())
+			require.Equal(
+				t,
+				"loc1",
+				gotFv.Location,
+			)
+			require.IsType(
+				t,
+				123,
+				gotFv.Value.Elem().Interface(),
+			)
 		},
 	)
 
@@ -104,7 +120,11 @@ func TestStringBasedBuilder_Get(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, gotFv)
 
-			require.Equal(t, "loc1", gotFv.Location)
+			require.Equal(
+				t,
+				"loc1",
+				gotFv.Location,
+			)
 			require.IsType(
 				t,
 				[]int{1, 2, 3, 4, 5},
@@ -157,7 +177,11 @@ s3:
 			require.NoError(t, err)
 			require.NotNil(t, gotFv)
 
-			require.Equal(t, "loc1", gotFv.Location)
+			require.Equal(
+				t,
+				"loc1",
+				gotFv.Location,
+			)
 			require.Equal(
 				t,
 				&Conf{
@@ -201,7 +225,11 @@ s3:
 			require.NoError(t, err)
 			require.NotNil(t, gotFv)
 
-			require.Equal(t, "loc1", gotFv.Location)
+			require.Equal(
+				t,
+				"loc1",
+				gotFv.Location,
+			)
 			require.IsType(
 				t,
 				[]*ComplexItem{
@@ -234,11 +262,19 @@ s3:
 
 			gotFv, err := sb.Get("Some.Path", vType)
 			require.Nil(t, gotFv)
-			require.ErrorIs(t, err, ErrParse)
+			require.ErrorIs(
+				t,
+				err,
+				ErrParse,
+			)
 
 			var e ParseError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t, ParseError{
 					Path:     "Some.Path",
@@ -268,11 +304,19 @@ s3:
 
 			gotFv, err := sb.Get("Some.Path", vType)
 			require.Nil(t, gotFv)
-			require.ErrorIs(t, err, ErrParse)
+			require.ErrorIs(
+				t,
+				err,
+				ErrParse,
+			)
 
 			var e ParseError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t, ParseError{
 					Path:     "Some.Path",
@@ -303,7 +347,11 @@ s3:
 			gotFv, err := sb.Get("Some.Path", vType)
 
 			require.Nil(t, gotFv)
-			require.ErrorIs(t, err, ErrInvalidType)
+			require.ErrorIs(
+				t,
+				err,
+				ErrInvalidType,
+			)
 		},
 	)
 
@@ -327,8 +375,16 @@ s3:
 			require.NoError(t, err)
 			require.NotNil(t, gotFv)
 
-			require.Equal(t, "loc1", gotFv.Location)
-			require.IsType(t, 123, gotFv.Value.Elem().Interface())
+			require.Equal(
+				t,
+				"loc1",
+				gotFv.Location,
+			)
+			require.IsType(
+				t,
+				123,
+				gotFv.Value.Elem().Interface(),
+			)
 		},
 	)
 }
@@ -336,8 +392,16 @@ s3:
 func TestGetError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrGet)
-	require.ErrorIs(t, GetError{}, ErrGet)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrGet,
+	)
+	require.ErrorIs(
+		t,
+		GetError{},
+		ErrGet,
+	)
 }
 
 func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
@@ -371,7 +435,11 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			gotFvs, gotErr := sb.GetFieldValuesFrom(model)
 			require.NoError(t, gotErr)
-			require.Equal(t, fvs, gotFvs)
+			require.Equal(
+				t,
+				fvs,
+				gotFvs,
+			)
 		},
 	)
 
@@ -422,11 +490,23 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			var e GetError
 
-			require.ErrorAs(t, gotErr, &e)
+			require.ErrorAs(
+				t,
+				gotErr,
+				&e,
+			)
 
-			require.Equal(t, 4, e.Count())
+			require.Equal(
+				t,
+				4,
+				e.Count(),
+			)
 
-			require.ErrorIs(t, e.MError[0], errMocked1)
+			require.ErrorIs(
+				t,
+				e.MError[0],
+				errMocked1,
+			)
 
 			for idx, expectedLoc := range []string{
 				"loc-a",
@@ -435,7 +515,11 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 			} {
 				var ue UnboundedLocationError
 
-				require.ErrorAs(t, e.MError[idx+1], &ue)
+				require.ErrorAs(
+					t,
+					e.MError[idx+1],
+					&ue,
+				)
 				require.Equal(
 					t,
 					UnboundedLocationError{
@@ -505,11 +589,23 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 
 			var e GetError
 
-			require.ErrorAs(t, gotErr, &e)
+			require.ErrorAs(
+				t,
+				gotErr,
+				&e,
+			)
 
-			require.Equal(t, 7, e.Count())
+			require.Equal(
+				t,
+				7,
+				e.Count(),
+			)
 
-			require.ErrorIs(t, e.MError[0], errMocked1)
+			require.ErrorIs(
+				t,
+				e.MError[0],
+				errMocked1,
+			)
 
 			for idx, expectedLoc := range []string{
 				"exp-loc-a",
@@ -518,7 +614,11 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 			} {
 				var ue UnboundedLocationError
 
-				require.ErrorAs(t, e.MError[idx+1], &ue)
+				require.ErrorAs(
+					t,
+					e.MError[idx+1],
+					&ue,
+				)
 				require.Equal(
 					t,
 					UnboundedLocationError{
@@ -535,7 +635,11 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 			} {
 				var ue UnboundedLocationError
 
-				require.ErrorAs(t, e.MError[idx+1+3], &ue)
+				require.ErrorAs(
+					t,
+					e.MError[idx+1+3],
+					&ue,
+				)
 				require.Equal(
 					t,
 					UnboundedLocationError{
@@ -551,8 +655,16 @@ func TestStringBasedBuilder_GetFieldValuesFrom(t *testing.T) {
 func TestUnboundedLocationErrors_Len(t *testing.T) {
 	t.Parallel()
 
-	require.Equal(t, 0, UnboundedLocationErrors{}.Len())
-	require.Equal(t, 0, UnboundedLocationErrors(nil).Len())
+	require.Equal(
+		t,
+		0,
+		UnboundedLocationErrors{}.Len(),
+	)
+	require.Equal(
+		t,
+		0,
+		UnboundedLocationErrors(nil).Len(),
+	)
 	require.Equal(
 		t, 2, UnboundedLocationErrors{
 			UnboundedLocationError{},
@@ -583,7 +695,11 @@ func TestUnboundedLocationErrors_Swap(t *testing.T) {
 	}
 
 	l.Swap(0, 1)
-	require.Equal(t, expected, l)
+	require.Equal(
+		t,
+		expected,
+		l,
+	)
 }
 
 func TestUnboundedLocationError_Error(t *testing.T) {
@@ -601,15 +717,31 @@ func TestUnboundedLocationError_Error(t *testing.T) {
 func TestUnboundedLocationError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, UnboundedLocationError{}, errMocked1)
-	require.ErrorIs(t, UnboundedLocationError{}, ErrUnboundedLocation)
+	require.NotErrorIs(
+		t,
+		UnboundedLocationError{},
+		errMocked1,
+	)
+	require.ErrorIs(
+		t,
+		UnboundedLocationError{},
+		ErrUnboundedLocation,
+	)
 }
 
 func TestParseError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, ParseError{}, errMocked1)
-	require.ErrorIs(t, ParseError{}, ErrParse)
+	require.NotErrorIs(
+		t,
+		ParseError{},
+		errMocked1,
+	)
+	require.ErrorIs(
+		t,
+		ParseError{},
+		ErrParse,
+	)
 }
 
 func TestParseError_Error(t *testing.T) {
@@ -629,8 +761,16 @@ func TestParseError_Error(t *testing.T) {
 func TestAliasCollisionError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, AliasCollisionError{}, errMocked1)
-	require.ErrorIs(t, AliasCollisionError{}, ErrAliasCollision)
+	require.NotErrorIs(
+		t,
+		AliasCollisionError{},
+		errMocked1,
+	)
+	require.ErrorIs(
+		t,
+		AliasCollisionError{},
+		ErrAliasCollision,
+	)
 }
 
 func TestAliasCollisionError_Error(t *testing.T) {
@@ -654,7 +794,11 @@ func TestWithAliases(t *testing.T) {
 		"c": "tc",
 	}
 	r := WithAliases(mapping)
-	require.Equal(t, AliasesOption(mapping), r)
+	require.Equal(
+		t,
+		AliasesOption(mapping),
+		r,
+	)
 }
 
 func TestAliasesOption_apply(t *testing.T) {
@@ -674,7 +818,11 @@ func TestAliasesOption_apply(t *testing.T) {
 
 			ao := AliasesOption(mapping)
 			require.NoError(t, ao.apply(&io))
-			require.Equal(t, mapping, io.aliases)
+			require.Equal(
+				t,
+				mapping,
+				io.aliases,
+			)
 		},
 	)
 
@@ -687,7 +835,11 @@ func TestAliasesOption_apply(t *testing.T) {
 			var io internalOpts
 
 			ao := AliasesOption(mapping)
-			require.ErrorIs(t, ao.apply(&io), ErrNoAliasesProvided)
+			require.ErrorIs(
+				t,
+				ao.apply(&io),
+				ErrNoAliasesProvided,
+			)
 		},
 	)
 }
@@ -725,7 +877,11 @@ func TestNewStringBasedBuilder(t *testing.T) {
 			b, err := NewStringBasedBuilder(p, o)
 
 			require.NoError(t, err)
-			require.Equal(t, sv, b.values)
+			require.Equal(
+				t,
+				sv,
+				b.values,
+			)
 		},
 	)
 
@@ -735,7 +891,11 @@ func TestNewStringBasedBuilder(t *testing.T) {
 
 			b, err := NewStringBasedBuilder(nil)
 
-			require.ErrorIs(t, err, ErrNilProvider)
+			require.ErrorIs(
+				t,
+				err,
+				ErrNilProvider,
+			)
 			require.Nil(t, b)
 		},
 	)
@@ -771,13 +931,21 @@ func TestNewStringBasedBuilder(t *testing.T) {
 				Return(errMocked1).
 				Once()
 
-			b, err := NewStringBasedBuilder(p, o1, o2)
+			b, err := NewStringBasedBuilder(
+				p,
+				o1,
+				o2,
+			)
 
 			require.Nil(t, b)
 
 			var e ierror.IError
 
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.Equal(
 				t, ierror.IError{
 					Index: 1,
@@ -842,8 +1010,16 @@ func TestOverriddenKeyError_Error(t *testing.T) {
 func TestOverriddenKeyError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.ErrorIs(t, OverriddenKeyError{}, ErrOverriddenKey)
-	require.NotErrorIs(t, OverriddenKeyError{}, errMocked1)
+	require.ErrorIs(
+		t,
+		OverriddenKeyError{},
+		ErrOverriddenKey,
+	)
+	require.NotErrorIs(
+		t,
+		OverriddenKeyError{},
+		errMocked1,
+	)
 }
 
 func TestStringBasedBuilder_ExpandStruct(t *testing.T) {
@@ -882,14 +1058,46 @@ c:
 			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.NoError(t, err)
 
-			require.Contains(t, sb.expandedValues, "P.T.A")
-			require.Equal(t, R(123), sb.expandedValues["P.T.A"].Value.Interface())
-			require.Contains(t, sb.expandedValues, "P.T.B")
-			require.Equal(t, R(123.412), sb.expandedValues["P.T.B"].Value.Interface())
-			require.Contains(t, sb.expandedValues, "P.T.C.X")
-			require.Equal(t, R(2332), sb.expandedValues["P.T.C.X"].Value.Interface())
-			require.Contains(t, sb.expandedValues, "P.T.C.Y")
-			require.Equal(t, R(123.234), sb.expandedValues["P.T.C.Y"].Value.Interface())
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.A",
+			)
+			require.Equal(
+				t,
+				R(123),
+				sb.expandedValues["P.T.A"].Value.Interface(),
+			)
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.B",
+			)
+			require.Equal(
+				t,
+				R(123.412),
+				sb.expandedValues["P.T.B"].Value.Interface(),
+			)
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.C.X",
+			)
+			require.Equal(
+				t,
+				R(2332),
+				sb.expandedValues["P.T.C.X"].Value.Interface(),
+			)
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.C.Y",
+			)
+			require.Equal(
+				t,
+				R(123.234),
+				sb.expandedValues["P.T.C.Y"].Value.Interface(),
+			)
 		},
 	)
 
@@ -916,12 +1124,36 @@ c:
 			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
 			require.NoError(t, err)
 
-			require.Contains(t, sb.expandedValues, "P.T.A")
-			require.Equal(t, R(123), sb.expandedValues["P.T.A"].Value.Interface())
-			require.Contains(t, sb.expandedValues, "P.T.C.X")
-			require.Equal(t, R(2332), sb.expandedValues["P.T.C.X"].Value.Interface())
-			require.Contains(t, sb.expandedValues, "P.T.C.Y")
-			require.Equal(t, R(123.234), sb.expandedValues["P.T.C.Y"].Value.Interface())
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.A",
+			)
+			require.Equal(
+				t,
+				R(123),
+				sb.expandedValues["P.T.A"].Value.Interface(),
+			)
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.C.X",
+			)
+			require.Equal(
+				t,
+				R(2332),
+				sb.expandedValues["P.T.C.X"].Value.Interface(),
+			)
+			require.Contains(
+				t,
+				sb.expandedValues,
+				"P.T.C.Y",
+			)
+			require.Equal(
+				t,
+				R(123.234),
+				sb.expandedValues["P.T.C.Y"].Value.Interface(),
+			)
 		},
 	)
 
@@ -965,13 +1197,25 @@ c:
 			}
 
 			err := sb.ExpandStruct("P.T", reflect.TypeOf(p))
-			require.ErrorIs(t, err, &ParseError{})
+			require.ErrorIs(
+				t,
+				err,
+				&ParseError{},
+			)
 
 			var parseErr *ParseError
 
 			errors.As(err, &parseErr)
-			require.Equal(t, "P.T", parseErr.Path)
-			require.Equal(t, reflect.TypeOf(p), parseErr.Type)
+			require.Equal(
+				t,
+				"P.T",
+				parseErr.Path,
+			)
+			require.Equal(
+				t,
+				reflect.TypeOf(p),
+				parseErr.Type,
+			)
 			require.Empty(t, parseErr.Location)
 		},
 	)
@@ -994,8 +1238,16 @@ c:
 
 			var asErr *AliasCollisionError
 
-			require.ErrorAs(t, err, &asErr)
-			require.Equal(t, "Alias", asErr.Path)
+			require.ErrorAs(
+				t,
+				err,
+				&asErr,
+			)
+			require.Equal(
+				t,
+				"Alias",
+				asErr.Path,
+			)
 		},
 	)
 
@@ -1033,7 +1285,11 @@ c:
 
 			var asErr model.UnsupportedTypeError
 
-			require.ErrorAs(t, err, &asErr)
+			require.ErrorAs(
+				t,
+				err,
+				&asErr,
+			)
 		},
 	)
 }

@@ -55,8 +55,16 @@ func TestValueNode_Fill(t *testing.T) {
 					Location: "some-location",
 				},
 			)
-			require.NotContains(t, fvs[1], uint(50))
-			require.Equal(t, 128, *i)
+			require.NotContains(
+				t,
+				fvs[1],
+				uint(50),
+			)
+			require.Equal(
+				t,
+				128,
+				*i,
+			)
 		},
 	)
 
@@ -96,8 +104,16 @@ func TestValueNode_Fill(t *testing.T) {
 			require.Empty(
 				t, ploc,
 			)
-			require.ErrorIs(t, err, ErrUninitializedKey)
-			require.ErrorContains(t, err, "the.path")
+			require.ErrorIs(
+				t,
+				err,
+				ErrUninitializedKey,
+			)
+			require.ErrorContains(
+				t,
+				err,
+				"the.path",
+			)
 			require.Nil(t, i)
 		},
 	)
@@ -129,7 +145,11 @@ func TestValueNode_FeedFieldValues(t *testing.T) {
 				vpi,
 			)
 
-			require.Contains(t, fvs, uint(50))
+			require.Contains(
+				t,
+				fvs,
+				uint(50),
+			)
 
 			require.Equal(
 				t, fvalue.Value{
@@ -195,7 +215,11 @@ func TestValueNode_BuildGetList(t *testing.T) {
 			var gl GetList
 
 			n.BuildGetList(&gl)
-			require.Len(t, gl, 1)
+			require.Len(
+				t,
+				gl,
+				1,
+			)
 
 			g := NewMockGetter(t)
 			g.
@@ -215,7 +239,11 @@ func TestValueNode_BuildGetList(t *testing.T) {
 
 			uid, fv, err := gl[0](g)
 			require.NoError(t, err)
-			require.Equal(t, expectedUID, uid)
+			require.Equal(
+				t,
+				expectedUID,
+				uid,
+			)
 			require.NotNil(t, fv)
 			require.Equal(
 				t,
@@ -227,4 +255,28 @@ func TestValueNode_BuildGetList(t *testing.T) {
 			)
 		},
 	)
+}
+
+func TestValueNode_BuildExpandList(t *testing.T) {
+	t.Parallel()
+
+	t.Run("value_node_expand_list_empty", func(t *testing.T) {
+		t.Parallel()
+
+		n := &ValueNode{
+			Type:        reflect.TypeOf(123),
+			VisiblePath: "test.path",
+			UID:         42,
+		}
+
+		var el ExpandList
+		n.BuildExpandList(&el)
+
+		// ValueNode.BuildExpandList should do nothing (empty implementation)
+		require.Equal(
+			t,
+			0,
+			len(el),
+		)
+	})
 }

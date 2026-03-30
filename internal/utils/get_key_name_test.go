@@ -84,7 +84,11 @@ func Test_getKeyName(t *testing.T) {
 				if got := GetKeyName(
 					tt.args.rootKey, tt.args.fieldType,
 				); got != tt.want {
-					t.Errorf("GetKeyName() = %v, want %v", got, tt.want)
+					t.Errorf(
+						"GetKeyName() = %v, want %v",
+						got,
+						tt.want,
+					)
 				}
 			},
 		)

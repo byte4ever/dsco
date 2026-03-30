@@ -40,7 +40,11 @@ func (f *Locations) Dump(writer io.Writer) {
 }
 
 // Report adds a new fill report entry.
-func (f *Locations) Report(uid uint, path string, location string) {
+func (f *Locations) Report(
+	uid uint,
+	path string,
+	location string,
+) {
 	*f = append(
 		*f, Location{
 			UID:      uid,

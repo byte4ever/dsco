@@ -82,7 +82,6 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 					},
 				}, s,
 			)
-
 		},
 	)
 
@@ -153,7 +152,6 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 					},
 				}, s,
 			)
-
 		},
 	)
 
@@ -180,8 +178,16 @@ func Test_stackEmbed_pushToStack(t *testing.T) {
 				vt,
 			)
 
-			require.ErrorIs(t, err, ErrInvalidEmbedded)
-			require.Len(t, s, 0)
+			require.ErrorIs(
+				t,
+				err,
+				ErrInvalidEmbedded,
+			)
+			require.Len(
+				t,
+				s,
+				0,
+			)
 		},
 	)
 }
@@ -311,8 +317,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 		func(t *testing.T) {
 			t.Parallel()
 
-			type Sub2 struct {
-			}
+			type Sub2 struct{}
 
 			type Sub11 struct{}
 
@@ -324,8 +329,7 @@ func Test_getVisibleFieldList(t *testing.T) {
 			var vSub1 Sub1
 			vSub1Type := reflect.TypeOf(vSub1)
 
-			type Sub0 struct {
-			}
+			type Sub0 struct{}
 
 			type Root struct {
 				*Sub0
@@ -342,7 +346,11 @@ func Test_getVisibleFieldList(t *testing.T) {
 				vt,
 			)
 
-			require.Len(t, gotElems, 1)
+			require.Len(
+				t,
+				gotElems,
+				1,
+			)
 
 			require.Equal(
 				t,
@@ -358,13 +366,41 @@ func Test_getVisibleFieldList(t *testing.T) {
 				gotElems,
 			)
 
-			require.Len(t, errs, 3)
-			require.ErrorIs(t, errs[0], ErrInvalidEmbedded)
-			require.ErrorContains(t, errs[0], "Sub0")
-			require.ErrorIs(t, errs[1], ErrInvalidEmbedded)
-			require.ErrorContains(t, errs[1], "Sub1.Sub11")
-			require.ErrorIs(t, errs[2], ErrInvalidEmbedded)
-			require.ErrorContains(t, errs[2], "Sub2")
+			require.Len(
+				t,
+				errs,
+				3,
+			)
+			require.ErrorIs(
+				t,
+				errs[0],
+				ErrInvalidEmbedded,
+			)
+			require.ErrorContains(
+				t,
+				errs[0],
+				"Sub0",
+			)
+			require.ErrorIs(
+				t,
+				errs[1],
+				ErrInvalidEmbedded,
+			)
+			require.ErrorContains(
+				t,
+				errs[1],
+				"Sub1.Sub11",
+			)
+			require.ErrorIs(
+				t,
+				errs[2],
+				ErrInvalidEmbedded,
+			)
+			require.ErrorContains(
+				t,
+				errs[2],
+				"Sub2",
+			)
 		},
 	)
 
@@ -396,10 +432,18 @@ func Test_getVisibleFieldList(t *testing.T) {
 				vt,
 			)
 
-			require.Len(t, errs, 1)
+			require.Len(
+				t,
+				errs,
+				1,
+			)
 
 			var e FieldNameCollisionError
-			require.ErrorAs(t, errs[0], &e)
+			require.ErrorAs(
+				t,
+				errs[0],
+				&e,
+			)
 			require.Equal(
 				t, FieldNameCollisionError{
 					Path1: "X1",
@@ -436,10 +480,18 @@ func Test_getVisibleFieldList(t *testing.T) {
 				vt,
 			)
 
-			require.Len(t, errs, 1)
+			require.Len(
+				t,
+				errs,
+				1,
+			)
 
 			var e FieldNameCollisionError
-			require.ErrorAs(t, errs[0], &e)
+			require.ErrorAs(
+				t,
+				errs[0],
+				&e,
+			)
 			require.Equal(
 				t,
 				FieldNameCollisionError{
@@ -486,9 +538,17 @@ func Test_getVisibleFieldList(t *testing.T) {
 				vt,
 			)
 
-			require.Len(t, errs, 1)
+			require.Len(
+				t,
+				errs,
+				1,
+			)
 			var e FieldNameCollisionError
-			require.ErrorAs(t, errs[0], &e)
+			require.ErrorAs(
+				t,
+				errs[0],
+				&e,
+			)
 			require.Equal(
 				t, FieldNameCollisionError{
 					Path1: "Sub2.Sub22.X",
@@ -505,7 +565,11 @@ func TestModel_TypeName(t *testing.T) {
 	m := &Model{
 		typeName: "type-name",
 	}
-	require.Equal(t, "type-name", m.TypeName())
+	require.Equal(
+		t,
+		"type-name",
+		m.TypeName(),
+	)
 }
 
 func TestNewModel(t *testing.T) {
@@ -522,10 +586,18 @@ func TestNewModel(t *testing.T) {
 
 			m, err := NewModel(reflect.TypeOf(&Root{}))
 			require.NoError(t, err)
-			require.Equal(t, uint(2), m.fieldCount)
+			require.Equal(
+				t,
+				uint(2),
+				m.fieldCount,
+			)
 			require.NotNil(t, m.accelerator)
 			require.NotNil(t, m.getList)
-			require.Equal(t, 2, m.getList.Count())
+			require.Equal(
+				t,
+				2,
+				m.getList.Count(),
+			)
 		},
 	)
 
@@ -541,7 +613,11 @@ func TestNewModel(t *testing.T) {
 			m, err := NewModel(reflect.TypeOf(&Root{}))
 
 			var e ModelError
-			require.ErrorAs(t, err, &e)
+			require.ErrorAs(
+				t,
+				err,
+				&e,
+			)
 			require.False(t, e.None())
 			require.Nil(t, m)
 		},
@@ -564,8 +640,16 @@ func TestModel_ApplyOn(t *testing.T) {
 
 	gotFvs, err := m.ApplyOn(getter)
 
-	require.Equal(t, fvs, gotFvs)
-	require.Equal(t, errMocked1, err)
+	require.Equal(
+		t,
+		fvs,
+		gotFvs,
+	)
+	require.Equal(
+		t,
+		errMocked1,
+		err,
+	)
 }
 
 func TestModel_Expand(t *testing.T) {
@@ -585,7 +669,11 @@ func TestModel_Expand(t *testing.T) {
 
 	err := m.Expand(structExpander)
 
-	require.Equal(t, errMocked1, err)
+	require.Equal(
+		t,
+		errMocked1,
+		err,
+	)
 }
 
 func TestModel_Fill(t *testing.T) {
@@ -597,7 +685,11 @@ func TestModel_Fill(t *testing.T) {
 
 	accelerator := NewMockNode(t)
 	accelerator.
-		On("Fill", v, layers).
+		On(
+			"Fill",
+			v,
+			layers,
+		).
 		Return(ploc, errMocked1).
 		Once()
 
@@ -607,15 +699,31 @@ func TestModel_Fill(t *testing.T) {
 
 	gotPLoc, err := m.Fill(v, layers)
 
-	require.Equal(t, ploc, gotPLoc)
-	require.Equal(t, errMocked1, err)
+	require.Equal(
+		t,
+		ploc,
+		gotPLoc,
+	)
+	require.Equal(
+		t,
+		errMocked1,
+		err,
+	)
 }
 
 func TestModelError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrModel)
-	require.ErrorIs(t, ModelError{}, ErrModel)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrModel,
+	)
+	require.ErrorIs(
+		t,
+		ModelError{},
+		ErrModel,
+	)
 }
 
 func TestModel_GetFieldValuesFor(t *testing.T) {

@@ -265,10 +265,18 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 					mock.MatchedBy(
 						func(v reflect.Value) bool {
 							i := v.Interface()
-							require.IsType(t, i, (*int)(nil))
+							require.IsType(
+								t,
+								i,
+								(*int)(nil),
+							)
 							vi, ok := i.(*int)
 							require.True(t, ok)
-							return assert.Equal(t, 123, *vi)
+							return assert.Equal(
+								t,
+								123,
+								*vi,
+							)
 						},
 					),
 				).
@@ -284,10 +292,18 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 					mock.MatchedBy(
 						func(v reflect.Value) bool {
 							i := v.Interface()
-							require.IsType(t, i, (*float32)(nil))
+							require.IsType(
+								t,
+								i,
+								(*float32)(nil),
+							)
 							vi, ok := i.(*float32)
 							require.True(t, ok)
-							return assert.Equal(t, float32(123.123), *vi)
+							return assert.Equal(
+								t,
+								float32(123.123),
+								*vi,
+							)
 						},
 					),
 				).
@@ -308,7 +324,11 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 				},
 			}
 
-			n.FeedFieldValues(srcID, fvs, v)
+			n.FeedFieldValues(
+				srcID,
+				fvs,
+				v,
+			)
 		},
 	)
 
@@ -346,7 +366,11 @@ func TestStructNode_FeedFieldValues(t *testing.T) {
 				},
 			}
 
-			n.FeedFieldValues(srcID, fvs, v)
+			n.FeedFieldValues(
+				srcID,
+				fvs,
+				v,
+			)
 		},
 	)
 }
@@ -423,7 +447,11 @@ func TestStructNode_PushSubNodes(t *testing.T) {
 	fieldIndex := []int{1, 2, 3}
 	n.PushSubNodes(fieldIndex, s0)
 
-	require.Len(t, n.Index, 1)
+	require.Len(
+		t,
+		n.Index,
+		1,
+	)
 	require.Equal(
 		t,
 		IndexedSubNode{
@@ -432,6 +460,71 @@ func TestStructNode_PushSubNodes(t *testing.T) {
 		},
 		*(n.Index[0]),
 	)
+}
+
+func TestStructNode_BuildExpandList(t *testing.T) {
+	t.Parallel()
+
+	t.Run("struct_node_expand_list", func(t *testing.T) {
+		t.Parallel()
+
+		type TestStruct struct {
+			Field1 string
+			Field2 int
+		}
+
+		stType := reflect.TypeOf((*TestStruct)(nil))
+		visiblePath := "test.struct.path"
+
+		s0 := NewMockNode(t)
+		s1 := NewMockNode(t)
+
+		n := &StructNode{
+			Type:        stType,
+			VisiblePath: visiblePath,
+			Index: IndexedSubNodes{
+				&IndexedSubNode{
+					Node:  s0,
+					Index: []int{0},
+				},
+				&IndexedSubNode{
+					Node:  s1,
+					Index: []int{1},
+				},
+			},
+		}
+
+		var el ExpandList
+
+		// Set up expectations for child nodes
+		s0.On("BuildExpandList", &el).Return().Once()
+		s1.On("BuildExpandList", &el).Return().Once()
+
+		n.BuildExpandList(&el)
+
+		// StructNode should push one expand operation and call children
+		require.Equal(
+			t,
+			1,
+			len(el),
+		)
+
+		// Test that the expand operation works correctly
+		expander := newMockStructExpander(t)
+		expander.On(
+			"ExpandStruct",
+			visiblePath,
+			stType,
+		).Return(nil).Once()
+
+		err := el[0](expander)
+		require.NoError(t, err)
+
+		// Verify all mocks were called
+		s0.AssertExpectations(t)
+		s1.AssertExpectations(t)
+		expander.AssertExpectations(t)
+	})
 }
 
 func TestStructNodeError_Is(t *testing.T) {

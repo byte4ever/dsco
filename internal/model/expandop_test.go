@@ -40,7 +40,12 @@ func TestExpandList_Count(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.s.Count(), "Count()")
+			assert.Equalf(
+				t,
+				tt.want,
+				tt.s.Count(),
+				"Count()",
+			)
 		})
 	}
 }
@@ -75,7 +80,11 @@ func TestExpandList_Push(t *testing.T) {
 			sizeBefore := len(tt.s)
 
 			tt.s.Push(tt.args.o)
-			require.Equal(t, sizeBefore+1, len(tt.s))
+			require.Equal(
+				t,
+				sizeBefore+1,
+				len(tt.s),
+			)
 		})
 	}
 }
@@ -113,7 +122,11 @@ func TestExpandList_ApplyOn(t *testing.T) {
 
 			var asErr ApplyError
 
-			require.ErrorAs(t, err, &asErr)
+			require.ErrorAs(
+				t,
+				err,
+				&asErr,
+			)
 			require.Equal(t, asErr.MError, merror.MError([]error{
 				errMocked1,
 				errMocked2,

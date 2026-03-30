@@ -112,7 +112,11 @@ func Test_longTypeName(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				require.Equal(t, tt.want, LongTypeName(tt.args.t))
+				require.Equal(
+					t,
+					tt.want,
+					LongTypeName(tt.args.t),
+				)
 			},
 		)
 	}

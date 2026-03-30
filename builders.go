@@ -28,7 +28,6 @@ func (layers Layers) GetPolicies() (
 
 	for index, layer := range layers {
 		err := layer.register(bo)
-
 		if err != nil {
 			errs.Add(
 				ierror.IError{
@@ -116,8 +115,12 @@ func Env(prefix string, options ...Option) (
 
 func newLayerBuilder(l int) *layerBuilder {
 	return &layerBuilder{
-		builders: make(constraintLayerPolicies, 0, l),
-		idDedup:  make(map[string]int),
+		builders: make(
+			constraintLayerPolicies,
+			0,
+			l,
+		),
+		idDedup: make(map[string]int),
 	}
 }
 
@@ -161,7 +164,11 @@ func wrapCmdlineBuild(
 }
 
 func (o *StrictCmdlineLayer) register(to *layerBuilder) error {
-	return wrapCmdlineBuild(to, newStrictLayer, o.options)
+	return wrapCmdlineBuild(
+		to,
+		newStrictLayer,
+		o.options,
+	)
 }
 
 // WithStrictCmdlineLayer creates a strict command line layer.
@@ -173,7 +180,11 @@ func WithStrictCmdlineLayer(options ...Option) *StrictCmdlineLayer {
 }
 
 func (o *CmdlineLayer) register(to *layerBuilder) error {
-	return wrapCmdlineBuild(to, newNormalLayer, o.options)
+	return wrapCmdlineBuild(
+		to,
+		newNormalLayer,
+		o.options,
+	)
 }
 
 // WithCmdlineLayer creates a command line layer.
@@ -183,7 +194,7 @@ func WithCmdlineLayer(options ...Option) *CmdlineLayer {
 	}
 }
 
-// ///////////////////////////////////////////////////
+// ///////////////////////////////////////////////////.
 
 func wrapEnvBuild(
 	to *layerBuilder,
@@ -214,7 +225,12 @@ func wrapEnvBuild(
 }
 
 func (o *StrictEnvLayer) register(to *layerBuilder) error {
-	return wrapEnvBuild(to, newStrictLayer, o.prefix, o.options)
+	return wrapEnvBuild(
+		to,
+		newStrictLayer,
+		o.prefix,
+		o.options,
+	)
 }
 
 // WithStrictEnvLayer creates a new strict environment layer.
@@ -226,7 +242,12 @@ func WithStrictEnvLayer(prefix string, options ...Option) *StrictEnvLayer {
 }
 
 func (o *EnvLayer) register(to *layerBuilder) error {
-	return wrapEnvBuild(to, newNormalLayer, o.prefix, o.options)
+	return wrapEnvBuild(
+		to,
+		newNormalLayer,
+		o.prefix,
+		o.options,
+	)
 }
 
 // WithEnvLayer creates an environment variable layer.
@@ -237,7 +258,7 @@ func WithEnvLayer(prefix string, options ...Option) *EnvLayer {
 	}
 }
 
-// ///////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////.
 
 func wrapStructBuild(
 	to *layerBuilder,
@@ -281,7 +302,12 @@ func wrapStructBuild(
 }
 
 func (o *StrictStructLayer) register(to *layerBuilder) error {
-	return wrapStructBuild(to, newStrictLayer, o.input, o.id)
+	return wrapStructBuild(
+		to,
+		newStrictLayer,
+		o.input,
+		o.id,
+	)
 }
 
 // WithStrictStructLayer creates a new strict structure layer.
@@ -293,7 +319,12 @@ func WithStrictStructLayer(input any, id string) *StrictStructLayer {
 }
 
 func (o *StructLayer) register(to *layerBuilder) error {
-	return wrapStructBuild(to, newNormalLayer, o.input, o.id)
+	return wrapStructBuild(
+		to,
+		newNormalLayer,
+		o.input,
+		o.id,
+	)
 }
 
 // WithStructLayer creates a structure layer.

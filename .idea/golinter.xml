@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoLinterFmtOnSave">
+    <option name="enabledOnSave" value="true" />
+  </component>
+  <component name="GoLinterSettings">
+    <option name="customConfigFile" value="$PROJECT_DIR$/.golangci.yaml" />
+    <option name="enabledLinters">
+      <list>
+        <option value="decorder" />
+        <option value="exportloopref" />
+        <option value="predeclared" />
+        <option value="importas" />
+        <option value="gocritic" />
+        <option value="errcheck" />
+        <option value="exhaustruct" />
+        <option value="forcetypeassert" />
+        <option value="dogsled" />
+        <option value="maintidx" />
+        <option value="nilnil" />
+        <option value="ineffassign" />
+        <option value="wsl" />
+        <option value="varnamelen" />
+        <option value="exhaustive" />
+        <option value="revive" />
+        <option value="prealloc" />
+        <option value="durationcheck" />
+        <option value="gochecknoglobals" />
+        <option value="dupl" />
+        <option value="govet" />
+        <option value="forbidigo" />
+        <option value="ireturn" />
+        <option value="errname" />
+        <option value="gomoddirectives" />
+        <option value="gochecknoinits" />
+        <option value="nosprintfhostport" />
+        <option value="wrapcheck" />
+        <option value="lll" />
+        <option value="makezero" />
+        <option value="thelper" />
+        <option value="containedctx" />
+        <option value="nolintlint" />
+        <option value="gosec" />
+        <option value="goerr113" />
+        <option value="gomodguard" />
+        <option value="godox" />
+        <option value="gofmt" />
+        <option value="unused" />
+        <option value="depguard" />
+        <option value="paralleltest" />
+        <option value="godot" />
+        <option value="goimports" />
+        <option value="goprintffuncname" />
+      </list>
+    </option>
+    <option name="linterSelected" value="true" />
+    <option name="useCustomConfigFile" value="true" />
+  </component>
+</project>

@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errMocked1 = errors.New("error mocked 1")
-var errMocked2 = errors.New("error mocked 2")
+var (
+	errMocked1 = errors.New("error mocked 1")
+	errMocked2 = errors.New("error mocked 2")
+)
 
 func TestInvalidInputError_Error(t *testing.T) {
 	t.Parallel()
@@ -26,8 +28,16 @@ func TestInvalidInputError_Error(t *testing.T) {
 func TestInvalidInputError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrInvalidInput)
-	require.ErrorIs(t, InvalidInputError{}, ErrInvalidInput)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrInvalidInput,
+	)
+	require.ErrorIs(
+		t,
+		InvalidInputError{},
+		ErrInvalidInput,
+	)
 }
 
 func TestCmdlineAlreadyUsedError_Error(t *testing.T) {
@@ -45,8 +55,16 @@ func TestCmdlineAlreadyUsedError_Error(t *testing.T) {
 func TestCmdlineAlreadyUsedError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrCmdlineAlreadyUsed)
-	require.ErrorIs(t, CmdlineAlreadyUsedError{}, ErrCmdlineAlreadyUsed)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrCmdlineAlreadyUsed,
+	)
+	require.ErrorIs(
+		t,
+		CmdlineAlreadyUsedError{},
+		ErrCmdlineAlreadyUsed,
+	)
 }
 
 func TestDuplicateEnvPrefixError_Error(t *testing.T) {
@@ -65,8 +83,16 @@ func TestDuplicateEnvPrefixError_Error(t *testing.T) {
 func TestDuplicatAeEnvPrefixError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrDuplicateEnvPrefix)
-	require.ErrorIs(t, DuplicateEnvPrefixError{}, ErrDuplicateEnvPrefix)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrDuplicateEnvPrefix,
+	)
+	require.ErrorIs(
+		t,
+		DuplicateEnvPrefixError{},
+		ErrDuplicateEnvPrefix,
+	)
 }
 
 func TestDuplicateInputStructError_Error(t *testing.T) {
@@ -84,8 +110,16 @@ func TestDuplicateInputStructError_Error(t *testing.T) {
 func TestDuplicateInputStructError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrDuplicateInputStruct)
-	require.ErrorIs(t, DuplicateInputStructError{}, ErrDuplicateInputStruct)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrDuplicateInputStruct,
+	)
+	require.ErrorIs(
+		t,
+		DuplicateInputStructError{},
+		ErrDuplicateInputStruct,
+	)
 }
 
 func TestDuplicateStructIDError_Error(t *testing.T) {
@@ -104,13 +138,29 @@ func TestDuplicateStructIDError_Error(t *testing.T) {
 func TestDuplicateStructIDError_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrDuplicateStructID)
-	require.ErrorIs(t, DuplicateStructIDError{}, ErrDuplicateStructID)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrDuplicateStructID,
+	)
+	require.ErrorIs(
+		t,
+		DuplicateStructIDError{},
+		ErrDuplicateStructID,
+	)
 }
 
 func TestLayerErrors_Is(t *testing.T) {
 	t.Parallel()
 
-	require.NotErrorIs(t, errMocked1, ErrLayer)
-	require.ErrorIs(t, LayerErrors{}, ErrLayer)
+	require.NotErrorIs(
+		t,
+		errMocked1,
+		ErrLayer,
+	)
+	require.ErrorIs(
+		t,
+		LayerErrors{},
+		ErrLayer,
+	)
 }

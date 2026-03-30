@@ -40,11 +40,14 @@ func newProvider(
 ) {
 	// ensure prefix is uppercase
 	if !rePrefix.MatchString(prefix) {
-		return nil, fmt.Errorf("%q : %w", prefix, ErrInvalidPrefix)
+		return nil, fmt.Errorf(
+			"%q : %w",
+			prefix,
+			ErrInvalidPrefix,
+		)
 	}
 
 	stringValues, err := extractStringValues(environ, prefix)
-
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +75,7 @@ func NewEntriesProvider(prefix string) (*EntriesProvider, error) {
 // 	"\\t", `\t`,
 // 	"\"", `"`,
 // 	"\\", `\`,
-// )
+// ).
 
 func extractStringValues(env []string, prefix string) (
 	svalue.Values, error,
@@ -89,16 +92,15 @@ func extractStringValues(env []string, prefix string) (
 
 		if len(groups) == rePrefixed.NumSubexp()+1 {
 			if reSubKey.MatchString(groups[1]) {
-				stringValues[strings.ToLower(groups[1][1:])] =
-					&svalue.Value{
-						Location: fmt.Sprintf(
-							"env[%s%s]",
-							prefix,
-							groups[1],
-						),
-						// Value: replacer.Replace(groups[2]),
-						Value: groups[2],
-					}
+				stringValues[strings.ToLower(groups[1][1:])] = &svalue.Value{
+					Location: fmt.Sprintf(
+						"env[%s%s]",
+						prefix,
+						groups[1],
+					),
+					// Value: replacer.Replace(groups[2]),
+					Value: groups[2],
+				}
 
 				continue
 			}

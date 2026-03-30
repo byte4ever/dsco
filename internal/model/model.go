@@ -38,7 +38,11 @@ func (ModelError) Is(err error) bool {
 func NewModel(inputModelType reflect.Type) (*Model, error) {
 	var maxUID uint
 
-	accelerator, errs := scan(&maxUID, "", inputModelType)
+	accelerator, errs := scan(
+		&maxUID,
+		"",
+		inputModelType,
+	)
 
 	if !errs.None() {
 		return nil, ModelError{
@@ -46,8 +50,16 @@ func NewModel(inputModelType reflect.Type) (*Model, error) {
 		}
 	}
 
-	getList := make(GetList, 0, maxUID)
-	expandList := make(ExpandList, 0, maxUID)
+	getList := make(
+		GetList,
+		0,
+		maxUID,
+	)
+	expandList := make(
+		ExpandList,
+		0,
+		maxUID,
+	)
 
 	accelerator.BuildGetList(&getList)
 
@@ -134,13 +146,20 @@ const preallocateStack = 16
 func getVisibleFieldList(path string, t reflect.Type) (elems, []error) {
 	var errs []error
 
-	st := make(stackEmbed, 0, preallocateStack)
-
-	_ = st.pushToStack(nil, 0, "", t.Elem())
-
-	var (
-		order int
+	st := make(
+		stackEmbed,
+		0,
+		preallocateStack,
 	)
+
+	_ = st.pushToStack(
+		nil,
+		0,
+		"",
+		t.Elem(),
+	)
+
+	var order int
 
 	processed := make(map[string]*elemEmbedded)
 
@@ -165,7 +184,6 @@ func getVisibleFieldList(path string, t reflect.Type) (elems, []error) {
 				localFieldName,
 				toProcess.field.Type,
 			)
-
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -206,7 +224,11 @@ func getVisibleFieldList(path string, t reflect.Type) (elems, []error) {
 	}
 
 	// reorder processed fields
-	fieldValues := make(elems, 0, len(processed))
+	fieldValues := make(
+		elems,
+		0,
+		len(processed),
+	)
 	for _, e := range processed {
 		fieldValues = append(fieldValues, e)
 	}

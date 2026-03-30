@@ -114,7 +114,11 @@ func TestRegexpKey(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				require.Equal(t, tt.matches, reSubKey.MatchString(tt.str))
+				require.Equal(
+					t,
+					tt.matches,
+					reSubKey.MatchString(tt.str),
+				)
 			},
 		)
 	}
@@ -168,7 +172,11 @@ func Test_RegexpPrefix(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				require.Equal(t, tt.match, rePrefix.MatchString(tt.str))
+				require.Equal(
+					t,
+					tt.match,
+					rePrefix.MatchString(tt.str),
+				)
 			},
 		)
 	}
@@ -259,8 +267,16 @@ bolos`,
 				setEnv(t, tt.args.env)
 				got, errs := NewEntriesProvider(tt.args.prefix)
 
-				require.Equal(t, tt.wantErr, errs)
-				require.Equal(t, tt.want, got)
+				require.Equal(
+					t,
+					tt.wantErr,
+					errs,
+				)
+				require.Equal(
+					t,
+					tt.want,
+					got,
+				)
 			},
 		)
 	}
@@ -282,8 +298,16 @@ func TestProvide_InvalidPrefix(t *testing.T) {
 				t.Parallel()
 
 				p, err := NewEntriesProvider(prefix)
-				require.ErrorIs(t, err, ErrInvalidPrefix)
-				require.ErrorContains(t, err, prefix)
+				require.ErrorIs(
+					t,
+					err,
+					ErrInvalidPrefix,
+				)
+				require.ErrorContains(
+					t,
+					err,
+					prefix,
+				)
 				require.Nil(t, p)
 			},
 		)
@@ -308,14 +332,19 @@ func TestProvider_GetStringValues(t *testing.T) {
 		stringValues: stringValues,
 	}
 
-	require.Equal(t, stringValues, p.GetStringValues())
+	require.Equal(
+		t,
+		stringValues,
+		p.GetStringValues(),
+	)
 }
 
-func TestProvideKeySyntaxError(t *testing.T) { //nolint:paralleltest //using env variable
+func TestProvideKeySyntaxError(
+	t *testing.T,
+) { //nolint:paralleltest //using env variable
 	t.Run(
 		"",
 		func(t *testing.T) {
-
 			keys := []string{
 				"PREFIX-1A-B",
 				"PREFIX-A-1B",
@@ -337,9 +366,17 @@ func TestProvideKeySyntaxError(t *testing.T) { //nolint:paralleltest //using env
 			p, err := NewEntriesProvider("PREFIX")
 			require.Nil(t, p)
 
-			require.ErrorIs(t, err, ErrAmbiguousKeys)
+			require.ErrorIs(
+				t,
+				err,
+				ErrAmbiguousKeys,
+			)
 			for _, k := range keys {
-				require.ErrorContains(t, err, k)
+				require.ErrorContains(
+					t,
+					err,
+					k,
+				)
 			}
 		},
 	)

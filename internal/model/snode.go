@@ -43,7 +43,6 @@ func (n StructNode) Fill(
 			value.Elem().FieldByIndex(index.Index),
 			layers,
 		)
-
 		if err != nil {
 			errs.Add(err)
 		}
@@ -110,7 +109,10 @@ func (n *StructNode) BuildGetList(s *GetList) {
 func (n *StructNode) BuildExpandList(el *ExpandList) {
 	el.Push(
 		func(g internal.StructExpander) (err error) {
-			return g.ExpandStruct(n.VisiblePath, n.Type) //nolint:wrapcheck // dgas
+			return g.ExpandStruct(
+				n.VisiblePath,
+				n.Type,
+			) //nolint:wrapcheck // dgas
 		},
 	)
 

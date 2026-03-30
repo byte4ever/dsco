@@ -31,14 +31,22 @@ func (m *MockFS) Create(name string) (
 
 func (m *MockFS) Mkdir(name string, perm os.FileMode) error {
 	m.t.Helper()
-	m.t.Logf("Call Mkdir(%q, %q):", name, perm)
+	m.t.Logf(
+		"Call Mkdir(%q, %q):",
+		name,
+		perm,
+	)
 
 	return m.Fs.Mkdir(name, perm) //nolint:wrapcheck // dgas
 }
 
 func (m *MockFS) MkdirAll(path string, perm os.FileMode) error {
 	m.t.Helper()
-	m.t.Logf("Call MkdirAll(%q, %q):", path, perm)
+	m.t.Logf(
+		"Call MkdirAll(%q, %q):",
+		path,
+		perm,
+	)
 
 	return m.Fs.MkdirAll(path, perm) //nolint:wrapcheck // dgas
 }
@@ -63,9 +71,18 @@ func (m *MockFS) OpenFile(
 	afero.File, error,
 ) {
 	m.t.Helper()
-	m.t.Logf("Call OpenFile(%q, %d, %q):", name, flag, perm)
+	m.t.Logf(
+		"Call OpenFile(%q, %d, %q):",
+		name,
+		flag,
+		perm,
+	)
 
-	return m.Fs.OpenFile(name, flag, perm) //nolint:wrapcheck // dgas
+	return m.Fs.OpenFile(
+		name,
+		flag,
+		perm,
+	) //nolint:wrapcheck // dgas
 }
 
 func (m *MockFS) Remove(name string) error {
@@ -84,7 +101,11 @@ func (m *MockFS) RemoveAll(path string) error {
 
 func (m *MockFS) Rename(oldname, newname string) error {
 	m.t.Helper()
-	m.t.Logf("Call Rename(%q, %q):", oldname, newname)
+	m.t.Logf(
+		"Call Rename(%q, %q):",
+		oldname,
+		newname,
+	)
 
 	return m.Fs.Rename(oldname, newname) //nolint:wrapcheck // dgas
 }
@@ -105,23 +126,53 @@ func (m *MockFS) Name() string {
 
 func (m *MockFS) Chmod(name string, mode os.FileMode) error {
 	m.t.Helper()
-	m.t.Logf("Call Chmod(%q, %o):", name, mode)
+	m.t.Logf(
+		"Call Chmod(%q, %o):",
+		name,
+		mode,
+	)
 
 	return m.Fs.Chmod(name, mode) //nolint:wrapcheck // dgas
 }
 
-func (m *MockFS) Chown(name string, uid, gid int) error {
+func (m *MockFS) Chown(
+	name string,
+	uid int,
+	gid int,
+) error {
 	m.t.Helper()
-	m.t.Logf("Call Chown(%q, %d, %d):", name, uid, gid)
+	m.t.Logf(
+		"Call Chown(%q, %d, %d):",
+		name,
+		uid,
+		gid,
+	)
 
-	return m.Fs.Chown(name, uid, gid) //nolint:wrapcheck // dgas
+	return m.Fs.Chown(
+		name,
+		uid,
+		gid,
+	) //nolint:wrapcheck // dgas
 }
 
-func (m *MockFS) Chtimes(name string, atime time.Time, mtime time.Time) error {
+func (m *MockFS) Chtimes(
+	name string,
+	atime time.Time,
+	mtime time.Time,
+) error {
 	m.t.Helper()
-	m.t.Logf("Call Chtimes(%q, %s, %s):", name, atime, mtime)
+	m.t.Logf(
+		"Call Chtimes(%q, %s, %s):",
+		name,
+		atime,
+		mtime,
+	)
 
-	return m.Fs.Chtimes(name, atime, mtime) //nolint:wrapcheck // dgas
+	return m.Fs.Chtimes(
+		name,
+		atime,
+		mtime,
+	) //nolint:wrapcheck // dgas
 }
 
 func Test_scanDirectory(t *testing.T) {
@@ -130,15 +181,35 @@ func Test_scanDirectory(t *testing.T) {
 			t.Parallel()
 			fs := afero.NewMemMapFs()
 
-			provider, err := newProvider(fs, "/tmp", &options{})
+			provider, err := newProvider(
+				fs,
+				"/tmp",
+				&options{},
+			)
 
 			var ep PathErrors
-			require.ErrorAs(t, err, &ep)
-			require.Len(t, ep, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&ep,
+			)
+			require.Len(
+				t,
+				ep,
+				1,
+			)
 
 			e := ep[0]
-			require.Equal(t, e.path, "/tmp")
-			require.ErrorIs(t, e.err, os.ErrNotExist)
+			require.Equal(
+				t,
+				e.path,
+				"/tmp",
+			)
+			require.ErrorIs(
+				t,
+				e.err,
+				os.ErrNotExist,
+			)
 			require.Nil(t, provider)
 		},
 	)
@@ -148,9 +219,13 @@ func Test_scanDirectory(t *testing.T) {
 			t.Parallel()
 			fs := afero.NewMemMapFs()
 
-			require.NoError(t, fs.MkdirAll("/test", 0755))
+			require.NoError(t, fs.MkdirAll("/test", 0o755))
 
-			provider, err := newProvider(fs, "/test", &options{})
+			provider, err := newProvider(
+				fs,
+				"/test",
+				&options{},
+			)
 
 			require.NoError(t, err)
 			require.NotNil(t, provider)
@@ -163,30 +238,34 @@ func Test_scanDirectory(t *testing.T) {
 			t.Parallel()
 			fs := afero.NewMemMapFs()
 
-			require.NoError(t, fs.MkdirAll("/test", 0755))
+			require.NoError(t, fs.MkdirAll("/test", 0o755))
 
 			require.NoError(
 				t,
 				afero.WriteFile(
-					fs, "/test/K1", []byte("content1"), 0755,
+					fs, "/test/K1", []byte("content1"), 0o755,
 				),
 			)
 
 			require.NoError(
 				t,
 				afero.WriteFile(
-					fs, "/test/K2", []byte("content2"), 0755,
+					fs, "/test/K2", []byte("content2"), 0o755,
 				),
 			)
 
 			require.NoError(
 				t,
 				afero.WriteFile(
-					fs, "/test/b/K3", []byte("content3"), 0755,
+					fs, "/test/b/K3", []byte("content3"), 0o755,
 				),
 			)
 
-			provider, err := newProvider(fs, "/test", &options{})
+			provider, err := newProvider(
+				fs,
+				"/test",
+				&options{},
+			)
 
 			require.NoError(t, err)
 
@@ -197,27 +276,67 @@ func Test_scanDirectory(t *testing.T) {
 			)
 
 			values := provider.values
-			require.Len(t, values, 3)
-			require.Contains(t, values, "k1")
-			require.Contains(t, values, "k2")
-			require.Contains(t, values, "k3")
+			require.Len(
+				t,
+				values,
+				3,
+			)
+			require.Contains(
+				t,
+				values,
+				"k1",
+			)
+			require.Contains(
+				t,
+				values,
+				"k2",
+			)
+			require.Contains(
+				t,
+				values,
+				"k3",
+			)
 
 			{
 				v := values["k1"]
-				require.Equal(t, "content1", v.Value)
-				require.Equal(t, "kfile[/test]:K1", v.Location)
+				require.Equal(
+					t,
+					"content1",
+					v.Value,
+				)
+				require.Equal(
+					t,
+					"kfile[/test]:K1",
+					v.Location,
+				)
 			}
 
 			{
 				v := values["k2"]
-				require.Equal(t, "content2", v.Value)
-				require.Equal(t, "kfile[/test]:K2", v.Location)
+				require.Equal(
+					t,
+					"content2",
+					v.Value,
+				)
+				require.Equal(
+					t,
+					"kfile[/test]:K2",
+					v.Location,
+				)
 			}
 
 			{
 				v := values["k3"]
-				require.Equal(t, "content3", v.Value)
-				require.Equal(t, "kfile[/test]:b/K3", v.Location)
+				require.Equal(
+					t,
+					"content3",
+					v.Value,
+				)
+				require.Equal(
+					t,
+					"kfile[/test]:b/K3",
+					v.Location,
+				)
 			}
 		},
 	)
@@ -235,23 +354,43 @@ func Test_scanDirectory(t *testing.T) {
 				},
 			}
 
-			require.NoError(t, fs.MkdirAll("/a/b/c", 0000))
+			require.NoError(t, fs.MkdirAll("/a/b/c", 0o000))
 			require.NoError(
 				t,
 				afero.WriteFile(
-					fs, "/a/b/c/K1", []byte{}, 0755,
+					fs, "/a/b/c/K1", []byte{}, 0o755,
 				),
 			)
 
-			provider, err := newProvider(ff2, "/", &options{})
+			provider, err := newProvider(
+				ff2,
+				"/",
+				&options{},
+			)
 
 			var ep PathErrors
-			require.ErrorAs(t, err, &ep)
-			require.Len(t, ep, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&ep,
+			)
+			require.Len(
+				t,
+				ep,
+				1,
+			)
 
 			e := ep[0]
-			require.Equal(t, e.path, "/a/b/c/K1")
-			require.ErrorIs(t, e.err, os.ErrPermission)
+			require.Equal(
+				t,
+				e.path,
+				"/a/b/c/K1",
+			)
+			require.ErrorIs(
+				t,
+				e.err,
+				os.ErrPermission,
+			)
 			require.Nil(t, provider)
 		},
 	)
@@ -269,16 +408,36 @@ func Test_scanDirectory(t *testing.T) {
 				},
 			}
 
-			require.NoError(t, fs.MkdirAll("/a/b/c", 0000))
-			provider, err := newProvider(ff2, "/", &options{})
+			require.NoError(t, fs.MkdirAll("/a/b/c", 0o000))
+			provider, err := newProvider(
+				ff2,
+				"/",
+				&options{},
+			)
 
 			var ep PathErrors
-			require.ErrorAs(t, err, &ep)
-			require.Len(t, ep, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&ep,
+			)
+			require.Len(
+				t,
+				ep,
+				1,
+			)
 
 			e := ep[0]
-			require.Equal(t, e.path, "/a/b/c")
-			require.ErrorIs(t, e.err, os.ErrPermission)
+			require.Equal(
+				t,
+				e.path,
+				"/a/b/c",
+			)
+			require.ErrorIs(
+				t,
+				e.err,
+				os.ErrPermission,
+			)
 			require.Nil(t, provider)
 		},
 	)
@@ -291,19 +450,39 @@ func Test_scanDirectory(t *testing.T) {
 			require.NoError(
 				t,
 				afero.WriteFile(
-					fs, "/a/b/c/zobby", []byte{}, 0755,
+					fs, "/a/b/c/zobby", []byte{}, 0o755,
 				),
 			)
 
-			provider, err := newProvider(fs, "/", &options{})
+			provider, err := newProvider(
+				fs,
+				"/",
+				&options{},
+			)
 
 			var ep PathErrors
-			require.ErrorAs(t, err, &ep)
-			require.Len(t, ep, 1)
+			require.ErrorAs(
+				t,
+				err,
+				&ep,
+			)
+			require.Len(
+				t,
+				ep,
+				1,
+			)
 
 			e := ep[0]
-			require.Equal(t, e.path, "/a/b/c/zobby")
-			require.ErrorIs(t, e.err, ErrInvalidFileName)
+			require.Equal(
+				t,
+				e.path,
+				"/a/b/c/zobby",
+			)
+			require.ErrorIs(
+				t,
+				e.err,
+				ErrInvalidFileName,
+			)
 			require.Nil(t, provider)
 		},
 	)
@@ -376,7 +555,11 @@ func TestEntriesProvider_GetStringValues(t *testing.T) {
 	}
 
 	fv := ep.GetStringValues()
-	require.Equal(t, values, fv)
+	require.Equal(
+		t,
+		values,
+		fv,
+	)
 }
 
 func TestNewEntriesProvider(t *testing.T) {
@@ -396,7 +579,7 @@ func TestNewEntriesProvider(t *testing.T) {
 			require.NoError(
 				t, fs.MkdirAll(
 					"/a/b/c",
-					0777,
+					0o777,
 				),
 			)
 
@@ -405,7 +588,7 @@ func TestNewEntriesProvider(t *testing.T) {
 					fs,
 					"/a/b/c/K1",
 					[]byte("content1"),
-					0777,
+					0o777,
 				),
 			)
 
@@ -413,7 +596,11 @@ func TestNewEntriesProvider(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, provider)
-			require.Len(t, provider.values, 1)
+			require.Len(
+				t,
+				provider.values,
+				1,
+			)
 		},
 	)
 
@@ -441,5 +628,9 @@ func TestEntriesProvider_GetName(t *testing.T) {
 	ep := EntriesProvider{
 		name: v,
 	}
-	require.Equal(t, v, ep.GetName())
+	require.Equal(
+		t,
+		v,
+		ep.GetName(),
+	)
 }

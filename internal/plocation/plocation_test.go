@@ -37,7 +37,11 @@ func TestPathLocations_Dump(t *testing.T) {
   path1  |  loc1
 `
 
-			require.Equal(t, expectedString, v.String())
+			require.Equal(
+				t,
+				expectedString,
+				v.String(),
+			)
 		},
 	)
 }
@@ -53,8 +57,16 @@ func TestPathLocations_Report(t *testing.T) {
 		},
 	}
 
-	ploc.Report(1, "path1", "loc1")
-	ploc.Report(2, "path2", "loc2")
+	ploc.Report(
+		1,
+		"path1",
+		"loc1",
+	)
+	ploc.Report(
+		2,
+		"path2",
+		"loc2",
+	)
 
 	require.Equal(
 		t, Locations{

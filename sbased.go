@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -82,7 +81,7 @@ type UnboundedLocationError struct {
 }
 
 func (a UnboundedLocationError) Error() string {
-	return fmt.Sprintf("unbounded location %s", a.Location)
+	return "unbounded location " + a.Location
 }
 
 func (UnboundedLocationError) Is(err error) bool {
@@ -221,7 +220,7 @@ func (s *StringBasedBuilder) ExpandStruct(
 	convertedPath := convert(path)
 
 	// check for alias collisions
-	if _, found := s.internalOpts.aliases[convertedPath]; found {
+	if _, found := s.aliases[convertedPath]; found {
 		return &AliasCollisionError{
 			Path: path,
 		}
@@ -256,10 +255,7 @@ func (s *StringBasedBuilder) ExpandStruct(
 		entryToExpand.Location,
 		tp,
 	) {
-		s.expandedValues[strings.Join([]string{
-			path,
-			value.Path,
-		}, ".")] = value
+		s.expandedValues[path+"."+value.Path] = value
 	}
 
 	return nil
@@ -275,7 +271,7 @@ func (s *StringBasedBuilder) Get(
 	convertedPath := convert(path)
 
 	// check for alias collisions
-	if _, found := s.internalOpts.aliases[convertedPath]; found {
+	if _, found := s.aliases[convertedPath]; found {
 		return nil, AliasCollisionError{
 			Path: path,
 		}

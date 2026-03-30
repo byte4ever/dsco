@@ -30,5 +30,9 @@ func TestIError_Unwrap(t *testing.T) {
 		Err: errMocked,
 	}
 
-	require.Equal(t, errMocked, e.Unwrap())
+	require.Equal(
+		t,
+		errMocked,
+		e.Unwrap(),
+	)
 }

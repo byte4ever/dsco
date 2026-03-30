@@ -7,7 +7,7 @@ import (
 
 var Err = errors.New("")
 
-// TODO :- lmartin 7/5/22 -: rename
+// TODO :- lmartin 7/5/22 -: rename.
 
 type MError []error //nolint:errname // need to be fixed
 

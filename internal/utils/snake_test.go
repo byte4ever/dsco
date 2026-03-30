@@ -47,7 +47,11 @@ func TestToSnakeCase(t *testing.T) {
 				t.Parallel()
 
 				if got := ToSnakeCase(tt.args.str); got != tt.want {
-					t.Errorf("ToSnakeCase() = %v, want %v", got, tt.want)
+					t.Errorf(
+						"ToSnakeCase() = %v, want %v",
+						got,
+						tt.want,
+					)
 				}
 			},
 		)

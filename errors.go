@@ -12,43 +12,50 @@ import (
 // ErrNilInput is dummy...
 var ErrNilInput = errors.New("nil input")
 
-// ErrCmdlineAlreadyUsed represent an error where ....
+// ErrInvalidInput is the sentinel error for invalid input types.
 var ErrInvalidInput = errors.New("")
 
+// InvalidInputError represents an error where the input type is invalid.
 type InvalidInputError struct {
 	Type reflect.Type
 }
 
-// ErrCmdlineAlreadyUsed represent an error where ....
+// ErrCmdlineAlreadyUsed is the sentinel error for cmdline already used.
 var ErrCmdlineAlreadyUsed = errors.New("")
 
+// CmdlineAlreadyUsedError represents an error where cmdline is already used.
 type CmdlineAlreadyUsedError struct {
 	Index int
 }
 
-// ErrDuplicateEnvPrefix represent an error where ....
+// ErrDuplicateEnvPrefix is the sentinel error for duplicate env prefix.
 var ErrDuplicateEnvPrefix = errors.New("")
 
+// DuplicateEnvPrefixError represents an error where env prefix is duplicated.
 type DuplicateEnvPrefixError struct {
 	Prefix string
 	Index  int
 }
 
-// ErrDuplicateInputStruct represent an error where ....
+// ErrDuplicateInputStruct is the sentinel error for duplicate input struct.
 var ErrDuplicateInputStruct = errors.New("")
 
+// DuplicateInputStructError represents an error where input struct is
+// duplicated.
 type DuplicateInputStructError struct {
 	Index int
 }
 
-// ErrDuplicateStructID represent an error where ....
+// ErrDuplicateStructID is the sentinel error for duplicate struct ID.
 var ErrDuplicateStructID = errors.New("")
 
+// DuplicateStructIDError represents an error where struct ID is duplicated.
 type DuplicateStructIDError struct {
 	ID    string
 	Index int
 }
 
+// InvalidInputError methods.
 func (c InvalidInputError) Error() string {
 	return fmt.Sprintf(
 		"type %s is not a valid pointer on struct",
@@ -60,6 +67,7 @@ func (InvalidInputError) Is(err error) bool {
 	return errors.Is(err, ErrInvalidInput)
 }
 
+// CmdlineAlreadyUsedError methods.
 func (c CmdlineAlreadyUsedError) Error() string {
 	return fmt.Sprintf(
 		"cmdline already used in position #%d",
@@ -71,6 +79,7 @@ func (CmdlineAlreadyUsedError) Is(err error) bool {
 	return errors.Is(err, ErrCmdlineAlreadyUsed)
 }
 
+// DuplicateEnvPrefixError methods.
 func (c DuplicateEnvPrefixError) Error() string {
 	return fmt.Sprintf(
 		"layer #%d has same prefix=%s",
@@ -83,6 +92,7 @@ func (DuplicateEnvPrefixError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateEnvPrefix)
 }
 
+// DuplicateInputStructError methods.
 func (c DuplicateInputStructError) Error() string {
 	return fmt.Sprintf(
 		"struct layer #%d is using same pointer",
@@ -94,6 +104,7 @@ func (DuplicateInputStructError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateInputStruct)
 }
 
+// DuplicateStructIDError methods.
 func (c DuplicateStructIDError) Error() string {
 	return fmt.Sprintf(
 		"struct layer #%d is using same id=%q",
@@ -106,11 +117,13 @@ func (DuplicateStructIDError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateStructID)
 }
 
+// ErrLayer is the sentinel error for layer errors.
+var ErrLayer = errors.New("")
+
+// LayerErrors represents multiple layer errors.
 type LayerErrors struct {
 	merror.MError
 }
-
-var ErrLayer = errors.New("")
 
 func (LayerErrors) Is(err error) bool {
 	return errors.Is(err, ErrLayer)

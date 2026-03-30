@@ -57,9 +57,17 @@ func Test_scan(t *testing.T) {
 			}
 			var maxUID uint
 			vType := reflect.TypeOf(&Root{})
-			node, mError := scan(&maxUID, "", vType)
+			node, mError := scan(
+				&maxUID,
+				"",
+				vType,
+			)
 			require.True(t, mError.None())
-			require.Equal(t, uint(8), maxUID)
+			require.Equal(
+				t,
+				uint(8),
+				maxUID,
+			)
 
 			expectedNode := &StructNode{
 				Type: vType,
@@ -149,7 +157,11 @@ func Test_scan(t *testing.T) {
 				},
 			}
 
-			require.Equal(t, expectedNode, node)
+			require.Equal(
+				t,
+				expectedNode,
+				node,
+			)
 		},
 	)
 
@@ -207,9 +219,17 @@ func Test_scan(t *testing.T) {
 			}
 			var maxUID uint
 			vType := reflect.TypeOf(&Root{})
-			node, mError := scan(&maxUID, "", vType)
+			node, mError := scan(
+				&maxUID,
+				"",
+				vType,
+			)
 
-			require.Len(t, mError, 6)
+			require.Len(
+				t,
+				mError,
+				6,
+			)
 
 			for idx, expectedError := range []UnsupportedTypeError{
 				{
@@ -238,8 +258,16 @@ func Test_scan(t *testing.T) {
 				},
 			} {
 				var e UnsupportedTypeError
-				require.ErrorAs(t, mError[idx], &e)
-				require.Equal(t, expectedError, e)
+				require.ErrorAs(
+					t,
+					mError[idx],
+					&e,
+				)
+				require.Equal(
+					t,
+					expectedError,
+					e,
+				)
 			}
 
 			expectedNode := &StructNode{
@@ -329,7 +357,11 @@ func Test_scan(t *testing.T) {
 					},
 				},
 			}
-			require.Equal(t, expectedNode, node)
+			require.Equal(
+				t,
+				expectedNode,
+				node,
+			)
 		},
 	)
 
@@ -379,9 +411,17 @@ func Test_scan(t *testing.T) {
 
 			var maxUID uint
 			vType := reflect.TypeOf(&Root{})
-			node, mError := scan(&maxUID, "", vType)
+			node, mError := scan(
+				&maxUID,
+				"",
+				vType,
+			)
 
-			require.Len(t, mError, 1)
+			require.Len(
+				t,
+				mError,
+				1,
+			)
 
 			for idx, expectedError := range []FieldNameCollisionError{
 				{
@@ -390,8 +430,16 @@ func Test_scan(t *testing.T) {
 				},
 			} {
 				var e FieldNameCollisionError
-				require.ErrorAs(t, mError[idx], &e)
-				require.Equal(t, expectedError, e)
+				require.ErrorAs(
+					t,
+					mError[idx],
+					&e,
+				)
+				require.Equal(
+					t,
+					expectedError,
+					e,
+				)
 			}
 
 			expectedNode := &StructNode{
@@ -481,7 +529,11 @@ func Test_scan(t *testing.T) {
 					},
 				},
 			}
-			require.Equal(t, expectedNode, node)
+			require.Equal(
+				t,
+				expectedNode,
+				node,
+			)
 		},
 	)
 }
