@@ -8,7 +8,7 @@ type (
 	//
 	// Pattern: Strategy — each layer kind formats keys differently; the
 	// formatter is injected into StringBasedBuilder at construction time.
-	KeyFormatter interface { //nolint:iface // strategy interface; consumed by StringBasedBuilder in task 5
+	KeyFormatter interface {
 		// LayerKind returns the layer category (e.g. "env", "cmdline", "file").
 		// Empty for layers that cannot enumerate keys.
 		LayerKind() string
@@ -25,80 +25,72 @@ type (
 
 	// envKeyFormatter formats keys for environment-variable layers:
 	// PREFIX-UPPER-CASE-DASHED.
-	envKeyFormatter struct { //nolint:unused // consumed by StringBasedBuilder in task 5
+	envKeyFormatter struct {
 		prefix string
 	}
 
 	// cmdlineKeyFormatter formats keys for command-line layers: --name=.
-	cmdlineKeyFormatter struct{} //nolint:unused // consumed by StringBasedBuilder in task 5
+	cmdlineKeyFormatter struct{}
 
 	// fileKeyFormatter formats keys for file layers: dot-separated YAML path.
-	fileKeyFormatter struct { //nolint:unused // consumed by StringBasedBuilder in task 5
+	fileKeyFormatter struct { //nolint:unused // consumed by file layer wiring (planned)
 		id string
 	}
 
 	// nilKeyFormatter is a no-op formatter for layers (custom string
 	// providers) that cannot enumerate keys statically. LayerKind is empty so
 	// reduce-pass logic skips them when picking a canonical key.
-	nilKeyFormatter struct { //nolint:unused // consumed by StringBasedBuilder in task 5
+	nilKeyFormatter struct {
 		name string
 	}
 )
 
-func newEnvKeyFormatter(prefix string) *envKeyFormatter { //nolint:unused // consumed by StringBasedBuilder in task 5
+func newEnvKeyFormatter(prefix string) *envKeyFormatter {
 	return &envKeyFormatter{prefix: prefix}
 }
 
-func newCmdlineKeyFormatter() *cmdlineKeyFormatter { //nolint:unused // consumed by StringBasedBuilder in task 5
+func newCmdlineKeyFormatter() *cmdlineKeyFormatter {
 	return &cmdlineKeyFormatter{}
 }
 
-func newFileKeyFormatter(id string) *fileKeyFormatter { //nolint:unused // consumed by StringBasedBuilder in task 5
+//nolint:unused // consumed by file layer wiring (planned)
+func newFileKeyFormatter(id string) *fileKeyFormatter {
 	return &fileKeyFormatter{id: id}
 }
 
-func newNilKeyFormatter(name string) *nilKeyFormatter { //nolint:unused // consumed by StringBasedBuilder in task 5
+func newNilKeyFormatter(name string) *nilKeyFormatter {
 	return &nilKeyFormatter{name: name}
 }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*envKeyFormatter) LayerKind() string { return "env" }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (f *envKeyFormatter) LayerName() string { return "env:" + f.prefix }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (f *envKeyFormatter) FormatKey(aliasPath string) string {
 	return f.prefix + "-" + strings.ToUpper(aliasPath)
 }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*cmdlineKeyFormatter) LayerKind() string { return "cmdline" }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*cmdlineKeyFormatter) LayerName() string { return "cmdline" }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*cmdlineKeyFormatter) FormatKey(aliasPath string) string {
 	return "--" + aliasPath + "="
 }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
+//nolint:unused // consumed by file layer wiring (planned)
 func (*fileKeyFormatter) LayerKind() string { return "file" }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
+//nolint:unused // consumed by file layer wiring (planned)
 func (f *fileKeyFormatter) LayerName() string { return "file:" + f.id }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
+//nolint:unused // consumed by file layer wiring (planned)
 func (*fileKeyFormatter) FormatKey(aliasPath string) string {
 	return strings.ReplaceAll(aliasPath, "-", ".")
 }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*nilKeyFormatter) LayerKind() string { return "" }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (f *nilKeyFormatter) LayerName() string { return f.name }
 
-//nolint:unused // consumed by StringBasedBuilder in task 5
 func (*nilKeyFormatter) FormatKey(_ string) string { return "" }

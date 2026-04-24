@@ -119,6 +119,7 @@ type StringBasedBuilder struct {
 	internalOpts
 	values         svalue.Values
 	expandedValues map[string]*fvalue.Value
+	keyFormatter   KeyFormatter
 }
 
 // ErrNoAliasesProvided represent an error where no aliases map was
@@ -210,6 +211,24 @@ func NewStringBasedBuilder(
 		values:         converted,
 		expandedValues: make(map[string]*fvalue.Value),
 	}, nil
+}
+
+// newStringBasedBuilderWithFormatter is an internal constructor that
+// behaves like NewStringBasedBuilder but records the KeyFormatter used to
+// render the layer's keys in inventory reports.
+func newStringBasedBuilderWithFormatter(
+	provider StringValuesProvider,
+	formatter KeyFormatter,
+	options ...Option,
+) (*StringBasedBuilder, error) {
+	builder, err := NewStringBasedBuilder(provider, options...)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // same-package constructor
+	}
+
+	builder.keyFormatter = formatter
+
+	return builder, nil
 }
 
 func (s *StringBasedBuilder) ExpandStruct(
