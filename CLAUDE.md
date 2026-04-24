@@ -8,6 +8,8 @@ dsco (pronounced /ˈdɪskoʊ/) is a Go configuration library implementing a laye
 
 **Core Philosophy**: Enforces explicit configuration through pointer-based fields to prevent silent defaults. `nil` means "not configured", non-nil means "explicitly configured".
 
+**User-facing docs**: `README.md` / `README_fr.md` (overview and motivation), `QUICKSTART.md` / `QUICKSTART_fr.md` (getting started), `WARP.md` (Warp terminal integration notes), and `doc.go` (Go package doc).
+
 ## Development Commands
 
 ```bash
@@ -84,11 +86,13 @@ parse is automatically supported (`time.Duration`, `net.URL`, etc.). The
 | `filler.go` | Core orchestration, `Fill()` function, `dscoContext` |
 | `builders.go` | Layer construction (`WithCmdlineLayer`, `WithEnvLayer`, etc.) and dedup logic |
 | `sbased.go` | `StringBasedBuilder` — YAML-based type conversion, alias handling, struct expansion |
+| `structs.go` | `StructBuilder` — backs `WithStructLayer`, validates source struct type matches model |
 | `oiface.go` | `FieldValuesGetter` and `ModelInterface` — bridge interfaces between layers and model |
 | `iface.go` | Public provider interfaces (`StringValuesProvider`, `NamedStringValuesProvider`) |
 | `policy.go` | `strictLayer` / `normalLayer` wrappers |
 | `convert.go` | Path conversion: dot-separated → dash-separated snake_case |
 | `errors.go` | Error type definitions and layer-level dedup errors |
+| `doc.go` | Package-level Go doc with quickstart and overview |
 
 ### Internal Packages
 
