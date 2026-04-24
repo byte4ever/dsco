@@ -53,7 +53,7 @@ func (_c *MockNode_BuildExpandList_Call) Return() *MockNode_BuildExpandList_Call
 }
 
 func (_c *MockNode_BuildExpandList_Call) RunAndReturn(run func(*ExpandList)) *MockNode_BuildExpandList_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 
@@ -86,7 +86,7 @@ func (_c *MockNode_BuildGetList_Call) Return() *MockNode_BuildGetList_Call {
 }
 
 func (_c *MockNode_BuildGetList_Call) RunAndReturn(run func(*GetList)) *MockNode_BuildGetList_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 
@@ -121,7 +121,7 @@ func (_c *MockNode_FeedFieldValues_Call) Return() *MockNode_FeedFieldValues_Call
 }
 
 func (_c *MockNode_FeedFieldValues_Call) RunAndReturn(run func(string, fvalue.Values, reflect.Value)) *MockNode_FeedFieldValues_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 

@@ -66,7 +66,7 @@ func (_c *MockExpandListInterface_ApplyOn_Call) RunAndReturn(run func(internal.S
 	return _c
 }
 
-// Count provides a mock function with given fields:
+// Count provides a mock function with no fields
 func (_m *MockExpandListInterface) Count() int {
 	ret := _m.Called()
 
@@ -140,7 +140,7 @@ func (_c *MockExpandListInterface_Push_Call) Return() *MockExpandListInterface_P
 }
 
 func (_c *MockExpandListInterface_Push_Call) RunAndReturn(run func(ExpandOp)) *MockExpandListInterface_Push_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 

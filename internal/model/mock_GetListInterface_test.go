@@ -80,7 +80,7 @@ func (_c *MockGetListInterface_ApplyOn_Call) RunAndReturn(run func(internal.Valu
 	return _c
 }
 
-// Count provides a mock function with given fields:
+// Count provides a mock function with no fields
 func (_m *MockGetListInterface) Count() int {
 	ret := _m.Called()
 
@@ -154,7 +154,7 @@ func (_c *MockGetListInterface_Push_Call) Return() *MockGetListInterface_Push_Ca
 }
 
 func (_c *MockGetListInterface_Push_Call) RunAndReturn(run func(GetOp)) *MockGetListInterface_Push_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 
