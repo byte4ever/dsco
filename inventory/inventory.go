@@ -1,7 +1,6 @@
 package inventory
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -55,12 +54,6 @@ type (
 	}
 )
 
-// ErrCfgMustBePointer indicates that cfg passed to Compute is not a
-// pointer (it must be **T, i.e. a pointer to a pointer to a struct).
-var ErrCfgMustBePointer = errors.New(
-	"cfg must be a pointer to a pointer to a struct",
-)
-
 // Get records a leaf entry and returns (nil, nil) so the model treats
 // the field as unfilled.
 func (r *leafRecorder) Get(
@@ -92,7 +85,9 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 	// pointer-to-struct, mirroring dscoContext.generateModel in Fill.
 	rv := reflect.ValueOf(cfg)
 	if rv.Kind() != reflect.Pointer {
-		return nil, fmt.Errorf("%s: %w", errCtx, ErrCfgMustBePointer)
+		return nil, fmt.Errorf(
+			"%s: %w", errCtx, dsco.ErrCfgMustBePointer,
+		)
 	}
 
 	inner := rv.Elem().Interface()
