@@ -43,7 +43,6 @@ type (
 
 	// leaf describes one scalar leaf field of the config struct.
 	leaf struct {
-		uid    string
 		path   string
 		goType string
 	}
@@ -62,7 +61,6 @@ func (r *leafRecorder) Get(
 	fieldType reflect.Type,
 ) (*fvalue.Value, error) {
 	r.leaves = append(r.leaves, leaf{
-		uid:    path,
 		path:   path,
 		goType: fieldType.String(),
 	})
@@ -154,7 +152,7 @@ func reduce(
 		// for Key (per dsco precedence).
 		for _, inv := range perLayer {
 			for _, prov := range inv.Provides {
-				if prov.FieldUID != lf.uid {
+				if prov.FieldUID != lf.path {
 					continue
 				}
 
