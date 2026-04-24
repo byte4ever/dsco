@@ -1,0 +1,6 @@
+TYPE: github.com/example/myapp.Config
+
+PATH                  TYPE            KEY                        DEFAULT
+Database.Host         *string         env: MYAPP-DATABASE-HOST   —
+Database.Port         *int            cmdline: --database-port=  defaults=5432
+Server.Timeout        *time.Duration  —                          defaults=30s
