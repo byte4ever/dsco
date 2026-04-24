@@ -357,6 +357,103 @@ func (s *StringBasedBuilder) Get(
 	}
 }
 
+// ErrNilKeyFormatter indicates that ReportInventory was called on a
+// StringBasedBuilder with no KeyFormatter set.
+var ErrNilKeyFormatter = errors.New("nil key formatter")
+
+// ErrCollectAliasesNotImplemented is returned by the collectAliases stub
+// until Task 9 provides the real implementation.
+var ErrCollectAliasesNotImplemented = errors.New(
+	"collectAliases: not yet implemented",
+)
+
+// ErrUnknownKeyFormatterKind is returned by NewStringBasedBuilderForTest
+// when the kind argument is not a recognised formatter kind.
+var ErrUnknownKeyFormatterKind = errors.New("unknown key-formatter kind")
+
+// ReportInventory implements InventoryReporter by walking the model's
+// alias map and rendering each entry through the layer's KeyFormatter.
+// No I/O is performed.
+func (s *StringBasedBuilder) ReportInventory(
+	mdl ModelInterface,
+) (LayerInventory, error) {
+	const errCtx = "reporting inventory"
+
+	if s.keyFormatter == nil {
+		// Defensive: any builder constructed via the layer wrappers in
+		// builders.go has a non-nil formatter.
+		return LayerInventory{}, fmt.Errorf(
+			"%s: %w", errCtx, ErrNilKeyFormatter,
+		)
+	}
+
+	aliases, err := collectAliases(mdl)
+	if err != nil {
+		return LayerInventory{}, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	provides := make([]FieldProvision, 0, len(aliases))
+	for fieldUID, aliasPath := range aliases {
+		provides = append(provides, FieldProvision{
+			FieldUID: fieldUID,
+			Key:      s.keyFormatter.FormatKey(aliasPath),
+		})
+	}
+
+	inv := LayerInventory{
+		Name:     s.keyFormatter.LayerName(),
+		Provides: provides,
+	}
+
+	if s.keyFormatter.LayerKind() == "" {
+		inv.Note = "custom provider — keys not enumerable"
+		// Drop key strings — they cannot be rendered for custom providers.
+		for i := range inv.Provides {
+			inv.Provides[i].Key = ""
+		}
+	}
+
+	return inv, nil
+}
+
+// collectAliases returns the field-uid → alias-path map for the given
+// model. Stubbed; full implementation lives in inventory_walk.go (Task 9).
+func collectAliases(_ ModelInterface) (map[string]string, error) {
+	return nil, ErrCollectAliasesNotImplemented
+}
+
+// NewStringBasedBuilderForTest constructs a StringBasedBuilder with a
+// synthetic KeyFormatter. Intended solely for tests that need to
+// exercise ReportInventory without going through the layer wrappers in
+// builders.go.
+//
+// kind must be one of "env", "cmdline", "file", or "" (nil formatter
+// for custom-provider behaviour). For "env" / "file", metaOrPrefix is
+// the prefix or file id.
+func NewStringBasedBuilderForTest(
+	provider StringValuesProvider,
+	kind, metaOrPrefix string,
+) (*StringBasedBuilder, error) {
+	var kf KeyFormatter
+
+	switch kind {
+	case "env":
+		kf = newEnvKeyFormatter(metaOrPrefix)
+	case "cmdline":
+		kf = newCmdlineKeyFormatter()
+	case "file":
+		kf = newFileKeyFormatter(metaOrPrefix)
+	case "":
+		kf = newNilKeyFormatter(metaOrPrefix)
+	default:
+		return nil, fmt.Errorf(
+			"%w: %q", ErrUnknownKeyFormatterKind, kind,
+		)
+	}
+
+	return newStringBasedBuilderWithFormatter(provider, kf)
+}
+
 type GetError struct {
 	merror.MError
 }

@@ -33,7 +33,7 @@ type (
 	cmdlineKeyFormatter struct{}
 
 	// fileKeyFormatter formats keys for file layers: dot-separated YAML path.
-	fileKeyFormatter struct { //nolint:unused // consumed by file layer wiring (planned)
+	fileKeyFormatter struct {
 		id string
 	}
 
@@ -53,7 +53,6 @@ func newCmdlineKeyFormatter() *cmdlineKeyFormatter {
 	return &cmdlineKeyFormatter{}
 }
 
-//nolint:unused // consumed by file layer wiring (planned)
 func newFileKeyFormatter(id string) *fileKeyFormatter {
 	return &fileKeyFormatter{id: id}
 }
@@ -78,13 +77,10 @@ func (*cmdlineKeyFormatter) FormatKey(aliasPath string) string {
 	return "--" + aliasPath + "="
 }
 
-//nolint:unused // consumed by file layer wiring (planned)
 func (*fileKeyFormatter) LayerKind() string { return "file" }
 
-//nolint:unused // consumed by file layer wiring (planned)
 func (f *fileKeyFormatter) LayerName() string { return "file:" + f.id }
 
-//nolint:unused // consumed by file layer wiring (planned)
 func (*fileKeyFormatter) FormatKey(aliasPath string) string {
 	return strings.ReplaceAll(aliasPath, "-", ".")
 }
