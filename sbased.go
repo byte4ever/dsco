@@ -361,12 +361,6 @@ func (s *StringBasedBuilder) Get(
 // StringBasedBuilder with no KeyFormatter set.
 var ErrNilKeyFormatter = errors.New("nil key formatter")
 
-// ErrCollectAliasesNotImplemented is returned by the collectAliases stub
-// until Task 9 provides the real implementation.
-var ErrCollectAliasesNotImplemented = errors.New(
-	"collectAliases: not yet implemented",
-)
-
 // ErrUnknownKeyFormatterKind is returned by NewStringBasedBuilderForTest
 // when the kind argument is not a recognised formatter kind.
 var ErrUnknownKeyFormatterKind = errors.New("unknown key-formatter kind")
@@ -416,10 +410,41 @@ func (s *StringBasedBuilder) ReportInventory(
 	return inv, nil
 }
 
+// aliasRecorder implements internal.ValueGetter to capture each leaf
+// field's (FieldUID, alias-path) without producing any value.
+type aliasRecorder struct {
+	aliases map[string]string
+}
+
+// Get records the alias path for path and returns (nil, nil) so the
+// model treats the field as unfilled. No I/O is performed.
+func (r *aliasRecorder) Get(
+	path string,
+	_ reflect.Type,
+) (*fvalue.Value, error) {
+	r.aliases[path] = convert(path)
+	return nil, nil //nolint:nilnil // matches StringBasedBuilder.Get when nothing is found
+}
+
 // collectAliases returns the field-uid → alias-path map for the given
-// model. Stubbed; full implementation lives in inventory_walk.go (Task 9).
-func collectAliases(_ ModelInterface) (map[string]string, error) {
-	return nil, ErrCollectAliasesNotImplemented
+// model. The alias path is dash-separated, lowercase, matching the form
+// StringBasedBuilder.values keys use.
+//
+// It builds a recording ValueGetter that captures (path, convert(path))
+// for every leaf the model iterates, then runs the model's ApplyOn pass.
+// No values are loaded; the recorder always returns (nil, nil).
+func collectAliases(mdl ModelInterface) (map[string]string, error) {
+	const errCtx = "collecting aliases"
+
+	rec := &aliasRecorder{
+		aliases: make(map[string]string),
+	}
+
+	if _, err := mdl.ApplyOn(rec); err != nil {
+		return nil, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	return rec.aliases, nil
 }
 
 // NewStringBasedBuilderForTest constructs a StringBasedBuilder with a

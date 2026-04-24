@@ -30,6 +30,12 @@ func BuildModel(cfg any) (ModelInterface, error) {
 	return buildModel(cfg) //nolint:wrapcheck // thin public wrapper; caller sees buildModel errors directly
 }
 
+// CollectAliasesForTest exposes collectAliases for testing only. It is
+// intentionally not part of the public API.
+func CollectAliasesForTest(mdl ModelInterface) (map[string]string, error) {
+	return collectAliases(mdl) //nolint:wrapcheck // thin test seam; caller sees collectAliases errors directly
+}
+
 // PrepareInventoryWalk constructs the model and the per-layer
 // InventoryReporter list without performing any I/O. Used by the
 // inventory sub-package to compute a Report.

@@ -53,7 +53,6 @@ func (p *stubProvider) GetStringValues() svalue.Values { return p.vals }
 // wiring is covered by Task 11.
 func TestStringBasedBuilderReportInventoryEnvKind(t *testing.T) {
 	t.Parallel()
-	t.Skip("pending Task 9: real collectAliases implementation")
 
 	type sub struct {
 		Host *string `yaml:"host"`
@@ -117,4 +116,32 @@ func TestStructBuilderReportInventoryUnit(t *testing.T) {
 	assert.Equal(t, 5432, uids["Port"])
 	assert.NotContains(t, uids, "Host",
 		"nil-pointer fields must not appear")
+}
+
+// TestCollectAliasesIncludesNestedFields verifies that collectAliases
+// returns one entry per leaf, with dot→dash path conversion applied.
+func TestCollectAliasesIncludesNestedFields(t *testing.T) {
+	t.Parallel()
+
+	type sub struct {
+		Host *string `yaml:"host"`
+	}
+	type cfg struct {
+		Database *sub `yaml:"database"`
+		Port     *int `yaml:"port"`
+	}
+
+	mdl, err := dsco.BuildModel(&cfg{})
+	require.NoError(t, err)
+
+	aliases, err := dsco.CollectAliasesForTest(mdl)
+	require.NoError(t, err)
+
+	values := make(map[string]bool)
+	for _, alias := range aliases {
+		values[alias] = true
+	}
+
+	assert.True(t, values["database-host"], "expected database-host alias")
+	assert.True(t, values["port"], "expected port alias")
 }
