@@ -102,6 +102,20 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 		)
 	}
 
+	report, err := computeFromWalk(walk)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	return report, nil
+}
+
+// computeFromWalk runs the reporter loop and reduce phase for a prepared
+// InventoryWalk. Extracted so in-package tests can inject a walk with a
+// synthetic failing reporter without going through the public layer API.
+func computeFromWalk(walk *dsco.InventoryWalk) (*Report, error) {
+	const errCtx = "computing inventory"
+
 	perLayer := make([]dsco.LayerInventory, 0, len(walk.Reporters))
 
 	for idx, reporter := range walk.Reporters {

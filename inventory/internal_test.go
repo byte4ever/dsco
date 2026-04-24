@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/byte4ever/dsco"
 )
 
 // TestNormalizeValueStringer verifies that any fmt.Stringer is converted
@@ -61,6 +64,41 @@ func mustParseURL(str string) *url.URL {
 	}
 
 	return parsed
+}
+
+// stubFailingReporter is a minimal InventoryReporter whose ReportInventory
+// always returns an error. Used in-package to exercise the invErr branch
+// of computeFromWalk without going through the public layer API.
+type stubFailingReporter struct{ err error }
+
+func (r *stubFailingReporter) ReportInventory(
+	_ dsco.ModelInterface,
+) (dsco.LayerInventory, error) {
+	return dsco.LayerInventory{}, r.err
+}
+
+// TestComputeFromWalkPropagatesReporterError verifies that computeFromWalk
+// propagates errors returned by a reporter's ReportInventory and wraps them
+// with dsco.ErrFiller.
+func TestComputeFromWalkPropagatesReporterError(t *testing.T) {
+	t.Parallel()
+
+	type cfg struct{ Host *string `yaml:"host"` }
+
+	mdl, err := dsco.BuildModel(&cfg{})
+	require.NoError(t, err)
+
+	walk := &dsco.InventoryWalk{
+		Model: mdl,
+		Reporters: []dsco.InventoryReporter{
+			&stubFailingReporter{err: assert.AnError},
+		},
+	}
+
+	_, err = computeFromWalk(walk)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, assert.AnError)
+	assert.ErrorIs(t, err, dsco.ErrFiller)
 }
 
 // TestTrimStructPrefix verifies that trimStructPrefix removes the

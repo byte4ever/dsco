@@ -120,36 +120,6 @@ func TestComputePropagatesPrepareWalkError(t *testing.T) {
 	require.Error(t, err)
 }
 
-// failingReporter is a stub InventoryReporter whose ReportInventory always
-// returns an error. Used to cover the error-propagation branch in Compute.
-type failingReporter struct{ err error }
-
-func (r *failingReporter) ReportInventory(
-	_ dsco.ModelInterface,
-) (dsco.LayerInventory, error) {
-	return dsco.LayerInventory{}, r.err
-}
-
-// TestComputePropagatesReporterError verifies that Compute propagates an
-// error returned by a layer's ReportInventory call.
-func TestComputePropagatesReporterError(t *testing.T) {
-	t.Parallel()
-
-	type cfg struct {
-		Host *string `yaml:"host"`
-	}
-	var c *cfg
-
-	_, err := inventory.Compute(
-		&c,
-		dsco.WithInventoryReporterLayerForTest(
-			&failingReporter{err: assert.AnError},
-		),
-	)
-	require.Error(t, err)
-	require.ErrorIs(t, err, assert.AnError)
-}
-
 // TestComputeErrorsSatisfyErrFiller verifies that every error returned by
 // Compute satisfies errors.Is(err, dsco.ErrFiller), per spec.
 func TestComputeErrorsSatisfyErrFiller(t *testing.T) {

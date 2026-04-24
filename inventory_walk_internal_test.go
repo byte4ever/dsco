@@ -5,19 +5,41 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/byte4ever/dsco/internal/fvalue"
 )
 
-// TestMinimalFieldValuesGetterReturnsNil verifies that the test-only stub
-// returns (nil, nil) as documented. This covers the GetFieldValuesFrom
-// body of minimalFieldValuesGetter.
-func TestMinimalFieldValuesGetterReturnsNil(t *testing.T) {
+// bareFieldValuesGetter is an unexported FieldValuesGetter that does NOT
+// implement InventoryReporter. Used to exercise the
+// ErrLayerNotInventoryReporter branch in prepareInventoryWalkFromPolicies.
+type bareFieldValuesGetter struct{}
+
+func (bareFieldValuesGetter) GetFieldValuesFrom(
+	_ ModelInterface,
+) (fvalue.Values, error) {
+	return nil, nil //nolint:nilnil // test stub
+}
+
+// TestPrepareInventoryWalkFromPoliciesRejectsNonReporter verifies that
+// prepareInventoryWalkFromPolicies returns ErrLayerNotInventoryReporter when
+// a policy's FieldValuesGetter does not implement InventoryReporter.
+func TestPrepareInventoryWalkFromPoliciesRejectsNonReporter(t *testing.T) {
 	t.Parallel()
 
-	var g minimalFieldValuesGetter
+	type cfg struct {
+		Host *string `yaml:"host"`
+	}
 
-	vals, err := g.GetFieldValuesFrom(nil)
-	assert.Nil(t, vals)
+	mdl, err := buildModel(&cfg{})
 	require.NoError(t, err)
+
+	policies := constraintLayerPolicies{
+		newNormalLayer(bareFieldValuesGetter{}),
+	}
+
+	_, err = prepareInventoryWalkFromPolicies(policies, mdl)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, ErrLayerNotInventoryReporter)
 }
 
 // TestInventoryReporterFVGReturnsNil verifies that the test-only adapter
