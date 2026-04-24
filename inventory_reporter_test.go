@@ -53,41 +53,35 @@ func (p *stubProvider) GetStringValues() svalue.Values { return p.vals }
 // wiring is covered by Task 11.
 func TestStringBasedBuilderReportInventoryEnvKind(t *testing.T) {
 	t.Parallel()
-	t.Skip("pending Task 8: BuildModel; Task 9: collectAliases")
+	t.Skip("pending Task 9: real collectAliases implementation")
 
-	// Body commented out until dsco.BuildModel (Task 8) and the real
-	// collectAliases (Task 9) are implemented.
-	//
-	// type sub struct {
-	// 	Host *string `yaml:"host"`
-	// }
-	// type cfg struct {
-	// 	Database *sub `yaml:"database"`
-	// 	Port     *int `yaml:"port"`
-	// }
-	//
-	// mdl, err := dsco.BuildModel(&cfg{})
-	// require.NoError(t, err)
-	//
-	// b, err := dsco.NewStringBasedBuilderForTest(
-	// 	&stubProvider{name: "stub", vals: svalue.Values{}},
-	// 	"env", "MYAPP",
-	// )
-	// require.NoError(t, err)
-	//
-	// inv, err := b.ReportInventory(mdl)
-	// require.NoError(t, err)
-	// assert.Equal(t, "env:MYAPP", inv.Name)
-	//
-	// keys := make(map[string]string)
-	// for _, p := range inv.Provides {
-	// 	keys[p.FieldUID] = p.Key
-	// }
-	// assert.Equal(t, "MYAPP-DATABASE-HOST", keys["Database.Host"])
-	// assert.Equal(t, "MYAPP-PORT", keys["Port"])
+	type sub struct {
+		Host *string `yaml:"host"`
+	}
+	type cfg struct {
+		Database *sub `yaml:"database"`
+		Port     *int `yaml:"port"`
+	}
 
-	// Suppress unused-import errors for require/assert while body is commented.
-	_ = require.New(t)
+	mdl, err := dsco.BuildModel(&cfg{})
+	require.NoError(t, err)
+
+	b, err := dsco.NewStringBasedBuilderForTest(
+		&stubProvider{name: "stub", vals: svalue.Values{}},
+		"env", "MYAPP",
+	)
+	require.NoError(t, err)
+
+	inv, err := b.ReportInventory(mdl)
+	require.NoError(t, err)
+	assert.Equal(t, "env:MYAPP", inv.Name)
+
+	keys := make(map[string]string)
+	for _, p := range inv.Provides {
+		keys[p.FieldUID] = p.Key
+	}
+	assert.Equal(t, "MYAPP-DATABASE-HOST", keys["Database.Host"])
+	assert.Equal(t, "MYAPP-PORT", keys["Port"])
 }
 
 // TestStructBuilderReportInventoryUnit calls StructBuilder.ReportInventory
@@ -95,38 +89,32 @@ func TestStringBasedBuilderReportInventoryEnvKind(t *testing.T) {
 // End-to-end Compute coverage lives in Task 11.
 func TestStructBuilderReportInventoryUnit(t *testing.T) {
 	t.Parallel()
-	t.Skip("pending Task 8: BuildModel")
 
-	// Body commented out until dsco.BuildModel (Task 8) is implemented.
-	//
-	// type cfg struct {
-	// 	Host *string `yaml:"host"`
-	// 	Port *int    `yaml:"port"`
-	// }
-	//
-	// defaults := &cfg{Port: dsco.R(5432)}
-	//
-	// sb, err := dsco.NewStructBuilder(defaults, "defaults")
-	// require.NoError(t, err)
-	//
-	// mdl, err := dsco.BuildModel(&cfg{})
-	// require.NoError(t, err)
-	//
-	// inv, err := sb.ReportInventory(mdl)
-	// require.NoError(t, err)
-	//
-	// assert.Equal(t, "struct:defaults", inv.Name)
-	//
-	// uids := make(map[string]any)
-	// for _, p := range inv.Provides {
-	// 	uids[p.FieldUID] = p.Value
-	// }
-	//
-	// assert.Contains(t, uids, "Port")
-	// assert.Equal(t, 5432, uids["Port"])
-	// assert.NotContains(t, uids, "Host",
-	// 	"nil-pointer fields must not appear")
+	type cfg struct {
+		Host *string `yaml:"host"`
+		Port *int    `yaml:"port"`
+	}
 
-	// Suppress unused-import errors while body is commented.
-	_ = assert.New(t)
+	defaults := &cfg{Port: dsco.R(5432)}
+
+	sb, err := dsco.NewStructBuilder(defaults, "defaults")
+	require.NoError(t, err)
+
+	mdl, err := dsco.BuildModel(&cfg{})
+	require.NoError(t, err)
+
+	inv, err := sb.ReportInventory(mdl)
+	require.NoError(t, err)
+
+	assert.Equal(t, "struct:defaults", inv.Name)
+
+	uids := make(map[string]any)
+	for _, p := range inv.Provides {
+		uids[p.FieldUID] = p.Value
+	}
+
+	assert.Contains(t, uids, "Port")
+	assert.Equal(t, 5432, uids["Port"])
+	assert.NotContains(t, uids, "Host",
+		"nil-pointer fields must not appear")
 }

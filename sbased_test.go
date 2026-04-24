@@ -1256,12 +1256,12 @@ c:
 			t.Parallel()
 
 			type SomeBadStruct struct {
-				A int      `yaml:"a"`
 				B *float64 `yaml:"b"`
 				C *struct {
 					X *int     `yaml:"x"`
 					Y *float64 `yaml:"y"`
 				} `yaml:"c"`
+				A int `yaml:"a"`
 			}
 
 			var p *SomeBadStruct
