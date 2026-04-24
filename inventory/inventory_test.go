@@ -149,3 +149,15 @@ func TestComputePropagatesReporterError(t *testing.T) {
 	require.Error(t, err)
 	require.ErrorIs(t, err, assert.AnError)
 }
+
+// TestComputeErrorsSatisfyErrFiller verifies that every error returned by
+// Compute satisfies errors.Is(err, dsco.ErrFiller), per spec.
+func TestComputeErrorsSatisfyErrFiller(t *testing.T) {
+	t.Parallel()
+
+	type cfg struct{ Host *string `yaml:"host"` }
+
+	_, err := inventory.Compute(cfg{}, dsco.WithEnvLayer("MYAPP"))
+	require.Error(t, err)
+	assert.ErrorIs(t, err, dsco.ErrFiller)
+}

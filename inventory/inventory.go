@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -86,7 +87,9 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 	rv := reflect.ValueOf(cfg)
 	if rv.Kind() != reflect.Pointer {
 		return nil, fmt.Errorf(
-			"%s: %w", errCtx, dsco.ErrCfgMustBePointer,
+			"%s: %w",
+			errCtx,
+			errors.Join(dsco.ErrFiller, dsco.ErrCfgMustBePointer),
 		)
 	}
 
@@ -94,7 +97,9 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 
 	walk, err := dsco.PrepareInventoryWalk(inner, layers...)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", errCtx, err)
+		return nil, fmt.Errorf(
+			"%s: %w", errCtx, errors.Join(dsco.ErrFiller, err),
+		)
 	}
 
 	perLayer := make([]dsco.LayerInventory, 0, len(walk.Reporters))
@@ -103,7 +108,10 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 		inv, invErr := reporter.ReportInventory(walk.Model)
 		if invErr != nil {
 			return nil, fmt.Errorf(
-				"%s: layer #%d: %w", errCtx, idx, invErr,
+				"%s: layer #%d: %w",
+				errCtx,
+				idx,
+				errors.Join(dsco.ErrFiller, invErr),
 			)
 		}
 
