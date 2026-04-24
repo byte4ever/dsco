@@ -62,3 +62,33 @@ func mustParseURL(str string) *url.URL {
 
 	return parsed
 }
+
+// TestTrimStructPrefix verifies that trimStructPrefix removes the
+// "struct:" prefix when present, and returns the input unchanged when
+// the prefix is absent or the string is too short.
+func TestTrimStructPrefix(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"with prefix", "struct:defaults", "defaults"},
+		{"no prefix — cmdline", "cmdline", "cmdline"},
+		{
+			"no prefix — env",
+			"env:MYAPP",
+			"env:MYAPP",
+		},
+		{"exact prefix length — no suffix", "struct:", "struct:"},
+	}
+
+	for _, cc := range cases {
+		cc := cc
+		t.Run(cc.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, cc.want, trimStructPrefix(cc.in))
+		})
+	}
+}

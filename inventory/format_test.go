@@ -86,11 +86,38 @@ type errWriter struct{ err error }
 
 func (w errWriter) Write([]byte) (int, error) { return 0, w.err }
 
+// nthErrWriter succeeds for the first n-1 Write calls and fails on the
+// nth call with the configured error.
+type nthErrWriter struct {
+	err   error
+	n     int
+	calls int
+}
+
+func (w *nthErrWriter) Write(p []byte) (int, error) {
+	w.calls++
+	if w.calls >= w.n {
+		return 0, w.err
+	}
+
+	return len(p), nil
+}
+
 // TestWriteJSONPropagatesWriterError covers the error branch when the
 // underlying io.Writer fails.
 func TestWriteJSONPropagatesWriterError(t *testing.T) {
 	t.Parallel()
 	err := fixtureReport().WriteJSON(errWriter{err: assert.AnError})
+	require.ErrorIs(t, err, assert.AnError)
+}
+
+// TestWriteJSONPropagatesSecondWriteError covers the error branch when
+// the second writer.Write call (the trailing newline) fails.
+func TestWriteJSONPropagatesSecondWriteError(t *testing.T) {
+	t.Parallel()
+
+	w := &nthErrWriter{err: assert.AnError, n: 2}
+	err := fixtureReport().WriteJSON(w)
 	require.ErrorIs(t, err, assert.AnError)
 }
 

@@ -89,7 +89,8 @@ func TestComputeSortsFieldsByPath(t *testing.T) {
 	assert.True(t, sort.StringsAreSorted(paths), "fields must be sorted by path")
 }
 
-// TestComputeRejectsNonPointerCfg verifies the error path.
+// TestComputeRejectsNonPointerCfg verifies the error path when cfg is not a
+// pointer.
 func TestComputeRejectsNonPointerCfg(t *testing.T) {
 	t.Parallel()
 
@@ -98,4 +99,53 @@ func TestComputeRejectsNonPointerCfg(t *testing.T) {
 	}
 	_, err := inventory.Compute(cfg{}, dsco.WithEnvLayer("MYAPP"))
 	require.Error(t, err)
+}
+
+// TestComputePropagatesPrepareWalkError verifies that Compute propagates an
+// error returned by PrepareInventoryWalk (e.g. duplicate cmdline layers).
+func TestComputePropagatesPrepareWalkError(t *testing.T) {
+	t.Parallel()
+
+	type cfg struct {
+		Host *string `yaml:"host"`
+	}
+	var c *cfg
+
+	// Two cmdline layers trigger a dedup error inside PrepareInventoryWalk.
+	_, err := inventory.Compute(
+		&c,
+		dsco.WithCmdlineLayer(),
+		dsco.WithCmdlineLayer(),
+	)
+	require.Error(t, err)
+}
+
+// failingReporter is a stub InventoryReporter whose ReportInventory always
+// returns an error. Used to cover the error-propagation branch in Compute.
+type failingReporter struct{ err error }
+
+func (r *failingReporter) ReportInventory(
+	_ dsco.ModelInterface,
+) (dsco.LayerInventory, error) {
+	return dsco.LayerInventory{}, r.err
+}
+
+// TestComputePropagatesReporterError verifies that Compute propagates an
+// error returned by a layer's ReportInventory call.
+func TestComputePropagatesReporterError(t *testing.T) {
+	t.Parallel()
+
+	type cfg struct {
+		Host *string `yaml:"host"`
+	}
+	var c *cfg
+
+	_, err := inventory.Compute(
+		&c,
+		dsco.WithInventoryReporterLayerForTest(
+			&failingReporter{err: assert.AnError},
+		),
+	)
+	require.Error(t, err)
+	require.ErrorIs(t, err, assert.AnError)
 }
