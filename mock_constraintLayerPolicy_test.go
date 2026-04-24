@@ -78,7 +78,7 @@ func (_c *mockConstraintLayerPolicy_GetFieldValuesFrom_Call) RunAndReturn(run fu
 	return _c
 }
 
-// getFieldValuesGetter provides a mock function with given fields:
+// getFieldValuesGetter provides a mock function with no fields
 func (_m *mockConstraintLayerPolicy) getFieldValuesGetter() FieldValuesGetter {
 	ret := _m.Called()
 
@@ -91,7 +91,7 @@ func (_m *mockConstraintLayerPolicy) getFieldValuesGetter() FieldValuesGetter {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(FieldValuesGetter) //nolint:forcetypeassert // mock
+			r0 = ret.Get(0).(FieldValuesGetter)
 		}
 	}
 
@@ -125,7 +125,7 @@ func (_c *mockConstraintLayerPolicy_getFieldValuesGetter_Call) RunAndReturn(run 
 	return _c
 }
 
-// isStrict provides a mock function with given fields:
+// isStrict provides a mock function with no fields
 func (_m *mockConstraintLayerPolicy) isStrict() bool {
 	ret := _m.Called()
 

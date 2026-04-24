@@ -20,7 +20,7 @@ func (_m *MockNamedStringValuesProvider) EXPECT() *MockNamedStringValuesProvider
 	return &MockNamedStringValuesProvider_Expecter{mock: &_m.Mock}
 }
 
-// GetName provides a mock function with given fields:
+// GetName provides a mock function with no fields
 func (_m *MockNamedStringValuesProvider) GetName() string {
 	ret := _m.Called()
 
@@ -65,7 +65,7 @@ func (_c *MockNamedStringValuesProvider_GetName_Call) RunAndReturn(run func() st
 	return _c
 }
 
-// GetStringValues provides a mock function with given fields:
+// GetStringValues provides a mock function with no fields
 func (_m *MockNamedStringValuesProvider) GetStringValues() svalue.Values {
 	ret := _m.Called()
 

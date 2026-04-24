@@ -17,7 +17,7 @@ func (_m *MockPoliciesGetter) EXPECT() *MockPoliciesGetter_Expecter {
 	return &MockPoliciesGetter_Expecter{mock: &_m.Mock}
 }
 
-// GetPolicies provides a mock function with given fields:
+// GetPolicies provides a mock function with no fields
 func (_m *MockPoliciesGetter) GetPolicies() (constraintLayerPolicies, error) {
 	ret := _m.Called()
 
