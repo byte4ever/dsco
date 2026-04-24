@@ -29,17 +29,6 @@ func TestCmdlineKeyFormatter(t *testing.T) {
 	assert.Equal(t, "--database-host=", f.FormatKey("database-host"))
 }
 
-// TestFileKeyFormatter verifies file-layer key formatting:
-// raw alias path, dot-separated for human readability.
-func TestFileKeyFormatter(t *testing.T) {
-	t.Parallel()
-	f := newFileKeyFormatter("config.yaml")
-
-	assert.Equal(t, "file", f.LayerKind())
-	assert.Equal(t, "file:config.yaml", f.LayerName())
-	assert.Equal(t, "database.host", f.FormatKey("database-host"))
-}
-
 // TestNilKeyFormatter verifies the no-op formatter returned when a layer
 // cannot enumerate keys (custom string providers).
 func TestNilKeyFormatter(t *testing.T) {

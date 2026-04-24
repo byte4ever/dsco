@@ -1415,15 +1415,3 @@ func TestNewStringBasedBuilderForTestCmdlineKind(t *testing.T) {
 	require.NotNil(t, sb)
 }
 
-// TestNewStringBasedBuilderForTestFileKind verifies that kind "file"
-// produces a builder with a file-style KeyFormatter.
-func TestNewStringBasedBuilderForTestFileKind(t *testing.T) {
-	t.Parallel()
-
-	p := NewMockStringValuesProvider(t)
-	p.EXPECT().GetStringValues().Return(svalue.Values{})
-
-	sb, err := NewStringBasedBuilderForTest(p, "file", "config.yaml")
-	require.NoError(t, err)
-	require.NotNil(t, sb)
-}

@@ -32,11 +32,6 @@ type (
 	// cmdlineKeyFormatter formats keys for command-line layers: --name=.
 	cmdlineKeyFormatter struct{}
 
-	// fileKeyFormatter formats keys for file layers: dot-separated YAML path.
-	fileKeyFormatter struct {
-		id string
-	}
-
 	// nilKeyFormatter is a no-op formatter for layers (custom string
 	// providers) that cannot enumerate keys statically. LayerKind is empty so
 	// reduce-pass logic skips them when picking a canonical key.
@@ -51,10 +46,6 @@ func newEnvKeyFormatter(prefix string) *envKeyFormatter {
 
 func newCmdlineKeyFormatter() *cmdlineKeyFormatter {
 	return &cmdlineKeyFormatter{}
-}
-
-func newFileKeyFormatter(id string) *fileKeyFormatter {
-	return &fileKeyFormatter{id: id}
 }
 
 func newNilKeyFormatter(name string) *nilKeyFormatter {
@@ -75,14 +66,6 @@ func (*cmdlineKeyFormatter) LayerName() string { return "cmdline" }
 
 func (*cmdlineKeyFormatter) FormatKey(aliasPath string) string {
 	return "--" + aliasPath + "="
-}
-
-func (*fileKeyFormatter) LayerKind() string { return "file" }
-
-func (f *fileKeyFormatter) LayerName() string { return "file:" + f.id }
-
-func (*fileKeyFormatter) FormatKey(aliasPath string) string {
-	return strings.ReplaceAll(aliasPath, "-", ".")
 }
 
 func (*nilKeyFormatter) LayerKind() string { return "" }

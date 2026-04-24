@@ -466,8 +466,6 @@ func NewStringBasedBuilderForTest(
 		kf = newEnvKeyFormatter(metaOrPrefix)
 	case "cmdline":
 		kf = newCmdlineKeyFormatter()
-	case "file":
-		kf = newFileKeyFormatter(metaOrPrefix)
 	case "":
 		kf = newNilKeyFormatter(metaOrPrefix)
 	default:
