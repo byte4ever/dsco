@@ -1,20 +1,20 @@
 type: github.com/example/myapp.Config
 fields:
-- key:
+- path: Database.Host
+  go_type: "*string"
+  key:
     layer: env
     key: MYAPP-DATABASE-HOST
-  path: Database.Host
-  go_type: "*string"
-- satisfied:
+- path: Database.Port
+  go_type: "*int"
+  satisfied:
     value: 5432
     layer_id: defaults
   key:
     layer: cmdline
     key: --database-port=
-  path: Database.Port
-  go_type: "*int"
-- satisfied:
+- path: Server.Timeout
+  go_type: "*time.Duration"
+  satisfied:
     value: 30s
     layer_id: defaults
-  path: Server.Timeout
-  go_type: "*time.Duration"
