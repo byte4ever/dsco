@@ -40,6 +40,35 @@ func (s *StructBuilder) GetFieldValuesFrom(model ModelInterface) (
 	), nil
 }
 
+// ReportInventory implements InventoryReporter by enumerating every
+// non-nil field of the source struct and recording its value as a
+// FieldProvision. No I/O is performed.
+func (s *StructBuilder) ReportInventory(
+	mdl ModelInterface,
+) (LayerInventory, error) { //nolint:unparam // error required by InventoryReporter interface
+	values := mdl.GetFieldValuesFor(s.id, s.value)
+
+	provides := make([]FieldProvision, 0, len(values))
+	for _, fv := range values {
+		// Dereference pointer values so the report shows the user-visible
+		// scalar, not a *T pointer.
+		val := fv.Value
+		if val.Kind() == reflect.Pointer {
+			val = val.Elem()
+		}
+
+		provides = append(provides, FieldProvision{
+			FieldUID: fv.Path,
+			Value:    val.Interface(),
+		})
+	}
+
+	return LayerInventory{
+		Name:     "struct:" + s.id,
+		Provides: provides,
+	}, nil
+}
+
 // NewStructBuilder creates a new structure layer builder.
 func NewStructBuilder(inputStruct any, id string) (*StructBuilder, error) {
 	if inputStruct == nil {

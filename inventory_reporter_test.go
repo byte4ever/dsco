@@ -89,3 +89,44 @@ func TestStringBasedBuilderReportInventoryEnvKind(t *testing.T) {
 	// Suppress unused-import errors for require/assert while body is commented.
 	_ = require.New(t)
 }
+
+// TestStructBuilderReportInventoryUnit calls StructBuilder.ReportInventory
+// directly with a small model and verifies only set fields appear.
+// End-to-end Compute coverage lives in Task 11.
+func TestStructBuilderReportInventoryUnit(t *testing.T) {
+	t.Parallel()
+	t.Skip("pending Task 8: BuildModel")
+
+	// Body commented out until dsco.BuildModel (Task 8) is implemented.
+	//
+	// type cfg struct {
+	// 	Host *string `yaml:"host"`
+	// 	Port *int    `yaml:"port"`
+	// }
+	//
+	// defaults := &cfg{Port: dsco.R(5432)}
+	//
+	// sb, err := dsco.NewStructBuilder(defaults, "defaults")
+	// require.NoError(t, err)
+	//
+	// mdl, err := dsco.BuildModel(&cfg{})
+	// require.NoError(t, err)
+	//
+	// inv, err := sb.ReportInventory(mdl)
+	// require.NoError(t, err)
+	//
+	// assert.Equal(t, "struct:defaults", inv.Name)
+	//
+	// uids := make(map[string]any)
+	// for _, p := range inv.Provides {
+	// 	uids[p.FieldUID] = p.Value
+	// }
+	//
+	// assert.Contains(t, uids, "Port")
+	// assert.Equal(t, 5432, uids["Port"])
+	// assert.NotContains(t, uids, "Host",
+	// 	"nil-pointer fields must not appear")
+
+	// Suppress unused-import errors while body is commented.
+	_ = assert.New(t)
+}
