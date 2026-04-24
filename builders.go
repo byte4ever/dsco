@@ -1,6 +1,7 @@
 package dsco
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -372,6 +373,10 @@ func (d DuplicateStringProviderError) Error() string {
 		d.Index,
 		d.ID,
 	)
+}
+
+func (DuplicateStringProviderError) Is(err error) bool {
+	return errors.Is(err, ErrDuplicateStringProvider)
 }
 
 func wrapStringProviderBuild(

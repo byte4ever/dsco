@@ -117,6 +117,10 @@ func (DuplicateStructIDError) Is(err error) bool {
 	return errors.Is(err, ErrDuplicateStructID)
 }
 
+// ErrDuplicateStringProvider is the sentinel error for duplicate string
+// provider.
+var ErrDuplicateStringProvider = errors.New("duplicate string provider")
+
 // ErrLayer is the sentinel error for layer errors.
 var ErrLayer = errors.New("")
 

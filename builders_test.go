@@ -1007,3 +1007,13 @@ func TestDuplicateStringProviderError_Error(t *testing.T) {
 		}.Error(),
 	)
 }
+
+// TestDuplicateStringProviderError_Is verifies that
+// DuplicateStringProviderError matches ErrDuplicateStringProvider via
+// errors.Is, following the sentinel + Is() pattern used throughout the package.
+func TestDuplicateStringProviderError_Is(t *testing.T) {
+	t.Parallel()
+
+	err := DuplicateStringProviderError{Index: 0, ID: "my-provider"}
+	require.ErrorIs(t, err, ErrDuplicateStringProvider)
+}
