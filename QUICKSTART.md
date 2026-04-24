@@ -1048,3 +1048,17 @@ dsco.Fill(&config,
     dsco.WithCmdlineLayer(),        // 4. Command line
 )
 ```
+
+---
+
+## What Keys Do I Need to Provide?
+
+Use `inventory.Compute` to get a static list of every key your layered config
+expects:
+
+```go
+report, _ := inventory.Compute(&config, layers...)
+report.WriteText(os.Stdout)
+```
+
+See the [Inventory section in the README](README.md#inventory) for details.

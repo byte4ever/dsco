@@ -126,6 +126,7 @@ step-by-step.
 - [Configuration Patterns](#configuration-patterns)
 - [Error Handling](#error-handling)
 - [Advanced Usage](#advanced-usage)
+- [Inventory](#inventory)
 - [API Reference](#api-reference)
 - [Examples](#examples)
 - [Contributing](#contributing)
@@ -718,11 +719,56 @@ Full API docs: [pkg.go.dev/github.com/byte4ever/dsco](https://pkg.go.dev/github.
 
 ---
 
+## Inventory
+
+Need to know exactly which keys to wire up before deploying?
+`inventory.Compute` walks your config struct and layers without performing
+any I/O and returns the canonical key each layer would accept for every
+required field.
+
+```go
+import (
+    "os"
+
+    "github.com/byte4ever/dsco"
+    "github.com/byte4ever/dsco/inventory"
+)
+
+report, err := inventory.Compute(&config,
+    dsco.WithStructLayer(defaults, "defaults"),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithCmdlineLayer(),
+)
+if err != nil {
+    log.Fatal(err)
+}
+report.WriteText(os.Stdout) // or WriteJSON / WriteYAML
+```
+
+Sample text output:
+
+```
+TYPE: github.com/example/myapp.Config
+
+PATH                  TYPE             KEY                              DEFAULT
+Database.Host         *string          env: MYAPP-DATABASE-HOST         —
+Database.Port         *int             cmdline: --database-port=        defaults=5432
+Server.Timeout        *time.Duration   —                                defaults=30s
+```
+
+No environment variables, command-line arguments, or files are read — this is
+a purely static analysis of the layered configuration.
+
+See [examples/inventory](examples/inventory/) for a runnable example.
+
+---
+
 ## Examples
 
 - **[Quick Start Guide](QUICKSTART.md)** - Step-by-step tutorial
 - **[examples/deadsimple](examples/deadsimple/)** - Basic multi-layer config
 - **[examples/simplemain](examples/simplemain/)** - Command-line application
+- **[examples/inventory](examples/inventory/)** - Inventory sub-package demo
 
 ---
 

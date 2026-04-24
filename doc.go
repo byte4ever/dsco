@@ -115,5 +115,12 @@ The library implements a sophisticated processing pipeline:
 
 For complete documentation and examples, see:
 https://pkg.go.dev/github.com/byte4ever/dsco
+
+# Inventory
+
+The inventory sub-package (github.com/byte4ever/dsco/inventory) computes
+a static list of configuration keys a Fill call would expect, with no
+I/O, suitable for "what do I need to set" diagnostics in operator
+tooling. See the Inventory section in README.md for examples.
 */
 package dsco
