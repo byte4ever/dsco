@@ -28,7 +28,11 @@ jobs:
 #          version: v1.52.2
 
       - name: Download CodeClimate test-reporter
-        run: curl -fsSL https://github.com/codeclimate/test-reporter/releases/download/v0.11.1/test-reporter-0.11.1-linux-amd64 > ./cc-test-reporter
+        run: |
+          curl -fsSL https://github.com/qltysh-archive/test-reporter/releases/download/v0.11.1/artifacts.tar.gz -o artifacts.tar
+          tar -xf artifacts.tar ./artifacts/bin/test-reporter-0.11.1-linux-amd64
+          mv ./artifacts/bin/test-reporter-0.11.1-linux-amd64 ./cc-test-reporter
+          rm -rf artifacts.tar ./artifacts
 
       - name: Set cc-test-reporter as executable
         run: chmod +x ./cc-test-reporter
