@@ -34,8 +34,8 @@ type (
 		LayerID string `json:"layer_id" yaml:"layer_id"`
 	}
 
-	// KeySpec is the canonical (highest-precedence) key form a string-based
-	// layer would accept to supply this field.
+	// KeySpec is the canonical key form the first string-based layer (in
+	// declaration order) that can supply this field would accept.
 	KeySpec struct {
 		Layer string `json:"layer" yaml:"layer"`
 		Key   string `json:"key"   yaml:"key"`
@@ -134,9 +134,11 @@ func computeFromWalk(walk *dsco.InventoryWalk) (*Report, error) {
 }
 
 // reduce collapses per-layer reports into one Field per leaf, applying
-// precedence rules: the last string-based layer that can supply a field
-// wins for Key; any struct layer that bakes in a value populates
-// Satisfied.
+// first-layer-wins precedence: the first string-based layer that can
+// supply a field wins for Key; the first struct layer that bakes in a
+// value populates Satisfied. This mirrors dsco.Fill semantics, where a
+// non-nil value from an earlier layer is kept and later layers are
+// skipped for that field.
 func reduce(
 	mdl dsco.ModelInterface,
 	perLayer []dsco.LayerInventory,
@@ -148,27 +150,33 @@ func reduce(
 	for _, lf := range leaves {
 		field := Field{Path: lf.path, GoType: lf.goType}
 
-		// Walk layers in declaration order; later ones override earlier
-		// for Key (per dsco precedence).
+		// Walk layers in declaration order; the first layer that supplies
+		// a Key or Satisfied value wins — matching Fill's first-wins
+		// semantics.
 		for _, inv := range perLayer {
 			for _, prov := range inv.Provides {
 				if prov.FieldUID != lf.path {
 					continue
 				}
 
-				if prov.Value != nil {
+				if field.Satisfied == nil && prov.Value != nil {
 					field.Satisfied = &Satisfaction{
 						LayerID: trimStructPrefix(inv.Name),
 						Value:   prov.Value,
 					}
 				}
 
-				if prov.Key != "" {
+				if field.Key == nil && prov.Key != "" {
 					field.Key = &KeySpec{
 						Layer: layerKindFromName(inv.Name),
 						Key:   prov.Key,
 					}
 				}
+			}
+
+			// Short-circuit once both slots are filled.
+			if field.Key != nil && field.Satisfied != nil {
+				break
 			}
 		}
 

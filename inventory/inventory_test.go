@@ -12,12 +12,12 @@ import (
 	"github.com/byte4ever/dsco/inventory"
 )
 
-// TestComputeCanonicalKeyHighestPrecedenceWins verifies that when env
-// and cmdline both can supply the same field, the cmdline key (last in
-// the layer list) wins.
+// TestComputeCanonicalKeyFirstLayerWins verifies that when env and
+// cmdline both can supply the same field, the env key (first in the
+// layer list) wins — matching dsco.Fill's first-layer-wins semantics.
 //
 //nolint:paralleltest // modifies os.Args
-func TestComputeCanonicalKeyHighestPrecedenceWins(t *testing.T) {
+func TestComputeCanonicalKeyFirstLayerWins(t *testing.T) {
 	// cmdline layer reads os.Args at registration time; supply clean args.
 	os.Args = []string{"testapp"}
 
@@ -35,8 +35,8 @@ func TestComputeCanonicalKeyHighestPrecedenceWins(t *testing.T) {
 	require.Len(t, report.Fields, 1)
 
 	require.NotNil(t, report.Fields[0].Key)
-	assert.Equal(t, "cmdline", report.Fields[0].Key.Layer)
-	assert.Equal(t, "--host=", report.Fields[0].Key.Key)
+	assert.Equal(t, "env", report.Fields[0].Key.Layer)
+	assert.Equal(t, "MYAPP-HOST", report.Fields[0].Key.Key)
 }
 
 // TestComputeSatisfiedByDefaults verifies that struct-layer values
