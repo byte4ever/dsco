@@ -87,7 +87,7 @@ graph TB
 1. **Layer Registration**: Different configuration sources register as layers with optional strict/normal policies
 2. **Model Generation**: Target struct is analyzed via reflection to create field mappings
 3. **Value Collection**: Each layer provides field values based on its source (cmdline, env, etc.)
-4. **Precedence Resolution**: Later layers override earlier ones, with strict mode detecting conflicts
+4. **Precedence Resolution**: Earlier layers override later ones (first-layer wins); strict mode detects conflicts
 5. **Type Conversion**: String values are converted to target types using YAML unmarshaling
 6. **Validation**: Required fields and custom validation rules are applied
 7. **Struct Filling**: Target struct is populated with final resolved values

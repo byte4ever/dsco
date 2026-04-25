@@ -11,9 +11,9 @@ a oublié de définir `DATABASE_PASSWORD` en production.
 // 30 secondes pour une configuration blindée
 var config *Config
 dsco.Fill(&config,
-    dsco.WithStructLayer(defaults, "defaults"),  // Valeurs par défaut dev intégrées
-    dsco.WithEnvLayer("MYAPP"),                  // Config Container/K8s
     dsco.WithCmdlineLayer(),                     // Surcharges locales rapides
+    dsco.WithEnvLayer("MYAPP"),                  // Config Container/K8s
+    dsco.WithStructLayer(defaults, "defaults"),  // Valeurs par défaut dev intégrées
 )
 // Configuration manquante ? L'app ne démarre pas. Vous le saurez immédiatement.
 ```
@@ -82,15 +82,15 @@ func main() {
     var config *Config
 
     _, err := dsco.Fill(&config,
-        // Couche 1 : valeurs par défaut (priorité la plus basse)
+        // Couche 1 : ligne de commande (priorité la plus haute)
+        dsco.WithCmdlineLayer(),
+        // Couche 2 : variables d'environnement
+        dsco.WithEnvLayer("MYAPP"),
+        // Couche 3 : valeurs par défaut (priorité la plus basse)
         dsco.WithStructLayer(&Config{
             Host: dsco.R("localhost"),
             Port: dsco.R(8080),
         }, "defaults"),
-        // Couche 2 : variables d'environnement
-        dsco.WithEnvLayer("MYAPP"),
-        // Couche 3 : ligne de commande (priorité la plus haute)
-        dsco.WithCmdlineLayer(),
     )
     if err != nil {
         log.Fatal(err)  // Config manquante ? Crash ici, pas en production.
@@ -138,7 +138,7 @@ tous les concepts étape par étape.
 
 | Fonctionnalité | Avantage |
 |----------------|----------|
-| **Priorité en couches** | Struct par défaut → vars env → cmdline. Le dernier gagne. |
+| **Priorité en couches** | Cmdline → vars env → struct par défaut. Le premier gagne. |
 | **Sécurité par pointeurs** | `nil` = non configuré. Pas de valeurs zéro silencieuses. |
 | **Mode strict** | Détecte les fautes de frappe et surcharges non désirées immédiatement. |
 | **Suivi des sources** | Sachez exactement d'où vient chaque valeur. |
@@ -269,6 +269,7 @@ Plus tard, vous réalisez que `Timeout` doit être ajusté par environnement :
 ```go
 // Maintenant Timeout peut être surchargé via l'environnement, tout le reste reste fixe
 dsco.Fill(&config,
+    dsco.WithEnvLayer("MYSERVICE"),  // Seul MYSERVICE-TIMEOUT doit exister
     dsco.WithStructLayer(&Config{
         Host:       dsco.R("api.internal"),
         Port:       dsco.R(8080),
@@ -276,7 +277,6 @@ dsco.Fill(&config,
         Timeout:    dsco.R(30 * time.Second),  // Par défaut, mais surchargeable
         BatchSize:  dsco.R(100),
     }, "defaults"),
-    dsco.WithEnvLayer("MYSERVICE"),  // Seul MYSERVICE-TIMEOUT doit exister
 )
 ```
 
@@ -291,15 +291,15 @@ production :
 
 ```go
 dsco.Fill(&config,
-    // Surcharges opérationnelles autorisées
-    dsco.WithEnvLayer("MYSERVICE"),
-    dsco.WithCmdlineLayer(),
-
     // Ces valeurs sont VERROUILLÉES - priorité maximale, application stricte
     dsco.WithStrictStructLayer(&Config{
         APIEndpoint: dsco.R("https://api.production.com"),
         AuditMode:   dsco.R(true),
     }, "immutable"),
+
+    // Surcharges opérationnelles autorisées
+    dsco.WithEnvLayer("MYSERVICE"),
+    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -330,8 +330,8 @@ dsco.Fill(&config, dsco.WithStructLayer(productionDefaults, "defaults"))
 ```go
 // Semaine 3 : Ajouter une couche env - les ops peuvent maintenant ajuster sans nouvelle release
 dsco.Fill(&config,
-    dsco.WithStructLayer(productionDefaults, "defaults"),
     dsco.WithEnvLayer("SVC"),
+    dsco.WithStructLayer(productionDefaults, "defaults"),
 )
 // Les ops définissent SVC-CONNECTION-POOL-SIZE=50
 ```
@@ -341,12 +341,12 @@ dsco.Fill(&config,
 ```go
 // Audit sécurité : s'assurer que TLS et le logging d'audit ne peuvent pas être désactivés
 dsco.Fill(&config,
-    dsco.WithEnvLayer("SVC"),
     dsco.WithStrictStructLayer(&Config{
         TLSEnabled:    dsco.R(true),
         AuditLogging:  dsco.R(true),
         MinTLSVersion: dsco.R("1.3"),
     }, "security"),
+    dsco.WithEnvLayer("SVC"),
 )
 ```
 
@@ -375,8 +375,8 @@ dsco.WithStrictStructLayer(&Config{
 
 ```go
 dsco.Fill(&config,
-    dsco.WithStructLayer(devDefaults, "dev"),
     dsco.WithCmdlineLayer(),
+    dsco.WithStructLayer(devDefaults, "dev"),
 )
 ```
 
@@ -541,7 +541,7 @@ graph TB
 1. **Enregistrement des couches** - Les sources s'enregistrent comme couches
 2. **Génération du modèle** - Struct analysée par réflexion
 3. **Collecte des valeurs** - Chaque couche fournit ses valeurs
-4. **Résolution de précédence** - Les couches suivantes écrasent les précédentes
+4. **Résolution de précédence** - La première couche à fournir un champ l'emporte
 5. **Conversion de types** - Strings → types cibles via YAML
 6. **Validation** - Champs requis vérifiés
 7. **Remplissage de la struct** - Cible peuplée avec les valeurs résolues
@@ -627,15 +627,15 @@ if err != nil {
 Les couches strictes génèrent une erreur quand les valeurs ne sont **pas consommées** :
 
 1. Valeur ne correspond à aucun champ (détection de fautes de frappe)
-2. Valeur surchargée par une couche suivante (détection de surcharge)
+2. Valeur remplacée par une couche antérieure (détection de surcharge)
 
 ```go
 _, err := dsco.Fill(&config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Strict
-    dsco.WithCmdlineLayer(),            // Peut surcharger
+    dsco.WithCmdlineLayer(),            // Antérieure — ses valeurs l'emportent
+    dsco.WithStrictEnvLayer("MYAPP"),  // Strict — erreur si cmdline a déjà fourni le champ
 )
-// MYAPP-PORT=8080 + --port=9000 → Erreur !
-// La valeur env a été surchargée.
+// --port=9000 + MYAPP-PORT=8080 → Erreur !
+// La valeur env a été remplacée par cmdline.
 ```
 
 ### Alias
@@ -744,9 +744,9 @@ import (
 
 var config *Config
 report, err := inventory.Compute(&config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 if err != nil {
     log.Fatal(err)
@@ -760,14 +760,16 @@ Exemple de sortie texte :
 TYPE: github.com/example/myapp.Config
 
 PATH                  TYPE             KEY                              DEFAULT
-Database.Host         *string          env: MYAPP-DATABASE-HOST         —
+Database.Host         *string          cmdline: --database-host=        —
 Database.Port         *int             cmdline: --database-port=        defaults=5432
 Server.Timeout        *time.Duration   —                                defaults=30s
 ```
 
 Un `—` dans la colonne DEFAULT indique qu'aucune couche ne fournit de valeur
 intégrée : c'est à l'opérateur de définir cette clé. Tout ce qui porte un
-`defaults=...` est déjà couvert.
+`defaults=...` est déjà couvert. La colonne KEY affiche la clé canonique de
+la première couche capable de fournir le champ — ici cmdline, puisqu'elle est
+déclarée en premier (priorité la plus haute).
 
 Trois exemples exécutables sont fournis dans le dépôt :
 

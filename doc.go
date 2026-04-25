@@ -6,8 +6,9 @@ struct-based configurations with strict validation.
 # Overview
 
 dsco implements a layered configuration system where different configuration
-sources are organized into layers with configurable precedence. Later layers
-override earlier ones, with optional strict mode for conflict detection.
+sources are organized into layers with configurable precedence. Earlier layers
+override later ones (first-layer wins); a layer that leaves a field nil falls
+through to the next layer. Strict mode detects conflicts and unused values.
 
 The library is designed for microservices environments where configuration
 safety is critical. It enforces explicit configuration through pointer-based
@@ -108,7 +109,7 @@ The library implements a sophisticated processing pipeline:
 1. Layer Registration: Different configuration sources register as layers
 2. Model Generation: Target struct is analyzed via reflection
 3. Value Collection: Each layer provides field values from its source
-4. Precedence Resolution: Later layers override earlier ones
+4. Precedence Resolution: Earlier layers override later ones (first-layer wins)
 5. Type Conversion: String values converted to target types via YAML
 6. Validation: Required fields and custom validation applied
 7. Struct Filling: Target struct populated with resolved values

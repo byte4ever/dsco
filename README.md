@@ -10,9 +10,9 @@ because someone forgot to set `DATABASE_PASSWORD` in production.
 // 30 seconds to bulletproof configuration
 var config *Config
 dsco.Fill(&config,
-    dsco.WithStructLayer(defaults, "defaults"),  // Dev defaults baked in
-    dsco.WithEnvLayer("MYAPP"),                  // Container/K8s config
     dsco.WithCmdlineLayer(),                     // Quick local overrides
+    dsco.WithEnvLayer("MYAPP"),                  // Container/K8s config
+    dsco.WithStructLayer(defaults, "defaults"),  // Dev defaults baked in
 )
 // Missing config? App won't start. You'll know immediately.
 ```
@@ -81,15 +81,15 @@ func main() {
     var config *Config
 
     _, err := dsco.Fill(&config,
-        // Layer 1: defaults (lowest priority)
+        // Layer 1: command line (highest priority)
+        dsco.WithCmdlineLayer(),
+        // Layer 2: environment variables
+        dsco.WithEnvLayer("MYAPP"),
+        // Layer 3: defaults (lowest priority)
         dsco.WithStructLayer(&Config{
             Host: dsco.R("localhost"),
             Port: dsco.R(8080),
         }, "defaults"),
-        // Layer 2: environment variables
-        dsco.WithEnvLayer("MYAPP"),
-        // Layer 3: command line (highest priority)
-        dsco.WithCmdlineLayer(),
     )
     if err != nil {
         log.Fatal(err)  // Missing config? Crash here, not in production.
@@ -137,7 +137,7 @@ step-by-step.
 
 | Feature | Benefit |
 |---------|---------|
-| **Layered Priority** | Struct defaults → env vars → cmdline. Later wins. |
+| **Layered Priority** | Cmdline → env vars → struct defaults. First wins. |
 | **Pointer-Based Safety** | `nil` = not configured. No silent zero values. |
 | **Strict Mode** | Catch typos and unwanted overrides immediately. |
 | **Source Tracking** | Know exactly where every value came from. |
@@ -265,6 +265,7 @@ Later, you realize `Timeout` needs adjustment per environment:
 ```go
 // Now Timeout can be overridden via environment, everything else stays fixed
 dsco.Fill(&config,
+    dsco.WithEnvLayer("MYSERVICE"),  // Only MYSERVICE-TIMEOUT needs to exist
     dsco.WithStructLayer(&Config{
         Host:       dsco.R("api.internal"),
         Port:       dsco.R(8080),
@@ -272,7 +273,6 @@ dsco.Fill(&config,
         Timeout:    dsco.R(30 * time.Second),  // Default, but overridable
         BatchSize:  dsco.R(100),
     }, "defaults"),
-    dsco.WithEnvLayer("MYSERVICE"),  // Only MYSERVICE-TIMEOUT needs to exist
 )
 ```
 
@@ -286,15 +286,15 @@ Some defaults should **never** be overridden in production:
 
 ```go
 dsco.Fill(&config,
-    // Operational overrides allowed
-    dsco.WithEnvLayer("MYSERVICE"),
-    dsco.WithCmdlineLayer(),
-
     // These values are LOCKED - highest priority, strict enforcement
     dsco.WithStrictStructLayer(&Config{
         APIEndpoint: dsco.R("https://api.production.com"),
         AuditMode:   dsco.R(true),
     }, "immutable"),
+
+    // Operational overrides allowed
+    dsco.WithEnvLayer("MYSERVICE"),
+    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -325,8 +325,8 @@ dsco.Fill(&config, dsco.WithStructLayer(productionDefaults, "defaults"))
 ```go
 // Week 3: Add env layer - ops can now adjust without new release
 dsco.Fill(&config,
-    dsco.WithStructLayer(productionDefaults, "defaults"),
     dsco.WithEnvLayer("SVC"),
+    dsco.WithStructLayer(productionDefaults, "defaults"),
 )
 // Ops sets SVC-CONNECTION-POOL-SIZE=50
 ```
@@ -336,12 +336,12 @@ dsco.Fill(&config,
 ```go
 // Security audit: ensure TLS and audit logging can't be disabled
 dsco.Fill(&config,
-    dsco.WithEnvLayer("SVC"),
     dsco.WithStrictStructLayer(&Config{
         TLSEnabled:    dsco.R(true),
         AuditLogging:  dsco.R(true),
         MinTLSVersion: dsco.R("1.3"),
     }, "security"),
+    dsco.WithEnvLayer("SVC"),
 )
 ```
 
@@ -369,8 +369,8 @@ dsco.WithStrictStructLayer(&Config{
 
 ```go
 dsco.Fill(&config,
-    dsco.WithStructLayer(devDefaults, "dev"),
     dsco.WithCmdlineLayer(),
+    dsco.WithStructLayer(devDefaults, "dev"),
 )
 ```
 
@@ -534,7 +534,7 @@ graph TB
 1. **Layer Registration** - Sources register as layers
 2. **Model Generation** - Struct analyzed via reflection
 3. **Value Collection** - Each layer provides values
-4. **Precedence Resolution** - Later layers override earlier
+4. **Precedence Resolution** - Earlier layers override later (first-layer wins)
 5. **Type Conversion** - Strings → target types via YAML
 6. **Validation** - Required fields checked
 7. **Struct Filling** - Target populated with resolved values
@@ -620,15 +620,15 @@ if err != nil {
 Strict layers error when values are **not consumed**:
 
 1. Value doesn't match any field (typo detection)
-2. Value overridden by later layer (override detection)
+2. Value overridden by an earlier layer (override detection)
 
 ```go
 _, err := dsco.Fill(&config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Strict
-    dsco.WithCmdlineLayer(),            // Can override
+    dsco.WithCmdlineLayer(),            // Earlier layer — its values win
+    dsco.WithStrictEnvLayer("MYAPP"),  // Strict — errors if cmdline already supplied field
 )
-// MYAPP-PORT=8080 + --port=9000 → Error!
-// Env value was overridden.
+// --port=9000 + MYAPP-PORT=8080 → Error!
+// Env value was overridden by cmdline.
 ```
 
 ### Aliases
@@ -736,9 +736,9 @@ import (
 
 var config *Config
 report, err := inventory.Compute(&config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 if err != nil {
     log.Fatal(err)
@@ -752,13 +752,15 @@ Sample text output:
 TYPE: github.com/example/myapp.Config
 
 PATH                  TYPE             KEY                              DEFAULT
-Database.Host         *string          env: MYAPP-DATABASE-HOST         —
+Database.Host         *string          cmdline: --database-host=        —
 Database.Port         *int             cmdline: --database-port=        defaults=5432
 Server.Timeout        *time.Duration   —                                defaults=30s
 ```
 
 A `—` in the DEFAULT column means no layer bakes in a value, so the operator
 must supply that key. Anything with `defaults=...` is already covered.
+The KEY column shows the canonical key from the first layer that can supply
+the field — here cmdline, since it is listed first (highest priority).
 
 Three runnable examples ship in the repo:
 
