@@ -22,7 +22,6 @@ dsco.Fill(&config,
 [![Go Reference](https://pkg.go.dev/badge/github.com/byte4ever/dsco.svg)](https://pkg.go.dev/github.com/byte4ever/dsco)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.21-61CFDD.svg?style=flat-square)
 [![Go Report Card](https://goreportcard.com/badge/github.com/byte4ever/dsco?style=flat-square)](https://goreportcard.com/report/github.com/byte4ever/dsco)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/c64776c8e19d20057719/test_coverage)](https://codeclimate.com/github/byte4ever/dsco/test_coverage)
 
 Français | [English](README.md)
 
