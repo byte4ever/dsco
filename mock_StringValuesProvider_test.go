@@ -20,7 +20,7 @@ func (_m *MockStringValuesProvider) EXPECT() *MockStringValuesProvider_Expecter 
 	return &MockStringValuesProvider_Expecter{mock: &_m.Mock}
 }
 
-// GetStringValues provides a mock function with given fields:
+// GetStringValues provides a mock function with no fields
 func (_m *MockStringValuesProvider) GetStringValues() svalue.Values {
 	ret := _m.Called()
 

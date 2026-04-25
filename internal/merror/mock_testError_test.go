@@ -17,7 +17,7 @@ func (_m *mockTestError) EXPECT() *mockTestError_Expecter {
 	return &mockTestError_Expecter{mock: &_m.Mock}
 }
 
-// Error provides a mock function with given fields:
+// Error provides a mock function with no fields
 func (_m *mockTestError) Error() string {
 	ret := _m.Called()
 

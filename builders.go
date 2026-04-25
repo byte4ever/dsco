@@ -1,6 +1,7 @@
 package dsco
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -153,7 +154,16 @@ func wrapCmdlineBuild(
 		}
 	}
 
-	builder, err := CmdLine(options...)
+	cmdLine, err := cmdline.NewEntriesProvider(os.Args[1:])
+	if err != nil {
+		return fmt.Errorf("cmdline builder: %w", err)
+	}
+
+	builder, err := newStringBasedBuilderWithFormatter(
+		cmdLine,
+		newCmdlineKeyFormatter(),
+		options...,
+	)
 	if err != nil {
 		return err
 	}
@@ -203,10 +213,7 @@ func wrapEnvBuild(
 	options []Option,
 ) error {
 	if idx := to.dedupId(
-		fmt.Sprintf(
-			"env(%s)",
-			prefix,
-		),
+		fmt.Sprintf("env(%s)", prefix),
 	); idx != nil {
 		return DuplicateEnvPrefixError{
 			Index:  *idx,
@@ -214,7 +221,16 @@ func wrapEnvBuild(
 		}
 	}
 
-	builder, err := Env(prefix, options...)
+	envProvider, err := env.NewEntriesProvider(prefix)
+	if err != nil {
+		return fmt.Errorf("env builder: %w", err)
+	}
+
+	builder, err := newStringBasedBuilderWithFormatter(
+		envProvider,
+		newEnvKeyFormatter(prefix),
+		options...,
+	)
 	if err != nil {
 		return err
 	}
@@ -359,6 +375,10 @@ func (d DuplicateStringProviderError) Error() string {
 	)
 }
 
+func (DuplicateStringProviderError) Is(err error) bool {
+	return errors.Is(err, ErrDuplicateStringProvider)
+}
+
 func wrapStringProviderBuild(
 	to *layerBuilder,
 	wrap func(bg FieldValuesGetter) constraintLayerPolicy,
@@ -368,10 +388,7 @@ func wrapStringProviderBuild(
 	providerName := provider.GetName()
 
 	if idx := to.dedupId(
-		fmt.Sprintf(
-			"stringProvider(%s)",
-			providerName,
-		),
+		fmt.Sprintf("stringProvider(%s)", providerName),
 	); idx != nil {
 		return DuplicateStringProviderError{
 			Index: *idx,
@@ -379,7 +396,11 @@ func wrapStringProviderBuild(
 		}
 	}
 
-	builder, err := NewStringBasedBuilder(provider, options...)
+	builder, err := newStringBasedBuilderWithFormatter(
+		provider,
+		newNilKeyFormatter(providerName),
+		options...,
+	)
 	if err != nil {
 		return err
 	}

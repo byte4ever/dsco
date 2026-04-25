@@ -238,7 +238,7 @@ func (_c *MockModelInterface_GetFieldValuesFor_Call) RunAndReturn(run func(strin
 	return _c
 }
 
-// TypeName provides a mock function with given fields:
+// TypeName provides a mock function with no fields
 func (_m *MockModelInterface) TypeName() string {
 	ret := _m.Called()
 

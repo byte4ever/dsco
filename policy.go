@@ -9,9 +9,12 @@ type constraintLayerPolicies []constraintLayerPolicy
 
 // constraintLayerPolicy defines the behavior for a configuration layer,
 // combining value retrieval capabilities with strictness constraints.
+//
+//nolint:iface // policy interface; aggregates value retrieval, strictness, and inventory access
 type constraintLayerPolicy interface {
 	FieldValuesGetter
 	isStrict() bool
+	getFieldValuesGetter() FieldValuesGetter
 }
 
 // strictLayer enforces strict processing where all provided configuration
@@ -25,10 +28,15 @@ func (*strictLayer) isStrict() bool {
 	return true
 }
 
+// getFieldValuesGetter returns the underlying FieldValuesGetter.
+func (l *strictLayer) getFieldValuesGetter() FieldValuesGetter {
+	return l.FieldValuesGetter
+}
+
 // newStrictLayer creates a new strict layer policy wrapping the provided
 // field values getter with strict consumption validation.
 //
-//nolint:ireturn // this is required
+//nolint:ireturn,iface // policy interface required for constraint dispatch
 func newStrictLayer(bg FieldValuesGetter) constraintLayerPolicy {
 	return &strictLayer{
 		FieldValuesGetter: bg,
@@ -46,10 +54,15 @@ func (*normalLayer) isStrict() bool {
 	return false
 }
 
+// getFieldValuesGetter returns the underlying FieldValuesGetter.
+func (l *normalLayer) getFieldValuesGetter() FieldValuesGetter {
+	return l.FieldValuesGetter
+}
+
 // newNormalLayer creates a new normal layer policy wrapping the provided
 // field values getter with flexible consumption rules.
 //
-//nolint:ireturn // this is required
+//nolint:ireturn,iface // policy interface required for constraint dispatch
 func newNormalLayer(bg FieldValuesGetter) constraintLayerPolicy {
 	return &normalLayer{
 		FieldValuesGetter: bg,

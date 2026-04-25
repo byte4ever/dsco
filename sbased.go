@@ -119,6 +119,7 @@ type StringBasedBuilder struct {
 	internalOpts
 	values         svalue.Values
 	expandedValues map[string]*fvalue.Value
+	keyFormatter   KeyFormatter
 }
 
 // ErrNoAliasesProvided represent an error where no aliases map was
@@ -210,6 +211,24 @@ func NewStringBasedBuilder(
 		values:         converted,
 		expandedValues: make(map[string]*fvalue.Value),
 	}, nil
+}
+
+// newStringBasedBuilderWithFormatter is an internal constructor that
+// behaves like NewStringBasedBuilder but records the KeyFormatter used to
+// render the layer's keys in inventory reports.
+func newStringBasedBuilderWithFormatter(
+	provider StringValuesProvider,
+	formatter KeyFormatter,
+	options ...Option,
+) (*StringBasedBuilder, error) {
+	builder, err := NewStringBasedBuilder(provider, options...)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // same-package constructor
+	}
+
+	builder.keyFormatter = formatter
+
+	return builder, nil
 }
 
 func (s *StringBasedBuilder) ExpandStruct(
@@ -336,6 +355,126 @@ func (s *StringBasedBuilder) Get(
 			ErrInvalidType,
 		)
 	}
+}
+
+// ErrNilKeyFormatter indicates that ReportInventory was called on a
+// StringBasedBuilder with no KeyFormatter set.
+var ErrNilKeyFormatter = errors.New("nil key formatter")
+
+// ErrUnknownKeyFormatterKind is returned by NewStringBasedBuilderForTest
+// when the kind argument is not a recognised formatter kind.
+var ErrUnknownKeyFormatterKind = errors.New("unknown key-formatter kind")
+
+// ReportInventory implements InventoryReporter by walking the model's
+// alias map and rendering each entry through the layer's KeyFormatter.
+// No I/O is performed.
+func (s *StringBasedBuilder) ReportInventory(
+	mdl ModelInterface,
+) (LayerInventory, error) {
+	const errCtx = "reporting inventory"
+
+	if s.keyFormatter == nil {
+		// Defensive: any builder constructed via the layer wrappers in
+		// builders.go has a non-nil formatter.
+		return LayerInventory{}, fmt.Errorf(
+			"%s: %w", errCtx, ErrNilKeyFormatter,
+		)
+	}
+
+	aliases, err := collectAliases(mdl)
+	if err != nil {
+		return LayerInventory{}, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	provides := make([]FieldProvision, 0, len(aliases))
+	for fieldUID, aliasPath := range aliases {
+		provides = append(provides, FieldProvision{
+			FieldUID: fieldUID,
+			Key:      s.keyFormatter.FormatKey(aliasPath),
+		})
+	}
+
+	inv := LayerInventory{
+		Name:     s.keyFormatter.LayerName(),
+		Provides: provides,
+	}
+
+	if s.keyFormatter.LayerKind() == "" {
+		inv.Note = "custom provider — keys not enumerable"
+		// Drop key strings — they cannot be rendered for custom providers.
+		for i := range inv.Provides {
+			inv.Provides[i].Key = ""
+		}
+	}
+
+	return inv, nil
+}
+
+// aliasRecorder implements internal.ValueGetter to capture each leaf
+// field's (FieldUID, alias-path) without producing any value.
+type aliasRecorder struct {
+	aliases map[string]string
+}
+
+// Get records the alias path for path and returns (nil, nil) so the
+// model treats the field as unfilled. No I/O is performed.
+func (r *aliasRecorder) Get(
+	path string,
+	_ reflect.Type,
+) (*fvalue.Value, error) {
+	r.aliases[path] = convert(path)
+	return nil, nil //nolint:nilnil // matches StringBasedBuilder.Get when nothing is found
+}
+
+// collectAliases returns the field-uid → alias-path map for the given
+// model. The alias path is dash-separated, lowercase, matching the form
+// StringBasedBuilder.values keys use.
+//
+// It builds a recording ValueGetter that captures (path, convert(path))
+// for every leaf the model iterates, then runs the model's ApplyOn pass.
+// No values are loaded; the recorder always returns (nil, nil).
+func collectAliases(mdl ModelInterface) (map[string]string, error) {
+	const errCtx = "collecting aliases"
+
+	rec := &aliasRecorder{
+		aliases: make(map[string]string),
+	}
+
+	if _, err := mdl.ApplyOn(rec); err != nil {
+		return nil, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	return rec.aliases, nil
+}
+
+// NewStringBasedBuilderForTest constructs a StringBasedBuilder with a
+// synthetic KeyFormatter. Intended solely for tests that need to
+// exercise ReportInventory without going through the layer wrappers in
+// builders.go.
+//
+// kind must be one of "env", "cmdline", "file", or "" (nil formatter
+// for custom-provider behaviour). For "env" / "file", metaOrPrefix is
+// the prefix or file id.
+func NewStringBasedBuilderForTest(
+	provider StringValuesProvider,
+	kind, metaOrPrefix string,
+) (*StringBasedBuilder, error) {
+	var kf KeyFormatter
+
+	switch kind {
+	case "env":
+		kf = newEnvKeyFormatter(metaOrPrefix)
+	case "cmdline":
+		kf = newCmdlineKeyFormatter()
+	case "":
+		kf = newNilKeyFormatter(metaOrPrefix)
+	default:
+		return nil, fmt.Errorf(
+			"%w: %q", ErrUnknownKeyFormatterKind, kind,
+		)
+	}
+
+	return newStringBasedBuilderWithFormatter(provider, kf)
 }
 
 type GetError struct {

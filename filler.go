@@ -36,8 +36,14 @@ type FillerErrors struct {
 	merror.MError
 }
 
-// ErrFiller is the sentinel error for configuration filling failures.
-var ErrFiller = errors.New("")
+var (
+	// ErrFiller is the sentinel error for configuration filling failures.
+	ErrFiller = errors.New("")
+
+	// ErrCfgMustBePointer indicates that the value passed to Fill or
+	// BuildModel is not a pointer to a struct.
+	ErrCfgMustBePointer = errors.New("cfg must be a pointer to a struct")
+)
 
 // Is implements error matching for FillerErrors, allowing error.Is checks
 // against ErrFiller to detect filling-related errors.
@@ -57,16 +63,43 @@ func newDSCOContext(
 	}
 }
 
+// generateModel populates c.model from c.inputModelRef.
+// c.inputModelRef is **T (Fill is called with &pp where pp is *T), so
+// dereference once to obtain *T before delegating to buildModel.
 func (c *dscoContext) generateModel() {
 	if c.err.None() {
-		model, err := model2.NewModel(reflect.TypeOf(c.inputModelRef).Elem())
+		// Dereference **T → *T so buildModel receives a plain *Struct.
+		ptrVal := reflect.ValueOf(c.inputModelRef).Elem().Interface()
+
+		mdl, err := buildModel(ptrVal)
 		if err != nil {
 			c.err.Add(err)
 			return
 		}
 
-		c.model = model
+		c.model = mdl
 	}
+}
+
+// buildModel constructs the model from a pointer-to-struct configuration.
+// inputModelRef must be *T where T is a struct. Used by both Fill (via
+// dscoContext.generateModel) and inventory walks.
+//
+//nolint:iface,ireturn,revive // shared helper; ModelInterface is the contract used by both Fill and inventory
+func buildModel(inputModelRef any) (ModelInterface, error) {
+	const errCtx = "building model"
+
+	t := reflect.TypeOf(inputModelRef)
+	if t == nil || t.Kind() != reflect.Pointer {
+		return nil, fmt.Errorf("%s: %w", errCtx, ErrCfgMustBePointer)
+	}
+
+	mdl, err := model2.NewModel(t)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", errCtx, err)
+	}
+
+	return mdl, nil
 }
 
 func (c *dscoContext) generateBuilders() {

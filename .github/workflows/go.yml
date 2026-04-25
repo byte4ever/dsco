@@ -27,23 +27,6 @@ jobs:
 #          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
 #          version: v1.52.2
 
-      - name: Upload coverage to CodeClimate
-        run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-
-      - name: Set cc-test-reporter as executable
-        run: chmod +x ./cc-test-reporter
-
-      - name: Run CodeClimate before script
-        run:  ./cc-test-reporter before-build
-
       - name: Test
-        run: go test -race -covermode=atomic -coverprofile=c.out -v ./...
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          files: ./c.out
-
-      - name: Upload coverage to CodeClimate
-        run:  ./cc-test-reporter  after-build  --id=a6fb8f40a524519328403a1c829feb823cfe38ea037f5f0363ea025c64b4e372 --prefix=github.com/byte4ever/dsco
+        run: go test -race -v ./...
 

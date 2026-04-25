@@ -8,6 +8,8 @@ dsco (pronounced /ˈdɪskoʊ/) is a Go configuration library implementing a laye
 
 **Core Philosophy**: Enforces explicit configuration through pointer-based fields to prevent silent defaults. `nil` means "not configured", non-nil means "explicitly configured".
 
+**User-facing docs**: `README.md` / `README_fr.md` (overview and motivation), `QUICKSTART.md` / `QUICKSTART_fr.md` (getting started), `WARP.md` (Warp terminal integration notes), and `doc.go` (Go package doc).
+
 ## Development Commands
 
 ```bash
@@ -43,8 +45,9 @@ Fill(&config, layers...) → Layer Registration → Model Generation (reflection
     → Value Collection → Precedence Resolution → Type Conversion (YAML) → Validation
 ```
 
-Later layers override earlier ones. Strict mode layers error if their values are
-not consumed (either unmatched to config fields, or overridden by later layers).
+Earlier layers override later ones. A layer that leaves a field nil falls through
+to the next layer. Strict mode layers error if their values are not consumed
+(either unmatched to config fields, or overridden by earlier layers).
 
 ### Fill Pipeline (`filler.go`)
 
@@ -84,11 +87,13 @@ parse is automatically supported (`time.Duration`, `net.URL`, etc.). The
 | `filler.go` | Core orchestration, `Fill()` function, `dscoContext` |
 | `builders.go` | Layer construction (`WithCmdlineLayer`, `WithEnvLayer`, etc.) and dedup logic |
 | `sbased.go` | `StringBasedBuilder` — YAML-based type conversion, alias handling, struct expansion |
+| `structs.go` | `StructBuilder` — backs `WithStructLayer`, validates source struct type matches model |
 | `oiface.go` | `FieldValuesGetter` and `ModelInterface` — bridge interfaces between layers and model |
 | `iface.go` | Public provider interfaces (`StringValuesProvider`, `NamedStringValuesProvider`) |
 | `policy.go` | `strictLayer` / `normalLayer` wrappers |
 | `convert.go` | Path conversion: dot-separated → dash-separated snake_case |
 | `errors.go` | Error type definitions and layer-level dedup errors |
+| `doc.go` | Package-level Go doc with quickstart and overview |
 
 ### Internal Packages
 
@@ -135,18 +140,19 @@ Aggregate errors embed `merror.MError` (e.g., `FillerErrors`, `LayerErrors`,
 
 ## Layer Types and Precedence
 
-Layers are processed in order; later layers override earlier ones:
+Order layers from highest to lowest priority; the first layer to supply a field
+wins. Later layers only fill fields left nil by all preceding layers:
 
 ```go
 dsco.Fill(&config,
-    dsco.WithStructLayer(defaults, "defaults"),  // lowest priority
-    dsco.WithEnvLayer("MYAPP"),                  // middle priority
     dsco.WithCmdlineLayer(),                     // highest priority
+    dsco.WithEnvLayer("MYAPP"),                  // middle priority
+    dsco.WithStructLayer(defaults, "defaults"),  // lowest priority
 )
 ```
 
 **Strict layers** (`WithStrictEnvLayer`, etc.) error if values don't match config
-fields or are overridden by later layers.
+fields or are overridden by an earlier layer.
 
 **Dedup rules** (in `builders.go`): only one cmdline layer allowed; env layers
 deduplicated by prefix; struct layers by pointer address and string ID; string

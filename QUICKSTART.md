@@ -123,16 +123,17 @@ Server: localhost:8080
 ## 4. Understanding Layers
 
 dsco uses a **layered configuration system**. Each layer provides values, and
-**later layers override earlier ones**.
+**the first layer to supply a field wins**. Later layers only fill fields left
+nil by all preceding layers.
 
 ```
-Layer 1 (first)  → lowest priority
-Layer 2          → overrides Layer 1
-Layer 3 (last)   → highest priority (wins)
+Layer 1 (first)  → highest priority (wins)
+Layer 2          → fills fields Layer 1 left nil
+Layer 3 (last)   → lowest priority
 ```
 
-Think of it like stacking transparencies - you see through to lower layers
-only where upper layers are empty (nil).
+Think of it like stacking transparencies — you see the topmost non-transparent
+layer first. Lower layers show through only where upper layers are clear (nil).
 
 ### Layer Types
 
@@ -388,13 +389,13 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
+    dsco.WithEnvLayer("MYAPP"),
     dsco.WithStructLayer(&Config{
         Host: dsco.R("localhost"),
         Database: &DatabaseConfig{
             Port: dsco.R(5432),
         },
     }, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
 )
 ```
 
@@ -412,9 +413,9 @@ Command line arguments use `--key=value` format:
 ```go
 _, err := dsco.Fill(
     &config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 ```
 
@@ -469,6 +470,7 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
+    dsco.WithCmdlineLayer(),
     dsco.WithStructLayer(&Config{
         Host:     dsco.R("localhost"),
         Port:     dsco.R(8080),
@@ -480,7 +482,6 @@ _, err := dsco.Fill(
         },
         LogLevel: dsco.R("debug"),
     }, "dev-defaults"),
-    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -544,32 +545,32 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
-    // Layer 1: Hardcoded defaults (lowest priority)
+    // Layer 1: Command line (highest priority)
+    dsco.WithCmdlineLayer(),
+
+    // Layer 2: Environment variables (middle priority)
+    dsco.WithEnvLayer("MYAPP"),
+
+    // Layer 3: Hardcoded defaults (lowest priority)
     dsco.WithStructLayer(&Config{
         Host:    dsco.R("localhost"),
         Port:    dsco.R(8080),
         Debug:   dsco.R(false),
         Timeout: dsco.R(30),
     }, "defaults"),
-
-    // Layer 2: Environment variables (middle priority)
-    dsco.WithEnvLayer("MYAPP"),
-
-    // Layer 3: Command line (highest priority)
-    dsco.WithCmdlineLayer(),
 )
 ```
 
 ### Precedence Example
 
 Given:
-- Struct layer: `Host="localhost"`, `Port=8080`
-- Environment: `MYAPP-HOST=staging.example.com`
 - Command line: `--host=production.example.com`
+- Environment: `MYAPP-HOST=staging.example.com`
+- Struct layer: `Host="localhost"`, `Port=8080`
 
 Result:
-- `Host` = `"production.example.com"` (from cmdline - highest priority)
-- `Port` = `8080` (from struct - no override)
+- `Host` = `"production.example.com"` (from cmdline — first layer to supply it)
+- `Port` = `8080` (from struct — cmdline and env left it nil)
 
 ---
 
@@ -579,7 +580,7 @@ Result:
 filling. A value is "not consumed" if:
 
 1. **It doesn't match any config field** (typo detection)
-2. **It was overridden by a later layer** (override detection)
+2. **It was overridden by an earlier layer** (override detection)
 
 ### Normal vs Strict
 
@@ -590,19 +591,19 @@ filling. A value is "not consumed" if:
 
 ### Understanding Override Detection
 
-Remember: **later layers override earlier ones**. If a strict layer's value
-is overridden by a subsequent layer, that's an error.
+Remember: **the first layer to supply a field wins**. If a strict layer's value
+is overridden by an earlier layer in the list, that's an error.
 
 ```go
 _, err := dsco.Fill(
     &config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Strict layer (position 0)
-    dsco.WithCmdlineLayer(),            // Later layer (position 1)
+    dsco.WithCmdlineLayer(),            // Earlier layer (position 0)
+    dsco.WithStrictEnvLayer("MYAPP"),  // Strict layer (position 1)
 )
 ```
 
-If both `MYAPP-PORT` and `--port` are provided, the cmdline value wins
-(later layer). But since the env layer is strict, its overridden value
+If both `--port` and `MYAPP-PORT` are provided, the cmdline value wins
+(earlier layer). But since the env layer is strict, its overridden value
 causes an `OverriddenKeyError`.
 
 ### Typo Detection
@@ -617,32 +618,32 @@ MYAPP-HOOST=localhost ./myapp
 
 ### Placement Matters
 
-Since later layers override earlier ones:
+Since the first layer to supply a field wins:
 
-- **Strict layer early** → errors if later layers override its values
-- **Strict layer late** → its values win; errors only for unmatched fields
+- **Strict layer early** → its values win; errors only for unmatched fields
+- **Strict layer late** → errors if earlier layers have already supplied its values
 
 ```go
-// Pattern 1: Strict env, ensure env vars aren't overridden by cmdline
+// Pattern 1: Strict cmdline at the front (typo detection only)
 dsco.Fill(&config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Errors if cmdline overrides
-    dsco.WithCmdlineLayer(),
-)
-
-// Pattern 2: Strict cmdline at the end (typo detection only)
-dsco.Fill(&config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithStrictCmdlineLayer(),  // Errors only for unmatched flags
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 
-// Pattern 3: Immutable values that MUST be used
+// Pattern 2: Strict env, ensure env vars aren't overridden by cmdline
 dsco.Fill(&config,
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithStrictEnvLayer("MYAPP"),  // Errors if cmdline already supplied it
+)
+
+// Pattern 3: Immutable values locked at the front
+dsco.Fill(&config,
     dsco.WithStrictStructLayer(&Config{
         APIEndpoint: dsco.R("https://api.production.com"),
     }, "immutable"),  // Highest priority, errors if not consumed
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -655,8 +656,8 @@ dsco.Fill(&config,
 - Ensuring immutable configuration values are used
 
 **Use normal for**:
-- Default values (may be overridden or not all needed)
-- Lower-priority layers where overrides are expected
+- Default values (may be skipped when earlier layers supply the field)
+- Lower-priority layers where being superseded by earlier layers is expected
 
 ---
 
@@ -673,8 +674,6 @@ type Config struct {
 
 _, err := dsco.Fill(
     &config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(
         dsco.WithAliases(map[string]string{
             // Format: "alias": "internal.path"
@@ -684,6 +683,8 @@ _, err := dsco.Fill(
             "v":       "logging.verbose", // --v → logging-verbose
         }),
     ),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 ```
 
@@ -767,9 +768,9 @@ if err != nil {
 
 _, err = dsco.Fill(
     &config,
-    dsco.WithStringValueProvider(fileProvider),  // File config
-    dsco.WithEnvLayer("MYAPP"),                  // Env overrides
-    dsco.WithCmdlineLayer(),                     // CLI overrides
+    dsco.WithCmdlineLayer(),                     // CLI (highest priority)
+    dsco.WithEnvLayer("MYAPP"),                  // Env
+    dsco.WithStringValueProvider(fileProvider),  // File config (lowest priority)
 )
 ```
 
@@ -961,13 +962,7 @@ func main() {
 
     locations, err := dsco.Fill(
         &config,
-        // 1. Defaults (lowest priority)
-        dsco.WithStructLayer(DefaultConfig(), "defaults"),
-
-        // 2. Environment variables
-        dsco.WithStrictEnvLayer("APP"),
-
-        // 3. Command line (highest priority)
+        // 1. Command line (highest priority)
         dsco.WithCmdlineLayer(
             dsco.WithAliases(map[string]string{
                 "db-host":     "database.host",
@@ -979,6 +974,12 @@ func main() {
                 "v":           "logging.verbose",
             }),
         ),
+
+        // 2. Environment variables
+        dsco.WithStrictEnvLayer("APP"),
+
+        // 3. Defaults (lowest priority)
+        dsco.WithStructLayer(DefaultConfig(), "defaults"),
     )
     if err != nil {
         log.Fatalf("Configuration error: %v", err)
@@ -1031,7 +1032,7 @@ APP-DATABASE-PASSWORD=secret123 \
 |---------|-----------|
 | Pointer fields | `nil` = not configured, value = explicitly set |
 | `R()` helper | Creates pointers easily: `dsco.R(8080)` |
-| Layer precedence | Later layers override earlier ones |
+| Layer precedence | First layer to supply a field wins |
 | Struct layers | Hardcoded defaults |
 | Env variables | Format: `PREFIX-KEY=value` |
 | Command line | Format: `--key=value` |
@@ -1039,12 +1040,29 @@ APP-DATABASE-PASSWORD=secret123 \
 | Aliases | Short names for nested paths |
 | Custom providers | Implement `NamedStringValuesProvider` |
 
-**Best Practice**: Always order layers from lowest to highest priority:
+**Best Practice**: Order layers from highest to lowest priority; the first
+layer to supply a field wins:
 ```go
 dsco.Fill(&config,
-    dsco.WithStructLayer(...),      // 1. Defaults
-    dsco.WithStringValueProvider(), // 2. Files/Secrets
-    dsco.WithEnvLayer(...),         // 3. Environment
-    dsco.WithCmdlineLayer(),        // 4. Command line
+    dsco.WithCmdlineLayer(),        // 1. Command line (highest priority)
+    dsco.WithEnvLayer(...),         // 2. Environment
+    dsco.WithStringValueProvider(), // 3. Files/Secrets
+    dsco.WithStructLayer(...),      // 4. Defaults (lowest priority)
 )
 ```
+
+---
+
+## What keys do I need to provide?
+
+`inventory.Compute` lists every key your layered config expects, without
+reading anything from env, flags, or files:
+
+```go
+report, _ := inventory.Compute(&config, layers...)
+report.WriteText(os.Stdout)
+```
+
+See the [Inventory section in the README](README.md#inventory) for the full
+walkthrough and the three runnable examples (text dump, JSON for tooling, and
+a preflight check that fails CI when required keys are missing).

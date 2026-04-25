@@ -125,16 +125,19 @@ Serveur : localhost:8080
 ## 4. Comprendre les Couches
 
 dsco utilise un **système de configuration en couches**. Chaque couche fournit
-des valeurs, et **les couches ultérieures remplacent les précédentes**.
+des valeurs, et **la première couche à fournir un champ l'emporte**. Les couches
+suivantes ne remplissent que les champs laissés nil par toutes les couches
+précédentes.
 
 ```
-Couche 1 (première)  → priorité la plus basse
-Couche 2             → remplace la Couche 1
-Couche 3 (dernière)  → priorité la plus haute (gagne)
+Couche 1 (première)  → priorité la plus haute (gagne)
+Couche 2             → remplit les champs laissés nil par la Couche 1
+Couche 3 (dernière)  → priorité la plus basse
 ```
 
-Imaginez des transparents empilés - vous voyez à travers les couches
-inférieures uniquement là où les couches supérieures sont vides (nil).
+Imaginez des transparents empilés — vous voyez le premier transparent
+non-transparent en premier. Les couches inférieures n'apparaissent que là où
+les couches supérieures sont transparentes (nil).
 
 ### Types de Couches
 
@@ -400,13 +403,13 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
+    dsco.WithEnvLayer("MYAPP"),
     dsco.WithStructLayer(&Config{
         Host: dsco.R("localhost"),
         Database: &DatabaseConfig{
             Port: dsco.R(5432),
         },
     }, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
 )
 ```
 
@@ -424,9 +427,9 @@ Les arguments en ligne de commande utilisent le format `--key=value` :
 ```go
 _, err := dsco.Fill(
     &config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 ```
 
@@ -483,6 +486,7 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
+    dsco.WithCmdlineLayer(),
     dsco.WithStructLayer(&Config{
         Host:     dsco.R("localhost"),
         Port:     dsco.R(8080),
@@ -494,7 +498,6 @@ _, err := dsco.Fill(
         },
         LogLevel: dsco.R("debug"),
     }, "dev-defaults"),
-    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -561,32 +564,32 @@ var config *Config
 
 _, err := dsco.Fill(
     &config,
-    // Couche 1 : Valeurs par défaut codées en dur (priorité la plus basse)
+    // Couche 1 : Ligne de commande (priorité la plus haute)
+    dsco.WithCmdlineLayer(),
+
+    // Couche 2 : Variables d'environnement (priorité moyenne)
+    dsco.WithEnvLayer("MYAPP"),
+
+    // Couche 3 : Valeurs par défaut codées en dur (priorité la plus basse)
     dsco.WithStructLayer(&Config{
         Host:    dsco.R("localhost"),
         Port:    dsco.R(8080),
         Debug:   dsco.R(false),
         Timeout: dsco.R(30),
     }, "defaults"),
-
-    // Couche 2 : Variables d'environnement (priorité moyenne)
-    dsco.WithEnvLayer("MYAPP"),
-
-    // Couche 3 : Ligne de commande (priorité la plus haute)
-    dsco.WithCmdlineLayer(),
 )
 ```
 
 ### Exemple de Priorité
 
 Étant donné :
-- Couche struct : `Host="localhost"`, `Port=8080`
-- Environnement : `MYAPP-HOST=staging.example.com`
 - Ligne de commande : `--host=production.example.com`
+- Environnement : `MYAPP-HOST=staging.example.com`
+- Couche struct : `Host="localhost"`, `Port=8080`
 
 Résultat :
-- `Host` = `"production.example.com"` (de cmdline - priorité la plus haute)
-- `Port` = `8080` (de struct - pas de surcharge)
+- `Host` = `"production.example.com"` (de cmdline — première couche à le fournir)
+- `Port` = `8080` (de struct — cmdline et env l'ont laissé nil)
 
 ---
 
@@ -596,7 +599,7 @@ Le **mode strict** garantit que toutes les valeurs d'une couche stricte sont
 consommées pendant le remplissage. Une valeur est « non consommée » si :
 
 1. **Elle ne correspond à aucun champ de config** (détection de fautes de frappe)
-2. **Elle a été remplacée par une couche ultérieure** (détection de surcharge)
+2. **Elle a été remplacée par une couche antérieure** (détection de surcharge)
 
 ### Normal vs Strict
 
@@ -607,20 +610,20 @@ consommées pendant le remplissage. Une valeur est « non consommée » si :
 
 ### Comprendre la Détection de Surcharge
 
-Rappelez-vous : **les couches ultérieures remplacent les précédentes**. Si la
-valeur d'une couche stricte est remplacée par une couche suivante, c'est une
-erreur.
+Rappelez-vous : **la première couche à fournir un champ l'emporte**. Si la
+valeur d'une couche stricte est remplacée par une couche antérieure dans la
+liste, c'est une erreur.
 
 ```go
 _, err := dsco.Fill(
     &config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Couche stricte (position 0)
-    dsco.WithCmdlineLayer(),            // Couche ultérieure (position 1)
+    dsco.WithCmdlineLayer(),            // Couche antérieure (position 0)
+    dsco.WithStrictEnvLayer("MYAPP"),  // Couche stricte (position 1)
 )
 ```
 
-Si `MYAPP-PORT` et `--port` sont tous deux fournis, la valeur cmdline gagne
-(couche ultérieure). Mais comme la couche env est stricte, sa valeur remplacée
+Si `--port` et `MYAPP-PORT` sont tous deux fournis, la valeur cmdline gagne
+(couche antérieure). Mais comme la couche env est stricte, sa valeur remplacée
 cause une `OverriddenKeyError`.
 
 ### Détection de Fautes de Frappe
@@ -636,32 +639,32 @@ MYAPP-HOOST=localhost ./myapp
 
 ### Le Positionnement Compte
 
-Puisque les couches ultérieures remplacent les précédentes :
+Puisque la première couche à fournir un champ l'emporte :
 
-- **Couche stricte tôt** → erreurs si des couches ultérieures remplacent ses valeurs
-- **Couche stricte tard** → ses valeurs gagnent ; erreurs uniquement pour les champs non correspondants
+- **Couche stricte en tête** → ses valeurs gagnent ; erreurs uniquement pour les champs non correspondants
+- **Couche stricte en queue** → erreurs si des couches antérieures ont déjà fourni ses valeurs
 
 ```go
-// Pattern 1 : Env strict, s'assurer que les vars env ne sont pas remplacées par cmdline
+// Pattern 1 : Cmdline strict en tête (détection de fautes de frappe uniquement)
 dsco.Fill(&config,
-    dsco.WithStrictEnvLayer("MYAPP"),  // Erreurs si cmdline remplace
-    dsco.WithCmdlineLayer(),
-)
-
-// Pattern 2 : Cmdline strict à la fin (détection de fautes de frappe uniquement)
-dsco.Fill(&config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithStrictCmdlineLayer(),  // Erreurs uniquement pour les flags non correspondants
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 
-// Pattern 3 : Valeurs immuables qui DOIVENT être utilisées
+// Pattern 2 : Env strict, s'assurer que les vars env ne sont pas remplacées par cmdline
 dsco.Fill(&config,
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(),
+    dsco.WithStrictEnvLayer("MYAPP"),  // Erreurs si cmdline a déjà fourni le champ
+)
+
+// Pattern 3 : Valeurs immuables verrouillées en tête
+dsco.Fill(&config,
     dsco.WithStrictStructLayer(&Config{
         APIEndpoint: dsco.R("https://api.production.com"),
     }, "immutable"),  // Priorité la plus haute, erreurs si non consommé
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithCmdlineLayer(),
 )
 ```
 
@@ -674,8 +677,8 @@ dsco.Fill(&config,
 - S'assurer que les valeurs de configuration immuables sont utilisées
 
 **Utilisez normal pour** :
-- Les valeurs par défaut (peuvent être remplacées ou pas toutes nécessaires)
-- Les couches de priorité basse où les surcharges sont attendues
+- Les valeurs par défaut (peuvent être sautées si une couche antérieure fournit le champ)
+- Les couches de priorité basse où être supplanté par des couches antérieures est attendu
 
 ---
 
@@ -692,8 +695,6 @@ type Config struct {
 
 _, err := dsco.Fill(
     &config,
-    dsco.WithStructLayer(defaults, "defaults"),
-    dsco.WithEnvLayer("MYAPP"),
     dsco.WithCmdlineLayer(
         dsco.WithAliases(map[string]string{
             // Format : "alias": "chemin.interne"
@@ -703,6 +704,8 @@ _, err := dsco.Fill(
             "v":       "logging.verbose", // --v → logging-verbose
         }),
     ),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithStructLayer(defaults, "defaults"),
 )
 ```
 
@@ -787,9 +790,9 @@ if err != nil {
 
 _, err = dsco.Fill(
     &config,
-    dsco.WithStringValueProvider(fileProvider),  // Config fichier
-    dsco.WithEnvLayer("MYAPP"),                  // Surcharges env
-    dsco.WithCmdlineLayer(),                     // Surcharges CLI
+    dsco.WithCmdlineLayer(),                     // CLI (priorité la plus haute)
+    dsco.WithEnvLayer("MYAPP"),                  // Env
+    dsco.WithStringValueProvider(fileProvider),  // Config fichier (priorité la plus basse)
 )
 ```
 
@@ -981,13 +984,7 @@ func main() {
 
     locations, err := dsco.Fill(
         &config,
-        // 1. Valeurs par défaut (priorité la plus basse)
-        dsco.WithStructLayer(DefaultConfig(), "defaults"),
-
-        // 2. Variables d'environnement
-        dsco.WithStrictEnvLayer("APP"),
-
-        // 3. Ligne de commande (priorité la plus haute)
+        // 1. Ligne de commande (priorité la plus haute)
         dsco.WithCmdlineLayer(
             dsco.WithAliases(map[string]string{
                 "db-host":     "database.host",
@@ -999,6 +996,12 @@ func main() {
                 "v":           "logging.verbose",
             }),
         ),
+
+        // 2. Variables d'environnement
+        dsco.WithStrictEnvLayer("APP"),
+
+        // 3. Valeurs par défaut (priorité la plus basse)
+        dsco.WithStructLayer(DefaultConfig(), "defaults"),
     )
     if err != nil {
         log.Fatalf("Erreur de configuration : %v", err)
@@ -1051,7 +1054,7 @@ APP-DATABASE-PASSWORD=secret123 \
 |---------|-----------|
 | Champs pointeurs | `nil` = non configuré, valeur = explicitement défini |
 | Helper `R()` | Crée des pointeurs facilement : `dsco.R(8080)` |
-| Priorité des couches | Les couches ultérieures remplacent les précédentes |
+| Priorité des couches | La première couche à fournir un champ l'emporte |
 | Couches struct | Valeurs par défaut codées en dur |
 | Variables env | Format : `PREFIX-KEY=value` |
 | Ligne de commande | Format : `--key=value` |
@@ -1059,13 +1062,30 @@ APP-DATABASE-PASSWORD=secret123 \
 | Alias | Noms courts pour les chemins imbriqués |
 | Fournisseurs personnalisés | Implémenter `NamedStringValuesProvider` |
 
-**Bonne Pratique** : Toujours ordonner les couches de la priorité la plus
-basse à la plus haute :
+**Bonne Pratique** : Toujours ordonner les couches de la priorité la plus haute
+à la plus basse ; la première couche à fournir un champ l'emporte :
 ```go
 dsco.Fill(&config,
-    dsco.WithStructLayer(...),      // 1. Valeurs par défaut
-    dsco.WithStringValueProvider(), // 2. Fichiers/Secrets
-    dsco.WithEnvLayer(...),         // 3. Environnement
-    dsco.WithCmdlineLayer(),        // 4. Ligne de commande
+    dsco.WithCmdlineLayer(),        // 1. Ligne de commande (priorité la plus haute)
+    dsco.WithEnvLayer(...),         // 2. Environnement
+    dsco.WithStringValueProvider(), // 3. Fichiers/Secrets
+    dsco.WithStructLayer(...),      // 4. Valeurs par défaut (priorité la plus basse)
 )
 ```
+
+---
+
+## Quelles clés dois-je fournir ?
+
+`inventory.Compute` liste toutes les clés que votre configuration en couches
+attend, sans rien lire dans l'environnement, les arguments ou les fichiers :
+
+```go
+report, _ := inventory.Compute(&config, layers...)
+report.WriteText(os.Stdout)
+```
+
+Voir la [section Inventaire du README](README_fr.md#inventaire) pour la
+description complète et les trois exemples exécutables (sortie texte, JSON
+pour l'outillage, et une vérification préalable qui fait échouer la CI
+lorsque des clés requises manquent).

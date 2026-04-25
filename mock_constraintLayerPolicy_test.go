@@ -78,7 +78,54 @@ func (_c *mockConstraintLayerPolicy_GetFieldValuesFrom_Call) RunAndReturn(run fu
 	return _c
 }
 
-// isStrict provides a mock function with given fields:
+// getFieldValuesGetter provides a mock function with no fields
+func (_m *mockConstraintLayerPolicy) getFieldValuesGetter() FieldValuesGetter {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for getFieldValuesGetter")
+	}
+
+	var r0 FieldValuesGetter
+	if rf, ok := ret.Get(0).(func() FieldValuesGetter); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(FieldValuesGetter)
+		}
+	}
+
+	return r0
+}
+
+// mockConstraintLayerPolicy_getFieldValuesGetter_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'getFieldValuesGetter'
+type mockConstraintLayerPolicy_getFieldValuesGetter_Call struct {
+	*mock.Call
+}
+
+// getFieldValuesGetter is a helper method to define mock.On call
+func (_e *mockConstraintLayerPolicy_Expecter) getFieldValuesGetter() *mockConstraintLayerPolicy_getFieldValuesGetter_Call {
+	return &mockConstraintLayerPolicy_getFieldValuesGetter_Call{Call: _e.mock.On("getFieldValuesGetter")}
+}
+
+func (_c *mockConstraintLayerPolicy_getFieldValuesGetter_Call) Run(run func()) *mockConstraintLayerPolicy_getFieldValuesGetter_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *mockConstraintLayerPolicy_getFieldValuesGetter_Call) Return(_a0 FieldValuesGetter) *mockConstraintLayerPolicy_getFieldValuesGetter_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *mockConstraintLayerPolicy_getFieldValuesGetter_Call) RunAndReturn(run func() FieldValuesGetter) *mockConstraintLayerPolicy_getFieldValuesGetter_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// isStrict provides a mock function with no fields
 func (_m *mockConstraintLayerPolicy) isStrict() bool {
 	ret := _m.Called()
 

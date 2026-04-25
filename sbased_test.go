@@ -1256,12 +1256,12 @@ c:
 			t.Parallel()
 
 			type SomeBadStruct struct {
-				A int      `yaml:"a"`
 				B *float64 `yaml:"b"`
 				C *struct {
 					X *int     `yaml:"x"`
 					Y *float64 `yaml:"y"`
 				} `yaml:"c"`
+				A int `yaml:"a"`
 			}
 
 			var p *SomeBadStruct
@@ -1293,3 +1293,125 @@ c:
 		},
 	)
 }
+
+// TestReportInventoryReturnsErrNilKeyFormatter verifies that
+// ReportInventory returns ErrNilKeyFormatter when the builder was
+// constructed without a KeyFormatter (i.e. via NewStringBasedBuilder
+// rather than the layer wrappers in builders.go).
+func TestReportInventoryReturnsErrNilKeyFormatter(t *testing.T) {
+	t.Parallel()
+
+	p := NewMockStringValuesProvider(t)
+	p.EXPECT().GetStringValues().Return(svalue.Values{})
+
+	sb, err := NewStringBasedBuilder(p)
+	require.NoError(t, err)
+
+	mdl := NewMockModelInterface(t)
+
+	_, invErr := sb.ReportInventory(mdl)
+	require.Error(t, invErr)
+	require.ErrorIs(t, invErr, ErrNilKeyFormatter)
+}
+
+// TestReportInventoryCustomProviderClearsKeys verifies that when the
+// builder has an empty LayerKind (custom provider / nil formatter), the
+// returned inventory sets Note to the custom-provider message and
+// clears all Key strings.
+func TestReportInventoryCustomProviderClearsKeys(t *testing.T) {
+	t.Parallel()
+
+	type cfg struct {
+		Host *string `yaml:"host"`
+	}
+
+	mdl, err := BuildModel(&cfg{})
+	require.NoError(t, err)
+
+	p := NewMockStringValuesProvider(t)
+	p.EXPECT().GetStringValues().Return(svalue.Values{})
+
+	// kind="" produces a nilKeyFormatter — LayerKind() returns "".
+	sb, buildErr := NewStringBasedBuilderForTest(p, "", "my-provider")
+	require.NoError(t, buildErr)
+
+	inv, invErr := sb.ReportInventory(mdl)
+	require.NoError(t, invErr)
+
+	assert.Equal(
+		t,
+		"custom provider — keys not enumerable",
+		inv.Note,
+	)
+
+	for _, fp := range inv.Provides {
+		assert.Empty(
+			t,
+			fp.Key,
+			"key must be cleared for custom providers",
+		)
+	}
+}
+
+// TestCollectAliasesReturnsErrorWhenApplyOnFails verifies that
+// collectAliases propagates errors returned by ModelInterface.ApplyOn.
+func TestCollectAliasesReturnsErrorWhenApplyOnFails(t *testing.T) {
+	t.Parallel()
+
+	mdl := NewMockModelInterface(t)
+	mdl.EXPECT().
+		ApplyOn(mock.AnythingOfType("*dsco.aliasRecorder")).
+		Return(nil, assert.AnError)
+
+	_, err := collectAliases(mdl)
+	require.Error(t, err)
+	require.ErrorIs(t, err, assert.AnError)
+}
+
+// TestReportInventoryPropagatesCollectAliasesError verifies that
+// ReportInventory propagates errors returned by collectAliases (i.e. when
+// ModelInterface.ApplyOn fails).
+func TestReportInventoryPropagatesCollectAliasesError(t *testing.T) {
+	t.Parallel()
+
+	p := NewMockStringValuesProvider(t)
+	p.EXPECT().GetStringValues().Return(svalue.Values{})
+
+	sb, err := NewStringBasedBuilderForTest(p, "env", "MYAPP")
+	require.NoError(t, err)
+
+	mdl := NewMockModelInterface(t)
+	mdl.EXPECT().
+		ApplyOn(mock.AnythingOfType("*dsco.aliasRecorder")).
+		Return(nil, assert.AnError)
+
+	_, invErr := sb.ReportInventory(mdl)
+	require.Error(t, invErr)
+	require.ErrorIs(t, invErr, assert.AnError)
+}
+
+// TestNewStringBasedBuilderForTestRejectsUnknownKind verifies that an
+// unrecognised kind argument causes an error.
+func TestNewStringBasedBuilderForTestRejectsUnknownKind(t *testing.T) {
+	t.Parallel()
+
+	p := NewMockStringValuesProvider(t)
+
+	_, err := NewStringBasedBuilderForTest(p, "bogus", "")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrUnknownKeyFormatterKind)
+}
+
+// TestNewStringBasedBuilderForTestCmdlineKind verifies that kind "cmdline"
+// produces a builder with a cmdline-style KeyFormatter.
+func TestNewStringBasedBuilderForTestCmdlineKind(t *testing.T) {
+	t.Parallel()
+
+	p := NewMockStringValuesProvider(t)
+	p.EXPECT().GetStringValues().Return(svalue.Values{})
+
+	sb, err := NewStringBasedBuilderForTest(p, "cmdline", "")
+	require.NoError(t, err)
+	require.NotNil(t, sb)
+}
+
