@@ -721,10 +721,10 @@ Full API docs: [pkg.go.dev/github.com/byte4ever/dsco](https://pkg.go.dev/github.
 
 ## Inventory
 
-Need to know exactly which keys to wire up before deploying?
-`inventory.Compute` walks your config struct and layers without performing
-any I/O and returns the canonical key each layer would accept for every
-required field.
+Want to know which keys an operator must set before the service will start?
+`inventory.Compute` walks your config struct and the layers you plan to
+register, then reports the canonical key each layer would accept for every
+leaf field. It reads nothing: no env vars, no flags, no files.
 
 ```go
 import (
@@ -734,6 +734,7 @@ import (
     "github.com/byte4ever/dsco/inventory"
 )
 
+var config *Config
 report, err := inventory.Compute(&config,
     dsco.WithStructLayer(defaults, "defaults"),
     dsco.WithEnvLayer("MYAPP"),
@@ -756,10 +757,17 @@ Database.Port         *int             cmdline: --database-port=        defaults
 Server.Timeout        *time.Duration   —                                defaults=30s
 ```
 
-No environment variables, command-line arguments, or files are read — this is
-a purely static analysis of the layered configuration.
+A `—` in the DEFAULT column means no layer bakes in a value, so the operator
+must supply that key. Anything with `defaults=...` is already covered.
 
-See [examples/inventory](examples/inventory/) for a runnable example.
+Three runnable examples ship in the repo:
+
+- [examples/inventory](examples/inventory/) — text dump for human eyeballing.
+- [examples/inventory/json](examples/inventory/json/) — JSON output, the format
+  you'd pipe into `jq` or your CI.
+- [examples/inventory/preflight](examples/inventory/preflight/) — preflight
+  check that exits non-zero if any key has no default, so an orchestrator
+  can fail the deploy before the service even tries to start.
 
 ---
 
@@ -768,7 +776,9 @@ See [examples/inventory](examples/inventory/) for a runnable example.
 - **[Quick Start Guide](QUICKSTART.md)** - Step-by-step tutorial
 - **[examples/deadsimple](examples/deadsimple/)** - Basic multi-layer config
 - **[examples/simplemain](examples/simplemain/)** - Command-line application
-- **[examples/inventory](examples/inventory/)** - Inventory sub-package demo
+- **[examples/inventory](examples/inventory/)** - Inventory text dump
+- **[examples/inventory/json](examples/inventory/json/)** - Inventory as JSON
+- **[examples/inventory/preflight](examples/inventory/preflight/)** - Preflight check that fails the deploy when required keys are missing
 
 ---
 

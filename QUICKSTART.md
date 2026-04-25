@@ -1051,14 +1051,16 @@ dsco.Fill(&config,
 
 ---
 
-## What Keys Do I Need to Provide?
+## What keys do I need to provide?
 
-Use `inventory.Compute` to get a static list of every key your layered config
-expects:
+`inventory.Compute` lists every key your layered config expects, without
+reading anything from env, flags, or files:
 
 ```go
 report, _ := inventory.Compute(&config, layers...)
 report.WriteText(os.Stdout)
 ```
 
-See the [Inventory section in the README](README.md#inventory) for details.
+See the [Inventory section in the README](README.md#inventory) for the full
+walkthrough and the three runnable examples (text dump, JSON for tooling, and
+a preflight check that fails CI when required keys are missing).

@@ -1069,3 +1069,20 @@ dsco.Fill(&config,
     dsco.WithCmdlineLayer(),        // 4. Ligne de commande
 )
 ```
+
+---
+
+## Quelles clés dois-je fournir ?
+
+`inventory.Compute` liste toutes les clés que votre configuration en couches
+attend, sans rien lire dans l'environnement, les arguments ou les fichiers :
+
+```go
+report, _ := inventory.Compute(&config, layers...)
+report.WriteText(os.Stdout)
+```
+
+Voir la [section Inventaire du README](README_fr.md#inventaire) pour la
+description complète et les trois exemples exécutables (sortie texte, JSON
+pour l'outillage, et une vérification préalable qui fait échouer la CI
+lorsque des clés requises manquent).

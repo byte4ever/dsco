@@ -128,6 +128,7 @@ tous les concepts étape par étape.
 - [Gestion des erreurs](#gestion-des-erreurs)
 - [Utilisation avancée](#utilisation-avancée)
 - [Référence API](#référence-api)
+- [Inventaire](#inventaire)
 - [Exemples](#exemples)
 - [Contribuer](#contribuer)
 
@@ -725,11 +726,69 @@ Documentation API complète : [pkg.go.dev/github.com/byte4ever/dsco](https://pkg
 
 ---
 
+## Inventaire
+
+Vous voulez savoir quelles clés un opérateur doit définir avant que le service
+démarre ? `inventory.Compute` parcourt votre struct de configuration et les
+couches que vous comptez enregistrer, puis affiche la clé canonique que chaque
+couche accepterait pour chaque champ feuille. Aucune lecture : ni variables
+d'environnement, ni arguments, ni fichiers.
+
+```go
+import (
+    "os"
+
+    "github.com/byte4ever/dsco"
+    "github.com/byte4ever/dsco/inventory"
+)
+
+var config *Config
+report, err := inventory.Compute(&config,
+    dsco.WithStructLayer(defaults, "defaults"),
+    dsco.WithEnvLayer("MYAPP"),
+    dsco.WithCmdlineLayer(),
+)
+if err != nil {
+    log.Fatal(err)
+}
+report.WriteText(os.Stdout) // ou WriteJSON / WriteYAML
+```
+
+Exemple de sortie texte :
+
+```
+TYPE: github.com/example/myapp.Config
+
+PATH                  TYPE             KEY                              DEFAULT
+Database.Host         *string          env: MYAPP-DATABASE-HOST         —
+Database.Port         *int             cmdline: --database-port=        defaults=5432
+Server.Timeout        *time.Duration   —                                defaults=30s
+```
+
+Un `—` dans la colonne DEFAULT indique qu'aucune couche ne fournit de valeur
+intégrée : c'est à l'opérateur de définir cette clé. Tout ce qui porte un
+`defaults=...` est déjà couvert.
+
+Trois exemples exécutables sont fournis dans le dépôt :
+
+- [examples/inventory](examples/inventory/) — sortie texte, lisible à l'œil nu.
+- [examples/inventory/json](examples/inventory/json/) — sortie JSON, le format
+  à injecter dans `jq` ou votre CI.
+- [examples/inventory/preflight](examples/inventory/preflight/) — vérification
+  préalable qui sort en code non-nul si une clé n'a pas de valeur par défaut,
+  pour qu'un orchestrateur fasse échouer le déploiement avant même que le
+  service tente de démarrer.
+
+---
+
 ## Exemples
 
 - **[Guide de démarrage rapide](QUICKSTART_fr.md)** - Tutoriel étape par étape
 - **[examples/deadsimple](examples/deadsimple/)** - Configuration multi-couches basique
 - **[examples/simplemain](examples/simplemain/)** - Application ligne de commande
+- **[examples/inventory](examples/inventory/)** - Inventaire en texte
+- **[examples/inventory/json](examples/inventory/json/)** - Inventaire en JSON
+- **[examples/inventory/preflight](examples/inventory/preflight/)** - Vérification préalable qui fait échouer le déploiement quand des clés requises manquent
 
 ---
 
