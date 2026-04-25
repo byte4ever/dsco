@@ -20,7 +20,7 @@ start?"
 - Enumerate every leaf field of a config struct alongside the canonical key
   each layer would accept.
 - Honour layer precedence: when multiple string-based layers can supply the
-  same field, surface the highest-precedence one.
+  same field, surface the key from the first layer in the declaration order.
 - Mark fields already satisfied by a struct (defaults) layer.
 - Output as JSON, YAML, or human-readable text.
 - Perform no I/O — never read environment variables, command-line arguments,
@@ -85,8 +85,8 @@ type Satisfaction struct {
     Value   any    `json:"value"    yaml:"value"`
 }
 
-// KeySpec is the canonical (highest-precedence) key form a string-based
-// layer would accept to supply this field.
+// KeySpec is the canonical key form the first string-based layer (in
+// declaration order) that can supply this field would accept.
 type KeySpec struct {
     Layer string `json:"layer" yaml:"layer"`
     Key   string `json:"key"   yaml:"key"`
@@ -211,8 +211,10 @@ full identifier lives in `LayerInventory.Name` for attribution.
   unconsumed-value errors at `Fill` time. The keys a strict layer accepts
   match a non-strict one. Not surfaced in the report.
 - **Precedence.** When multiple string-based layers can supply the same field,
-  the highest-precedence wins (the last layer in `Compute(...)` arg list that
-  can supply it). Same model dsco already uses for value resolution.
+  the first one wins (the first layer in `Compute(...)` arg list that can
+  supply it). This matches dsco.Fill's first-layer-wins semantics: a non-nil
+  value from an earlier layer is kept and later layers are skipped for that
+  field.
 
 ## Errors
 

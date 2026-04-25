@@ -104,8 +104,8 @@ type Satisfaction struct {
 	Value   any    `json:"value"    yaml:"value"`
 }
 
-// KeySpec is the canonical (highest-precedence) key form a string-based
-// layer would accept to supply this field.
+// KeySpec is the canonical key form the first string-based layer (in
+// declaration order) that can supply this field would accept.
 type KeySpec struct {
 	Layer string `json:"layer" yaml:"layer"`
 	Key   string `json:"key"   yaml:"key"`
@@ -1268,10 +1268,10 @@ import (
 	"github.com/byte4ever/dsco/inventory"
 )
 
-// TestComputeCanonicalKeyHighestPrecedenceWins verifies that when env
-// and cmdline both can supply the same field, the cmdline key (last in
-// the layer list) wins.
-func TestComputeCanonicalKeyHighestPrecedenceWins(t *testing.T) {
+// TestComputeCanonicalKeyFirstLayerWins verifies that when env and
+// cmdline both can supply the same field, the env key (first in the
+// layer list) wins — matching dsco.Fill's first-layer-wins semantics.
+func TestComputeCanonicalKeyFirstLayerWins(t *testing.T) {
 	t.Parallel()
 
 	type cfg struct {
@@ -1288,8 +1288,8 @@ func TestComputeCanonicalKeyHighestPrecedenceWins(t *testing.T) {
 	require.Len(t, report.Fields, 1)
 
 	require.NotNil(t, report.Fields[0].Key)
-	assert.Equal(t, "cmdline", report.Fields[0].Key.Layer)
-	assert.Equal(t, "--host=", report.Fields[0].Key.Key)
+	assert.Equal(t, "env", report.Fields[0].Key.Layer)
+	assert.Equal(t, "MYAPP-HOST", report.Fields[0].Key.Key)
 }
 
 // TestComputeSatisfiedByDefaults verifies that struct-layer values appear
@@ -1398,9 +1398,9 @@ func Compute(cfg any, layers ...dsco.Layer) (*Report, error) {
 }
 
 // reduce collapses per-layer reports into one Field per leaf, applying
-// precedence rules: the last string-based layer that can supply a field
-// wins for Key; any struct layer that bakes in a value populates
-// Satisfied.
+// first-layer-wins precedence: the first string-based layer that can
+// supply a field wins for Key; the first struct layer that bakes in a
+// value populates Satisfied. This matches dsco.Fill semantics.
 func reduce(m dsco.ModelInterface, perLayer []dsco.LayerInventory) *Report {
 	type leaf struct {
 		uid    string
@@ -1417,25 +1417,28 @@ func reduce(m dsco.ModelInterface, perLayer []dsco.LayerInventory) *Report {
 	for _, lf := range leaves {
 		f := Field{Path: lf.path, GoType: lf.goType}
 
-		// Walk layers in declaration order; later ones override earlier
-		// for Key (per dsco precedence).
+		// Walk layers in declaration order; the first layer to supply a
+		// Key or Satisfied value wins (first-layer-wins, per Fill semantics).
 		for _, inv := range perLayer {
 			for _, p := range inv.Provides {
 				if p.FieldUID != lf.uid {
 					continue
 				}
-				if p.Value != nil {
+				if f.Satisfied == nil && p.Value != nil {
 					f.Satisfied = &Satisfaction{
 						LayerID: trimStructPrefix(inv.Name),
 						Value:   p.Value,
 					}
 				}
-				if p.Key != "" {
+				if f.Key == nil && p.Key != "" {
 					f.Key = &KeySpec{
 						Layer: layerKindFromName(inv.Name),
 						Key:   p.Key,
 					}
 				}
+			}
+			if f.Key != nil && f.Satisfied != nil {
+				break
 			}
 		}
 
