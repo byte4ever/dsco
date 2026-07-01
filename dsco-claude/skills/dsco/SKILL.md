@@ -7,8 +7,10 @@ description: >-
   and inventory-based deployment discovery. Use whenever dsco code is produced
   or designed, when migrating viper / envconfig / koanf to dsco, or when the
   user mentions dsco.Fill / WithEnvLayer / WithCmdlineLayer / WithStructLayer /
-  WithStringValueProvider / dsco.R / inventory.Compute. To REVIEW existing dsco
-  code, use the review-dsco skill instead.
+  WithStringValueProvider / dsco.R / inventory.Compute. After producing code it
+  self-reviews through review-dsco with a bounded correction loop (up to 3
+  cycles, then escalates). To REVIEW existing dsco code directly, use the
+  review-dsco skill.
 x-dsco-target: v1.4.0-rc.1
 x-bundle-version: 1.4.0-rc.1
 ---
@@ -16,14 +18,54 @@ x-bundle-version: 1.4.0-rc.1
 # dsco
 
 Guide for writing configuration in the spirit of dsco: explicit, layered,
-pointer-based. This skill covers WRITING and DESIGNING dsco code. To judge
-existing dsco code, hand it to the **review-dsco** skill, which reviews
-adversarially in an isolated context.
+pointer-based. This skill covers WRITING and DESIGNING dsco code, and it does
+not present that code until it has passed its own review: every artifact it
+produces goes through the **review-dsco** orchestrator in a bounded
+correction → re-validation loop (see *Self-review loop*).
 
 **Hard guardrail.** Never invent dsco APIs. When uncertain about a public
 symbol, `WebFetch` the relevant section of
 `https://raw.githubusercontent.com/byte4ever/dsco/master/QUICKSTART.md`,
 `README.md`, or `doc.go` before writing code that uses it.
+
+## Self-review loop (mandatory)
+
+You do not hand the user unreviewed dsco code. Every time you PRODUCE dsco code
+— a config struct, a `Fill` call-site, a `*Layers` function, or an inventory
+driver — run it through the **review-dsco** orchestrator and converge before
+presenting it.
+
+The loop, per authored artifact:
+
+1. **Review.** Submit the CURRENT code to `review-dsco` (it fans out the aspect
+   reviewers as isolated sub-agents). Each review is fresh and anonymous: never
+   tell the reviewers the code is yours, and never pass the history of prior
+   rounds. Read the GLOBAL verdict.
+2. **Branch on the verdict:**
+   - **REJECT** (≥1 BLOCKING): fix every BLOCKING finding exactly as its
+     remediation states (clear IMPORTANT too when cheap), then go back to step 1.
+     This correction → re-validation cycle repeats up to **3 times**.
+   - **CONDITIONAL APPROVE** (only IMPORTANT/NOTED): converged. Present the code
+     WITH the accepted-risks list so the user can decide; optionally clear cheap
+     IMPORTANT first.
+   - **APPROVE**: converged. Present the code.
+3. **Escalate after 3 cycles.** If the verdict is STILL REJECT after the 3rd
+   correction → re-validation cycle, STOP looping. Tell the user, in plain terms:
+   - the code as it currently stands;
+   - the BLOCKING finding(s) that won't clear;
+   - what you changed in each of the 3 iterations and why it did not converge
+     (e.g. fixing lane A re-broke lane B, or the requirement is self-contradictory);
+   - and ask them to arbitrate: accept a trade-off, relax a requirement, or take
+     over.
+
+Convergence discipline:
+- Each iteration must actually resolve the previous round's BLOCKING items. A fix
+  that introduces a NEW blocking item is non-convergence — say so.
+- Never loosen the artifact just to make the reviewer pass (dropping a required
+  field, widening a type, deleting a `Validate` check). Fix the real defect; a
+  green verdict bought by weakening the config is a failure, not a pass.
+- The cap is a hard 3 cycles. "At least 3" means do not give up before trying
+  three times; "no more than 3" means escalate rather than grind past it.
 
 ## Version targeting
 

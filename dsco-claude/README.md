@@ -15,7 +15,10 @@ dsco `vX.Y.Z`).
 
 - **`dsco`** — the authoring skill. Distils the library's best practices and
   pitfalls into rules and playbooks for writing/designing dsco config. Modeled
-  on the `go` skill.
+  on the `go` skill. It does not present code until it passes review: every
+  artifact it produces runs through `review-dsco` in a bounded
+  correction → re-validation loop (up to 3 cycles on a REJECT, then it escalates
+  the unresolved BLOCKING findings to the user to arbitrate).
 - **`review-dsco`** — the review **orchestrator** for what `dsco` (or anyone)
   writes. It anonymises the artifact, selects the applicable per-aspect
   reviewers by signal, fans them out concurrently as isolated sub-agents, and

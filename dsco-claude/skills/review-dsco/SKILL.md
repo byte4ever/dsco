@@ -33,6 +33,10 @@ verbatim and attributed.
 The artifact is anonymous. Strip author, commit history, and any
 investment/deadline markers BEFORE fan-out. You do not receive (and do not pass
 on) the author's identity, the discussion history, or the production context.
+Re-reviews of corrected code are INDEPENDENT: each invocation sees only the
+current artifact, never the prior rounds or their verdicts (the dsco skill's
+self-review loop relies on this — a review must not soften because "it was
+almost passing last round").
 
 You are not evaluating effort, intent, or investment.
 

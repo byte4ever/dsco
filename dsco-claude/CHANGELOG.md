@@ -34,3 +34,8 @@ on its own.
   and a copy fallback for filesystems without symlinks.
 - "Keeping in sync with dsco" convention: each new library feature ships a
   matching update to both skills in the same change.
+- Self-review loop in the `dsco` skill: every artifact it produces is run
+  through `review-dsco` and iterated in a correction → re-validation loop while
+  the global verdict is REJECT, capped at 3 cycles; if BLOCKING findings still
+  stand after the 3rd, it stops and escalates them to the user to arbitrate.
+  Re-reviews are independent/anonymous, so convergence is judged fresh each round.
