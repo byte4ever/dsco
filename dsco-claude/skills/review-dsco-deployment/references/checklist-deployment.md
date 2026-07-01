@@ -6,9 +6,9 @@ score it in Phase 3 against a demonstrated failure mode.
 ## Version targeting
 - [ ] The dsco version in `go.mod` provides every API used here.
 - [ ] Any version-gated API (esp. `inventory.Compute`, `*Report`, the `Write*`
-      methods, min v1.4.0-rc.1) is available at the pinned version.
+      methods, min v1.4.0) is available at the pinned version.
 - [ ] If it is not, that is a finding: the code won't compile / advice is ahead
-      of the pin — offer `go get github.com/byte4ever/dsco@v1.4.0-rc.1`.
+      of the pin — offer `go get github.com/byte4ever/dsco@v1.4.0`.
 
 ## Inventory
 - [ ] `inventory.Compute(&cfg, ...)` (the `**T` rule).
@@ -29,7 +29,7 @@ score it in Phase 3 against a demonstrated failure mode.
       so inventory walks into it, not re-declared field-for-field locally.
 
 ## What failure looks like
-- `import ".../inventory"` against dsco < v1.4.0-rc.1 → build break for everyone
+- `import ".../inventory"` against dsco < v1.4.0 → build break for everyone
   on the pinned version.
 - Unexported `layers()` → the inventory binary re-declares the layer list; the
   generated key list drifts from what the service actually reads.

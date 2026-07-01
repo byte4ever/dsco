@@ -7,8 +7,8 @@ description: >-
   defaults sourced via WithStructLayer (attributable), and error handling
   (Fill's error checked, typed errors inspected). Usually run by the review-dsco
   orchestrator. Default verdict: REJECT.
-x-dsco-target: v1.4.0-rc.1
-x-bundle-version: 1.4.0-rc.1
+x-dsco-target: v1.4.0
+x-bundle-version: 1.4.0
 ---
 
 # review-dsco-validation

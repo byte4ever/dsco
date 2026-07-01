@@ -59,12 +59,12 @@ demonstrated failure mode.
   them into a struct layer so their source is attributable via `Fill`'s
   location map.
 
-## Inventory (dsco ≥ v1.4.0-rc.1)
+## Inventory (dsco ≥ v1.4.0)
 
 - **`inventory.Compute(cfg, ...)`** → `inventory.Compute(&cfg, ...)`. Same
   `**T` rule as `Fill`.
 - **Hand-maintained list of required env vars** in a README, k8s manifest, or
   `.env.example` → replace with an inventory driver. The generated list can't
   drift from the code.
-- **Using inventory against dsco < v1.4.0-rc.1** → the package does not exist
+- **Using inventory against dsco < v1.4.0** → the package does not exist
   there. Check `go.mod` and offer the upgrade before writing the driver.

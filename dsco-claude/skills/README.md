@@ -27,8 +27,8 @@ Any skill added here must follow the bundle's version-targeting convention:
 
 1. Declare the dsco version it targets in its `SKILL.md` frontmatter:
    ```yaml
-   x-dsco-target: v1.4.0-rc.1
-   x-bundle-version: 1.4.0-rc.1
+   x-dsco-target: v1.4.0
+   x-bundle-version: 1.4.0
    ```
 2. Gate version-specific advice: before using an API, check the user's pinned
    dsco version (`go.mod`) and offer the upgrade if the feature needs a newer

@@ -9,7 +9,7 @@
     irm https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.ps1 | iex
 
   To pin a version or pass options, run it as a scriptblock:
-    & ([scriptblock]::Create((irm <url>/bootstrap.ps1))) -Ref v1.4.0-rc.1 -Copy
+    & ([scriptblock]::Create((irm <url>/bootstrap.ps1))) -Ref v1.4.0 -Copy
 
   Uses tar.exe and curl/Invoke-WebRequest, which ship with Windows 10+.
 

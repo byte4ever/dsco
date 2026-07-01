@@ -17,7 +17,7 @@ first, then let the impact decide.
   shell history, and process listings; a real credential leak.
 - **`dsco.Fill(config, ...)`** (single pointer) → `InvalidInputError` at
   startup; the service never boots.
-- **Inventory driver against dsco < v1.4.0-rc.1.** `import ".../inventory"` does
+- **Inventory driver against dsco < v1.4.0.** `import ".../inventory"` does
   not compile; the build is broken for anyone on the pinned version.
 - **Shared package-level struct across named variants.** `DevLayers` and
   `ProductionLayers` both return the same `&defaults`; pointer-dedup drops one,

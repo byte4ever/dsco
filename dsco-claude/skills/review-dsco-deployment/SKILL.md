@@ -5,10 +5,10 @@ description: >-
   (inventory.Compute(&cfg), text/JSON/preflight flavours, hand-maintained key
   lists that should be generated), *Layers exported for cross-package reuse,
   version targeting (the go.mod pin actually provides the APIs used, esp.
-  inventory ≥ v1.4.0-rc.1), and third-party dsco-config embedding vs local
+  inventory ≥ v1.4.0), and third-party dsco-config embedding vs local
   redefinition. Usually run by the review-dsco orchestrator. Default: REJECT.
-x-dsco-target: v1.4.0-rc.1
-x-bundle-version: 1.4.0-rc.1
+x-dsco-target: v1.4.0
+x-bundle-version: 1.4.0
 ---
 
 # review-dsco-deployment
@@ -39,7 +39,7 @@ orchestrator includes this lane.
 ### Phase 1 — Enumeration (no scoring)
 
 1. **Version targeting** — the dsco version in `go.mod` provides every API used
-   here (esp. `inventory`, min v1.4.0-rc.1). If it does not, that is a finding:
+   here (esp. `inventory`, min v1.4.0). If it does not, that is a finding:
    the code won't compile / advice is ahead of the pin.
 2. **Inventory target** — `inventory.Compute(&cfg, ...)` (the `**T` rule).
 3. **Inventory flavour** — output flavour matches the use: text (human), JSON
@@ -67,7 +67,7 @@ hand-maintained list (or a re-declared layer set) and the code.
 
 ### Phase 3 — Scoring
 
-- **BLOCKING** — an inventory driver against dsco < v1.4.0-rc.1 (does not
+- **BLOCKING** — an inventory driver against dsco < v1.4.0 (does not
   compile); `inventory.Compute(cfg)` single pointer.
 - **IMPORTANT** — `*Layers` unexported while an inventory binary/test needs it
   (drift risk); a dependency config re-declared locally so inventory misses its
@@ -95,7 +95,7 @@ End with: `FINAL VERDICT: <REJECT|CONDITIONAL APPROVE|APPROVE>`.
 
 - "Deployment story looks fine" without checking the `go.mod` pin against the
   APIs used.
-- Assuming `inventory` exists without confirming dsco ≥ v1.4.0-rc.1.
+- Assuming `inventory` exists without confirming dsco ≥ v1.4.0.
 - "Best practice is an inventory driver" without naming the drift failure.
 - Praise of the artifact or the author.
 - Conditional suggestions instead of explicit issue/remediation pairs.
