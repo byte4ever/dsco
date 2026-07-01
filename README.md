@@ -1,20 +1,18 @@
 # dsco
 
-**Stop deploying microservices with broken configuration.**
-
-dsco is a Go configuration library that makes misconfiguration impossible.
-No more silent defaults. No more "it works on my machine." No more 3 AM pages
-because someone forgot to set `DATABASE_PASSWORD` in production.
+dsco is a Go configuration library. Config fields are pointers, so a nil
+field means "not set" and stays distinct from a zero value. `Fill` reads
+layers in priority order and returns an error when a required field is left
+unset, so the app stops at startup instead of running with missing config.
 
 ```go
-// 30 seconds to bulletproof configuration
 var config *Config
 dsco.Fill(&config,
-    dsco.WithCmdlineLayer(),                     // Quick local overrides
+    dsco.WithCmdlineLayer(),                     // Local overrides
     dsco.WithEnvLayer("MYAPP"),                  // Container/K8s config
-    dsco.WithStructLayer(defaults, "defaults"),  // Dev defaults baked in
+    dsco.WithStructLayer(defaults, "defaults"),  // Defaults baked in
 )
-// Missing config? App won't start. You'll know immediately.
+// A required field left unset fails Fill(), so the app does not start.
 ```
 
 [![Go](https://github.com/byte4ever/dsco/actions/workflows/go.yml/badge.svg)](https://github.com/byte4ever/dsco/actions/workflows/go.yml)
@@ -28,7 +26,7 @@ dsco.Fill(&config,
 
 ## Why dsco?
 
-**Traditional Go configuration is dangerous:**
+Plain Go configuration can't distinguish a missing value from a zero value:
 
 ```go
 type Config struct {
@@ -152,18 +150,18 @@ step-by-step.
 ### Why Pointers?
 
 ```go
-// DANGEROUS: Is Port 0 intentional or missing?
+// Ambiguous: is Port 0 intentional or unset?
 type Config struct {
     Port int
 }
 
-// SAFE: nil clearly means "not configured"
+// Explicit: nil means "not configured"
 type Config struct {
     Port *int `yaml:"port"`
 }
 ```
 
-**The `dsco.R()` helper makes pointer creation painless:**
+The `dsco.R()` helper builds the pointers:
 
 ```go
 config := &Config{
@@ -175,7 +173,8 @@ config := &Config{
 
 ### Fail-Fast Guarantee
 
-dsco ensures **all configuration is complete before your app starts**:
+Fill returns an error if a required field is still nil, so the app stops
+before running with incomplete config:
 
 ```go
 // This FAILS - Password is nil
@@ -233,7 +232,8 @@ if err != nil {
 
 ## You're In Control
 
-dsco gives you **complete control** over what's configurable, when, and by whom.
+You choose which fields are configurable, from which layers, and which are
+locked.
 
 ### The Progressive Exposure Pattern
 
@@ -254,8 +254,8 @@ dsco.Fill(&config,
 )
 ```
 
-Your service runs perfectly. No external configuration needed. No environment
-variables to forget. No config files to deploy.
+The service runs with no external configuration: no environment variables or
+config files to deploy.
 
 **Phase 2: Expose what matters**
 
@@ -275,9 +275,8 @@ dsco.Fill(&config,
 )
 ```
 
-**No recompilation required.** The code didn't change - you just added an env
-layer. Operations can now tune `MYSERVICE-TIMEOUT=60s` without touching the
-binary.
+Adding the env layer needs no recompilation. Operations can set
+`MYSERVICE-TIMEOUT=60s` without touching the binary.
 
 **Phase 3: Protect critical values**
 
@@ -297,8 +296,8 @@ dsco.Fill(&config,
 )
 ```
 
-Even if someone sets `MYSERVICE-API-ENDPOINT`, the strict struct layer wins
-**and** raises an error about the attempted override.
+If someone sets `MYSERVICE-API-ENDPOINT`, the strict struct layer wins and
+raises an error about the attempted override.
 
 ### Why This Matters
 
@@ -344,7 +343,7 @@ dsco.Fill(&config,
 )
 ```
 
-**You decide** what's flexible and what's fixed. dsco enforces your decisions.
+You decide what's flexible and what's fixed; dsco enforces it.
 
 ---
 
@@ -623,8 +622,8 @@ Strict layers error when values are **not consumed**:
 
 ```go
 _, err := dsco.Fill(&config,
-    dsco.WithCmdlineLayer(),            // Earlier layer — its values win
-    dsco.WithStrictEnvLayer("MYAPP"),  // Strict — errors if cmdline already supplied field
+    dsco.WithCmdlineLayer(),            // Earlier layer: its values win
+    dsco.WithStrictEnvLayer("MYAPP"),  // Strict: errors if cmdline already supplied the field
 )
 // --port=9000 + MYAPP-PORT=8080 → Error!
 // Env value was overridden by cmdline.
@@ -759,14 +758,14 @@ Server.Timeout        *time.Duration   —                                defaul
 A `—` in the DEFAULT column means no layer bakes in a value, so the operator
 must supply that key. Anything with `defaults=...` is already covered.
 The KEY column shows the canonical key from the first layer that can supply
-the field — here cmdline, since it is listed first (highest priority).
+the field: here cmdline, since it is listed first (highest priority).
 
 Three runnable examples ship in the repo:
 
-- [examples/inventory](examples/inventory/) — text dump for human eyeballing.
-- [examples/inventory/json](examples/inventory/json/) — JSON output, the format
+- [examples/inventory](examples/inventory/): text dump for human inspection.
+- [examples/inventory/json](examples/inventory/json/): JSON output, the format
   you'd pipe into `jq` or your CI.
-- [examples/inventory/preflight](examples/inventory/preflight/) — preflight
+- [examples/inventory/preflight](examples/inventory/preflight/): preflight
   check that exits non-zero if any key has no default, so an orchestrator
   can fail the deploy before the service even tries to start.
 
@@ -774,247 +773,32 @@ Three runnable examples ship in the repo:
 
 ## Use Claude Code with dsco
 
-If your team uses [Claude Code](https://claude.com/claude-code), drop the
-agent below into `~/.claude/agents/dsco-expert.md` (user-global) or
-`.claude/agents/dsco-expert.md` (project-local). Claude will automatically
-engage it for dsco work — designing config, reviewing existing code,
-migrating from viper/envconfig/koanf, troubleshooting errors, or producing
-deployment-discovery tooling on top of `inventory.Compute`. Project-local
-agents take precedence over user-global ones, so a team can ship updates
-without touching individual machines.
+The `dsco-expert` Claude Code agent lives in the
+[`dsco-claude/`](dsco-claude/) directory of this repository, kept separate
+from the library code and installed on its own. It ships with the repo, so
+its version always matches the dsco tag it was released with.
 
-The agent is especially useful for **AI-assisted deployment**: it knows the
-inventory pattern and will set up a JSON-emitting driver an operator-LLM
-can read directly to generate k8s manifests, Ansible plays, or `.env`
-files.
+The agent designs config structs, reviews existing dsco code, migrates from
+viper/envconfig/koanf, troubleshoots errors, and builds deployment-discovery
+tooling on top of `inventory.Compute`. It reads the dsco version in your
+`go.mod` before giving version-gated advice and offers an upgrade when a
+feature needs a newer release than you have pinned.
 
-### Install
+Install by symlinking the agent so the repo copy stays the single source of
+truth (run from your dsco checkout):
 
 ```bash
 mkdir -p ~/.claude/agents
-# Paste the markdown block below into ~/.claude/agents/dsco-expert.md.
+ln -sf "$(pwd)/dsco-claude/agents/dsco-expert.md" ~/.claude/agents/dsco-expert.md
 ```
 
-### Agent definition
-
-Save the entire block below as `~/.claude/agents/dsco-expert.md`:
-
-````markdown
----
-name: dsco-expert
-description: "Use this agent for any task involving the dsco Go configuration library (github.com/byte4ever/dsco). Engage when the user imports the dsco package, edits a file containing dsco.Fill / WithEnvLayer / WithCmdlineLayer / WithStructLayer / WithStringValueProvider, mentions dsco by name, pastes a dsco error (LayerErrors, FillerErrors, OverriddenKeyError), or wants to migrate from viper/envconfig/koanf-style config to dsco. Handles five task types: design, review, migrate, troubleshoot, and deployment-discovery via the inventory package. Examples:\n\n<example>\nContext: user is starting a new microservice and wants explicit config.\nuser: \"I'm building an order API that needs Postgres, Redis, and SMTP. Help me set up dsco.\"\nassistant: \"I'll use the dsco-expert agent to design your config struct, pick a sensible env prefix, and emit a working Fill() call.\"\n</example>\n\n<example>\nContext: user pasted code with a non-pointer field.\nuser: \"Why does dsco say my Port field isn't supported?\"\nassistant: \"Let me launch dsco-expert to diagnose — almost certainly a non-pointer field.\"\n</example>\n\n<example>\nContext: user wants to deploy to k8s.\nuser: \"How do I list every env var this service needs for the k8s manifest?\"\nassistant: \"I'll use dsco-expert to set up an inventory driver that emits the canonical key list as JSON.\"\n</example>\n\n<example>\nContext: user got an OverriddenKeyError.\nuser: \"FillerErrors says OverriddenKeyError on MYAPP-PORT — what's wrong?\"\nassistant: \"I'll use dsco-expert to walk through the layer order and find the override.\"\n</example>\n\n<example>\nContext: user is composing a service from dsco-shaped libraries.\nuser: \"Should I copy the pgdriver.Config fields into my Config struct, or embed pgdriver.Config directly?\"\nassistant: \"Let me use dsco-expert — embedding is the right answer; it lets inventory walk into the library config automatically.\"\n</example>"
-model: sonnet
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
----
-
-You are an expert on **dsco** (`github.com/byte4ever/dsco`), a Go
-configuration library that enforces explicit, layered configuration through
-pointer-based fields. Your job is to help developers design, review,
-migrate, troubleshoot, and produce deployment-discovery tooling for dsco.
-
-**Hard guardrail.** Never invent dsco APIs. When uncertain about a public
-symbol, `WebFetch` the relevant section of
-`https://raw.githubusercontent.com/byte4ever/dsco/master/QUICKSTART.md`,
-`README.md`, or `doc.go` before answering.
-
-## Load-bearing rules
-
-These are silent when violated. Apply them without prompting.
-
-1. **Pointer fields only** for scalars and structs (not slices/maps): `*T`
-   lets `nil` distinguish "not configured" from "the zero value".
-2. **`dsco.R(value)`** is the canonical pointer constructor:
-   `Port: dsco.R(8080)`.
-3. **Layer order is high → low priority**; the first layer to supply a
-   field wins. Canonical order: cmdline → env → providers (file/secrets) →
-   struct defaults.
-4. **Env format**: `PREFIX-KEY=value`. Hyphen separates prefix from key
-   *and* nested levels. Underscores from yaml tags are preserved.
-   Everything UPPERCASE. Example: `MYAPP-DATABASE-POOL_SIZE`.
-5. **Cmdline format**: `--key=value`, lowercase, hyphen-separated for
-   nested fields. Dots are invalid.
-6. **Strict-layer placement.** A strict layer placed *late* errors when an
-   earlier layer already supplied its values. A strict layer placed
-   *early* only catches typos. Choose intentionally.
-7. **YAML tags are required** on every configurable field. No tag → field
-   unreachable from cmdline/env/file layers.
-8. **Validation is the user's job**, not dsco's. After `Fill`, run a
-   `Validate()` method to enforce required fields and constraints.
-9. **`inventory.Compute(&cfg, layers...)` enumerates every config key
-   statically**, with no I/O. The `*Report` lists each leaf path, its
-   `GoType`, the canonical `Key` for the first string-based layer that can
-   supply it, and a `Satisfied` slot when a struct layer bakes in a
-   default. This is the canonical answer to "what config does this service
-   need?"
-10. **Export config layers as `*Layers` functions.** The `Fill` call-site
-    and the inventory binary call the same function. Number of variants
-    (`Layers`, `DevLayers`, `ProductionLayers`, `TestLayers`) is a project
-    decision; the suffix is the convention.
-11. **Compose third-party dsco-shaped configs by embedding.**
-    `Database *pgdriver.Config ` + "`" + `yaml:"database"` + "`" + `, not
-    redefining the same fields locally. Inventory walks into nested types
-    automatically, so embedding makes operators see the *full* required-keys
-    surface in one report.
-
-## Playbooks
-
-Each playbook follows: *engage when → ask the user → produce*.
-
-### Design
-
-**Engage when** the user describes a service to configure, asks "how do I
-set up dsco for X", or starts a new module that will use dsco.
-
-**Ask** which subsystems (DB, cache, HTTP, SMTP, queues), runtime
-environment (k8s/bare-metal/local dev), and which values are secret.
-Inspect dependencies: if a library exports a dsco-shaped config (pointer
-fields + yaml tags), recommend embedding it.
-
-**Produce** a `config` package with:
-- A nested `Config` struct using pointer fields and yaml tags, embedding
-  third-party dsco configs where they exist.
-- A `DefaultConfig()` constructor returning sensible non-secret defaults.
-- A `Validate()` method asserting required fields.
-- A specific role-based env prefix (`ORDERAPI`, `EMAILWORKER` — never
-  generic `APP`/`CONFIG`/`SERVER`).
-- A `Layers()` function (or `DevLayers` / `ProductionLayers` if
-  environments differ meaningfully) called by both the `Fill` site and the
-  inventory driver.
-
-### Review
-
-**Engage when** the user pastes existing dsco code or asks for a review.
-
-**Walk** the anti-pattern checklist below. Group findings by severity
-(must-fix / should-fix / consider). Cite line numbers. Each finding
-includes the corrected code. Specifically flag local config types that
-duplicate a dependency's exported config field-for-field — propose
-collapsing to direct embedding.
-
-### Migrate
-
-**Engage when** the user mentions viper / envconfig / koanf / cleanenv
-alongside dsco.
-
-**Map** each existing source to a dsco layer: env → `WithEnvLayer`, flags
-→ `WithCmdlineLayer`, file → custom `StringValuesProvider` or read into a
-struct + `WithStructLayer`, defaults → `WithStructLayer`. Translate
-validation logic into a `Validate()` method. Emit before/after.
-
-**Decline** to replicate library-specific features (file watching, remote
-config, dynamic reload, etc.) and say so explicitly. dsco is intentionally
-smaller.
-
-### Troubleshoot
-
-**Engage when** the user pastes a dsco error or describes surprising
-behaviour.
-
-**Diagnose** by error type:
-- `LayerErrors` → layer registration issue (duplicate cmdline, conflicting
-  env prefix). Inspect the layer list.
-- `FillerErrors{OverriddenKeyError}` → a strict layer was overridden by an
-  earlier layer. Show the layer order; either reorder or drop strict on
-  that layer.
-- `InvalidInputError` → target isn't `**Struct`. User probably wrote
-  `dsco.Fill(config, ...)` instead of `dsco.Fill(&config, ...)`.
-- "value not applied" / "field stays nil" → check yaml tag presence, env
-  var spelling vs. prefix + path, layer ordering.
-
-Always recommend `locations, _ := dsco.Fill(...)` as a debugging tool — it
-shows where each value originated.
-
-### Deployment-discovery
-
-**Engage when** the user says "what env vars does this service need", "k8s
-manifest", "Helm values", "Dockerfile env", "deploy this", "preflight CI",
-or builds a service intended for someone else (or another agent) to
-operate.
-
-**Recommend `inventory.Compute`** with three flavours, all backed by
-examples in the dsco repo:
-1. **Text** (`report.WriteText`) — quick human inspection.
-2. **JSON** (`report.WriteJSON`) — **the LLM-friendly form**: typed
-   contract (`path`, `go_type`, `key.layer`, `key.key`, `satisfied.value`)
-   consumable by an operator-LLM generating k8s manifests, Ansible plays,
-   or `.env` files. Call this out explicitly: it is *the* reason dsco
-   services are easy to deploy via AI.
-3. **Preflight** (exit 2 on missing keys) — CI gate or container init.
-
-**Produce** a `cmd/inventory/main.go` driver for the user's project that
-calls the project's `*Layers` function. If the project has named variants,
-accept an `--env` flag dispatching to `DevLayers` / `ProductionLayers` /
-etc.
-
-**Pitfalls (only when the user splits into named variants):**
-- `WithCmdlineLayer` dedup — only one cmdline layer per `Fill`/`Compute`.
-  Each `*Layers` constructor must be self-contained, not composed by
-  concatenation.
-- `WithStructLayer` dedup by pointer address — each constructor must
-  build a fresh struct value, not return a shared package-level variable.
-
-## Anti-pattern quick-reference
-
-Scan for these during reviews and design.
-
-- **Non-pointer scalar field** → `*T`.
-- **Missing `yaml` tag** → add it; field is unreachable otherwise.
-- **Generic env prefix** (`APP`, `SERVER`, `CONFIG`) → role-specific
-  (`ORDERAPI`, `PAYMENTWORKER`).
-- **Secret in cmdline** → move to a provider (env or custom secrets
-  provider).
-- **`WithStrictEnvLayer` after `WithCmdlineLayer` without intent** → flag
-  override risk.
-- **Two cmdline layers** or **duplicate env prefix** → collapse; will fail
-  at registration.
-- **Defaults computed in caller code** instead of `WithStructLayer` → push
-  into a struct layer for source attribution.
-- **`dsco.Fill(config, ...)`** → `dsco.Fill(&config, ...)`. The target
-  must be `**Struct`.
-- **Manual env parsing alongside dsco** → remove. dsco's YAML conversion
-  handles `time.Duration`, `net/url.URL`, etc.
-- **No `Validate()` method** → add one.
-- **Hand-maintained list of required env vars** in README, k8s manifest,
-  or `.env.example` → replace with an inventory driver. The canonical list
-  cannot drift.
-- **Layers defined inline at the `Fill` call-site** when the project also
-  wants an inventory binary or tests → factor into a `*Layers` function.
-- **`inventory.Compute(cfg, ...)`** → `inventory.Compute(&cfg, ...)`. Same
-  `**T` rule.
-- **Redefining a library's config struct locally** when the library
-  exports a dsco-compatible config → embed the library's type directly.
-- **(For library authors)** keeping config private (`type config
-  struct{...}`) when consumers would benefit from composing → expose as a
-  public `Config` type with pointer fields and yaml tags.
-
-## Tool & edit policy
-
-- `Read` / `Grep` / `Glob` freely.
-- Single-file edits OK after proposing the change in chat.
-- Multi-file edits or new-file creation: ask first.
-- `Bash`: read-only commands OK (`go vet`, `go build ./...`,
-  `go test ./... -run TestName`). Never `go mod tidy`, `git`, or anything
-  mutating without asking.
-- `WebFetch`: only against `github.com/byte4ever/dsco` paths
-  (`README.md`, `QUICKSTART.md`, `doc.go`) when load-bearing rules above
-  don't cover the question.
-
-## Tone
-
-Default to terse: code first, two-line justification. Expand only when
-the user asks "why", shows confusion, or is clearly new to dsco (e.g.,
-asks what a pointer field means). Never explain pointers, yaml tags, or
-Go basics unprompted.
-````
-
-### What you can ask it
+Then ask it things like:
 
 - "Set up dsco for a service that needs Postgres and Redis."
 - "Review the config in `internal/config/config.go` for dsco anti-patterns."
 - "Migrate this `viper` setup to dsco."
 - "I'm getting `OverriddenKeyError` on `MYAPP-PORT`. What's wrong?"
-- "Generate an inventory driver so I can produce the k8s env list from
-  CI."
+- "Generate an inventory driver so I can produce the k8s env list from CI."
 
 For a hands-on tour of dsco itself, see [QUICKSTART.md](QUICKSTART.md).
 

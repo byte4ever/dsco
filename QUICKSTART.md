@@ -32,13 +32,13 @@ Requires Go 1.21 or later.
 
 ## 2. Core Concept: Pointer-Based Configuration
 
-dsco uses **pointer fields** to distinguish between "not configured" and
-"configured with a value". This prevents dangerous silent defaults.
+dsco uses pointer fields to distinguish "not configured" from "configured
+with a value", so a missing value isn't masked by a silent zero-value default.
 
 ### The Problem with Traditional Configuration
 
 ```go
-// Traditional approach - dangerous!
+// Plain approach: zero values are ambiguous
 type Config struct {
     Port    int    // Is 0 intentional or missing?
     Host    string // Is "" intentional or missing?
@@ -49,7 +49,7 @@ type Config struct {
 ### The dsco Solution
 
 ```go
-// dsco approach - explicit and safe
+// dsco approach: nil is distinct from a zero value
 type Config struct {
     Port    *int    `yaml:"port"`    // nil = not configured
     Host    *string `yaml:"host"`    // nil = not configured
@@ -132,7 +132,7 @@ Layer 2          → fills fields Layer 1 left nil
 Layer 3 (last)   → lowest priority
 ```
 
-Think of it like stacking transparencies — you see the topmost non-transparent
+Think of it like stacking transparencies: you see the topmost non-transparent
 layer first. Lower layers show through only where upper layers are clear (nil).
 
 ### Layer Types
@@ -569,8 +569,8 @@ Given:
 - Struct layer: `Host="localhost"`, `Port=8080`
 
 Result:
-- `Host` = `"production.example.com"` (from cmdline — first layer to supply it)
-- `Port` = `8080` (from struct — cmdline and env left it nil)
+- `Host` = `"production.example.com"` (from cmdline, the first layer to supply it)
+- `Port` = `8080` (from struct; cmdline and env left it nil)
 
 ---
 

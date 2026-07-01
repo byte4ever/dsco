@@ -32,14 +32,14 @@ Nécessite Go 1.21 ou ultérieur.
 
 ## 2. Concept Fondamental : Configuration par Pointeurs
 
-dsco utilise des **champs pointeurs** pour distinguer « non configuré » de
-« configuré avec une valeur ». Cela évite les valeurs par défaut silencieuses
-dangereuses.
+dsco utilise des champs pointeurs pour distinguer « non configuré » de
+« configuré avec une valeur », de sorte qu'une valeur manquante n'est pas
+masquée par une valeur zéro par défaut silencieuse.
 
 ### Le Problème avec la Configuration Traditionnelle
 
 ```go
-// Approche traditionnelle - dangereuse !
+// Approche classique : les valeurs zéro sont ambiguës
 type Config struct {
     Port    int    // 0 est-il intentionnel ou manquant ?
     Host    string // "" est-il intentionnel ou manquant ?
@@ -50,7 +50,7 @@ type Config struct {
 ### La Solution dsco
 
 ```go
-// Approche dsco - explicite et sûre
+// Approche dsco : nil est distinct d'une valeur zéro
 type Config struct {
     Port    *int    `yaml:"port"`    // nil = non configuré
     Host    *string `yaml:"host"`    // nil = non configuré
@@ -135,7 +135,7 @@ Couche 2             → remplit les champs laissés nil par la Couche 1
 Couche 3 (dernière)  → priorité la plus basse
 ```
 
-Imaginez des transparents empilés — vous voyez le premier transparent
+Imaginez des transparents empilés : vous voyez le premier transparent
 non-transparent en premier. Les couches inférieures n'apparaissent que là où
 les couches supérieures sont transparentes (nil).
 
@@ -588,8 +588,8 @@ _, err := dsco.Fill(
 - Couche struct : `Host="localhost"`, `Port=8080`
 
 Résultat :
-- `Host` = `"production.example.com"` (de cmdline — première couche à le fournir)
-- `Port` = `8080` (de struct — cmdline et env l'ont laissé nil)
+- `Host` = `"production.example.com"` (de cmdline, première couche à le fournir)
+- `Port` = `8080` (de struct ; cmdline et env l'ont laissé nil)
 
 ---
 
