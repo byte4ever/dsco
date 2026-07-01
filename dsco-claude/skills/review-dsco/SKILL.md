@@ -121,6 +121,39 @@ nothing in its lane returns a "nothing in scope (trivial)" verdict — one cheap
 sub-agent, no downstream change. A skipped lane that mattered ships a defect.
 Bias toward inclusion. typing, layers, and validation always run.
 
+## Incremental re-review (correction rounds only)
+
+The `dsco` skill's self-review loop re-submits corrected code round after round.
+On such a **correction round** — where you hold the previous round's per-lane
+verdicts AND the diff that was just applied — you MAY re-run a subset instead of
+the full applicable set:
+
+- **Re-run** a lane if EITHER it did NOT return APPROVE last round (a REJECT or
+  CONDITIONAL lane must be re-judged on the new code), OR the applied diff
+  touches any code in that lane's scope.
+- **Carry forward** a lane's prior verdict ONLY if it was APPROVE last round AND
+  the diff leaves its scope untouched. Never carry forward a REJECT or
+  CONDITIONAL — those are always re-judged.
+- **When unsure** whether the diff touched a lane's scope, RE-RUN it. The cost is
+  one sub-agent; the cost of missing a regression is a shipped defect.
+
+Lane scope (what the diff must touch to force a re-run):
+
+| Lane | Re-run when the diff touches… |
+|---|---|
+| typing | struct fields, their types, or yaml tags |
+| layers | the `Fill`/`Compute` call, the layer list/order, strict layers, `*Layers` factoring |
+| secrets | the env prefix, a cmdline layer, secret routing, or any struct-literal value |
+| validation | the `Validate()` method, or `Fill`-error handling in `Load` |
+| deployment | inventory usage, `*Layers` export/signature, the module's dsco version, or an embedded config |
+
+Then arbitrate (worst-verdict-wins) over the UNION of {re-run verdicts} ∪
+{carried-forward APPROVE verdicts} — exactly as if all had run. Each re-run lane
+is still a fresh, isolated, anonymous sub-agent (no round history). The full
+fan-out is always a valid fallback; incremental is an optimisation, never a
+licence to skip a lane that could have regressed. A **first** (non-correction)
+review always runs the full applicable set.
+
 ## Arbitration (worst-verdict-wins — load-bearing)
 
 - **GLOBAL REJECT** if ANY applicable reviewer returns REJECT (≥1 BLOCKING in

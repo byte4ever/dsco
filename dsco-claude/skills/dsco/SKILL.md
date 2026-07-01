@@ -40,7 +40,10 @@ The loop, per authored artifact:
 1. **Review.** Submit the CURRENT code to `review-dsco` (it fans out the aspect
    reviewers as isolated sub-agents). Each review is fresh and anonymous: never
    tell the reviewers the code is yours, and never pass the history of prior
-   rounds. Read the GLOBAL verdict.
+   rounds. On a re-review after a fix, `review-dsco` may re-run only the lanes
+   your change touched and carry forward the untouched APPROVE lanes (its
+   *Incremental re-review*); the carried-forward verdicts still count in the
+   global verdict. Read the GLOBAL verdict.
 2. **Branch on the verdict:**
    - **REJECT** (≥1 BLOCKING): fix every BLOCKING finding exactly as its
      remediation states (clear IMPORTANT too when cheap), then go back to step 1.

@@ -39,3 +39,8 @@ on its own.
   the global verdict is REJECT, capped at 3 cycles; if BLOCKING findings still
   stand after the 3rd, it stops and escalates them to the user to arbitrate.
   Re-reviews are independent/anonymous, so convergence is judged fresh each round.
+- Incremental re-review in the `review-dsco` orchestrator: on a correction round
+  it may re-run only the lanes the fix touched (plus any lane that wasn't APPROVE)
+  and carry forward untouched APPROVE lanes, arbitrating over the union. A first
+  review still runs the full applicable set; when unsure whether a lane was
+  touched, it re-runs.
