@@ -92,8 +92,9 @@ function Status-One($path) {
 switch ($Command) {
   { $_ -in 'install', 'update' } {
     Write-Host "dsco-claude v$Version -> $ClaudeDir"
-    if (-not (Test-Path $AgentSrc)) { throw "agent not found at $AgentSrc" }
-    Link-One $AgentSrc (Join-Path $ClaudeDir 'agents\dsco-expert.md')
+    if (Test-Path $AgentSrc) {
+      Link-One $AgentSrc (Join-Path $ClaudeDir 'agents\dsco-expert.md')
+    }
     Each-Skill { param($name, $src) Link-One $src (Join-Path $ClaudeDir "skills\$name") }
     Write-Host 'done.'
   }
@@ -107,7 +108,7 @@ switch ($Command) {
     Write-Host "dsco-claude v$Version"
     Write-Host "bundle:  $BundleDir"
     Write-Host "target:  $ClaudeDir"
-    Status-One (Join-Path $ClaudeDir 'agents\dsco-expert.md')
+    if (Test-Path $AgentSrc) { Status-One (Join-Path $ClaudeDir 'agents\dsco-expert.md') }
     Each-Skill { param($name, $src) Status-One (Join-Path $ClaudeDir "skills\$name") }
   }
 }

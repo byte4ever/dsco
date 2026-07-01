@@ -85,8 +85,9 @@ each_skill() { # calls: $1 <name> <srcdir>
 
 do_install() {
   echo "dsco-claude v$VERSION -> $CLAUDE_DIR"
-  [ -f "$AGENT_SRC" ] || { echo "error: agent not found at $AGENT_SRC" >&2; exit 1; }
-  link_one "$AGENT_SRC" "$CLAUDE_DIR/agents/dsco-expert.md"
+  if [ -f "$AGENT_SRC" ]; then
+    link_one "$AGENT_SRC" "$CLAUDE_DIR/agents/dsco-expert.md"
+  fi
   each_skill _install_skill
   echo "done."
 }
@@ -107,7 +108,7 @@ do_status() {
   echo "dsco-claude v$VERSION"
   echo "bundle:  $BUNDLE_DIR"
   echo "target:  $CLAUDE_DIR"
-  _status_one "$CLAUDE_DIR/agents/dsco-expert.md"
+  if [ -f "$AGENT_SRC" ]; then _status_one "$CLAUDE_DIR/agents/dsco-expert.md"; fi
   each_skill _status_skill
 }
 _status_skill() { _status_one "$CLAUDE_DIR/skills/$1"; }

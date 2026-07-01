@@ -773,20 +773,24 @@ Three runnable examples ship in the repo:
 
 ## Use Claude Code with dsco
 
-The `dsco-expert` Claude Code agent lives in the
-[`dsco-claude/`](dsco-claude/) directory of this repository, kept separate
-from the library code and installed on its own. It ships with the repo, so
-its version always matches the dsco tag it was released with.
+The [`dsco-claude/`](dsco-claude/) directory of this repository ships two
+Claude Code skills, kept separate from the library code and installed on their
+own. They ship with the repo, so their version always matches the dsco tag
+they were released with.
 
-The agent designs config structs, reviews existing dsco code, migrates from
-viper/envconfig/koanf, troubleshoots errors, and builds deployment-discovery
-tooling on top of `inventory.Compute`. It reads the dsco version in your
-`go.mod` before giving version-gated advice and offers an upgrade when a
-feature needs a newer release than you have pinned.
+- **`dsco`** writes and designs idiomatic dsco config: pointer fields, layered
+  `Fill`, env prefixes, `Validate()`, and inventory-based deployment discovery.
+- **`review-dsco`** reviews that output adversarially (pointer discipline,
+  layer order, strict placement, secret routing, and more), returning a
+  REJECT / CONDITIONAL / APPROVE verdict.
 
-Install it with the bundled cross-platform script (run from your dsco
-checkout). It symlinks the agent into Claude Code, or copies it where symlinks
-aren't available:
+Both read the dsco version in your `go.mod` before giving version-gated advice
+and offer an upgrade when a feature (e.g. `inventory`) needs a newer release
+than you have pinned.
+
+Install with the bundled cross-platform script (run from your dsco checkout).
+It symlinks the skills into Claude Code, or copies them where symlinks aren't
+available:
 
 ```bash
 dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
@@ -795,7 +799,7 @@ dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
 
 Re-run `dsco-claude/install.sh update` after checking out a new dsco version.
 
-Then ask it things like:
+Then ask Claude things like:
 
 - "Set up dsco for a service that needs Postgres and Redis."
 - "Review the config in `internal/config/config.go` for dsco anti-patterns."

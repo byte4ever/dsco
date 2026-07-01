@@ -1,7 +1,8 @@
 # dsco-claude
 
-Claude Code tooling for [dsco](https://github.com/byte4ever/dsco) — the
-`dsco-expert` agent and any dsco-specific skills.
+Claude Code tooling for [dsco](https://github.com/byte4ever/dsco) — two skills:
+`dsco` (write idiomatic dsco config) and `review-dsco` (review it
+adversarially).
 
 This directory lives in the dsco repository but is kept **separate from the
 library code** and installed on its own. Because it ships with the repo, its
@@ -10,10 +11,21 @@ dsco `vX.Y.Z`).
 
 - **This release targets dsco `v1.4.0-rc.1`** (see [`VERSION`](VERSION)).
 
+## Skills
+
+- **`dsco`** — the authoring skill. Distils the library's best practices and
+  pitfalls into rules and playbooks for writing/designing dsco config. Modeled
+  on the `go` skill.
+- **`review-dsco`** — the adversarial reviewer for what `dsco` (or anyone)
+  writes. Default verdict REJECT, anonymous artifact, isolated sub-agent,
+  enumerate → scenarios → score → verdict → meta-critique. Modeled on the
+  `review-go` reviewers and the team's reviewer-agent spec.
+
 ## Why a dedicated directory
 
-The agent and skills used to live embedded in the dsco README and in
-`~/.claude`. Keeping them here instead means:
+The tooling used to live embedded in the dsco README and in `~/.claude` (as a
+single `dsco-expert` agent, now split into the two skills above). Keeping it
+here instead means:
 
 - The AI tooling is decoupled from the Go package: you install it with a
   symlink, not with `go get`.
@@ -26,9 +38,9 @@ The agent and skills used to live embedded in the dsco README and in
 
 ```
 dsco-claude/
-  agents/
-    dsco-expert.md      # the dsco-expert sub-agent (targets dsco v1.4.0-rc.1)
-  skills/               # dsco-specific skills (none yet, ready to hold them)
+  skills/
+    dsco/               # authoring skill (SKILL.md + references/pitfalls.md)
+    review-dsco/        # reviewer skill (SKILL.md + references/)
   install.sh            # installer/updater (Linux, macOS, WSL, Git Bash)
   install.ps1           # installer/updater (Windows PowerShell)
   VERSION               # bundle version == targeted dsco version
@@ -38,14 +50,14 @@ dsco-claude/
 
 ## Version targeting
 
-Every artifact here (the agent and any future skill) declares the dsco version
-it targets and follows one rule:
+Both skills declare the dsco version they target (`x-dsco-target`) and follow
+one rule:
 
 > **Before giving version-gated advice, check the version the user actually
 > depends on (their `go.mod`). If a feature needs a newer dsco than they have
 > pinned, say so and offer the upgrade instead of assuming the API exists.**
 
-Concretely, the agent will propose:
+Concretely, the skills will propose:
 
 ```bash
 go get github.com/byte4ever/dsco@v1.4.0-rc.1
@@ -68,9 +80,9 @@ and the same version-gate behavior. See
 
 ## Install
 
-Run the bundled installer. It symlinks the agent (and any skills) into Claude
-Code so the repo copy stays the single source of truth, and falls back to
-copying on filesystems without symlinks. Run it from your dsco checkout.
+Run the bundled installer. It symlinks the skills (`dsco`, `review-dsco`) into
+Claude Code so the repo copy stays the single source of truth, and falls back
+to copying on filesystems without symlinks. Run it from your dsco checkout.
 
 Linux, macOS, WSL, Git Bash:
 
@@ -101,6 +113,19 @@ the installer:
 ```bash
 git checkout v1.4.0-rc.1
 ```
+
+## Keeping in sync with dsco
+
+Every new dsco feature should land a matching update here, in the same change:
+
+- Extend the `dsco` skill (a new load-bearing rule or a `references/pitfalls.md`
+  entry) so the authoring guidance covers the feature.
+- Extend `review-dsco` (a Phase-1 category, a `checklist-dsco.md` check, a
+  `severity-rubric.md` example) so the reviewer catches its misuse.
+- Update the feature-minimums table with the version that introduced it.
+- Add a `CHANGELOG.md` entry.
+
+Treat the tooling as part of shipping the feature, not an afterthought.
 
 ## Releasing
 

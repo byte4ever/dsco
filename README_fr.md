@@ -782,20 +782,25 @@ Trois exemples exécutables sont fournis dans le dépôt :
 
 ## Utiliser Claude Code avec dsco
 
-L'agent Claude Code `dsco-expert` se trouve dans le répertoire
-[`dsco-claude/`](dsco-claude/) de ce dépôt, séparé du code de la bibliothèque
-et installé à part. Il est livré avec le dépôt, donc sa version correspond
-toujours au tag dsco avec lequel il est publié.
+Le répertoire [`dsco-claude/`](dsco-claude/) de ce dépôt fournit deux skills
+Claude Code, séparés du code de la bibliothèque et installés à part. Ils sont
+livrés avec le dépôt, donc leur version correspond toujours au tag dsco avec
+lequel ils sont publiés.
 
-L'agent conçoit des structs de config, examine du code dsco existant, migre
-depuis viper/envconfig/koanf, diagnostique des erreurs et construit des outils
-de découverte de déploiement basés sur `inventory.Compute`. Il lit la version
-de dsco dans votre `go.mod` avant de donner un conseil dépendant de la version
-et propose une mise à jour quand une fonctionnalité nécessite une version plus
-récente que celle que vous avez épinglée.
+- **`dsco`** écrit et conçoit du code dsco idiomatique : champs pointeurs,
+  `Fill` en couches, préfixes d'env, `Validate()`, et découverte de déploiement
+  basée sur l'inventaire.
+- **`review-dsco`** examine cette production de façon adversariale (discipline
+  des pointeurs, ordre des couches, placement du mode strict, routage des
+  secrets, etc.), et rend un verdict REJECT / CONDITIONAL / APPROVE.
 
-Installez-le avec le script cross-platform fourni (depuis votre clone dsco).
-Il crée un symlink de l'agent dans Claude Code, ou le copie là où les symlinks
+Les deux lisent la version de dsco dans votre `go.mod` avant de donner un
+conseil dépendant de la version et proposent une mise à jour quand une
+fonctionnalité (ex. `inventory`) nécessite une version plus récente que celle
+que vous avez épinglée.
+
+Installez-les avec le script cross-platform fourni (depuis votre clone dsco).
+Il crée un symlink des skills dans Claude Code, ou les copie là où les symlinks
 ne sont pas disponibles :
 
 ```bash
@@ -806,7 +811,7 @@ dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
 Relancez `dsco-claude/install.sh update` après avoir basculé sur une nouvelle
 version de dsco.
 
-Vous pouvez ensuite lui demander par exemple :
+Vous pouvez ensuite demander à Claude, par exemple :
 
 - « Configure dsco pour un service qui a besoin de Postgres et Redis. »
 - « Examine la config de `internal/config/config.go` à la recherche
