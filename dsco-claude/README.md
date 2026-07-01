@@ -16,10 +16,14 @@ dsco `vX.Y.Z`).
 - **`dsco`** — the authoring skill. Distils the library's best practices and
   pitfalls into rules and playbooks for writing/designing dsco config. Modeled
   on the `go` skill.
-- **`review-dsco`** — the adversarial reviewer for what `dsco` (or anyone)
-  writes. Default verdict REJECT, anonymous artifact, isolated sub-agent,
-  enumerate → scenarios → score → verdict → meta-critique. Modeled on the
-  `review-go` reviewers and the team's reviewer-agent spec.
+- **`review-dsco`** — the review **orchestrator** for what `dsco` (or anyone)
+  writes. It anonymises the artifact, selects the applicable per-aspect
+  reviewers by signal, fans them out concurrently as isolated sub-agents, and
+  arbitrates one global verdict (worst-verdict-wins). Modeled on `review-go`.
+- **`review-dsco-{typing,layers,secrets,validation,deployment}`** — the five
+  per-aspect reviewers. Each is REJECT by default, anonymous artifact, isolated
+  sub-agent, phases enumerate → scenarios → score → verdict → meta-critique,
+  with its own `references/checklist`. Built to the team's reviewer-agent spec.
 
 ## Why a dedicated directory
 
@@ -39,8 +43,13 @@ here instead means:
 ```
 dsco-claude/
   skills/
-    dsco/               # authoring skill (SKILL.md + references/pitfalls.md)
-    review-dsco/        # reviewer skill (SKILL.md + references/)
+    dsco/                     # authoring skill (SKILL.md + references/pitfalls.md)
+    review-dsco/              # review orchestrator (+ shared references/)
+    review-dsco-typing/       # per-aspect reviewer (SKILL.md + references/)
+    review-dsco-layers/       #   "
+    review-dsco-secrets/      #   "
+    review-dsco-validation/   #   "
+    review-dsco-deployment/   #   "
   install.sh            # installer/updater (Linux, macOS, WSL, Git Bash)
   install.ps1           # installer/updater (Windows PowerShell)
   VERSION               # bundle version == targeted dsco version

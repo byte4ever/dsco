@@ -14,11 +14,15 @@ on its own.
   rules, design/migrate/troubleshoot/deployment playbooks, and a
   `references/pitfalls.md` anti-pattern catalog). Modeled on the `go` skill.
   Replaces the earlier `dsco-expert` agent.
-- `skills/review-dsco/`: adversarial reviewer for dsco code, built to the
-  reviewer-agent spec — REJECT by default, anonymous artifact, isolated
-  sub-agent, phases enumerate → scenarios → score → verdict → meta-critique,
-  with `references/` (checklist, severity rubric, three worked few-shot
-  reviews). Modeled on the `review-go` reviewers.
+- `skills/review-dsco/`: the review **orchestrator**, modeled on `review-go`.
+  Anonymises the artifact, selects the applicable per-aspect reviewers by
+  signal, fans them out concurrently as isolated sub-agents, and arbitrates one
+  global verdict (worst-verdict-wins). Holds shared `references/` (severity
+  rubric + three worked few-shot reviews).
+- `skills/review-dsco-{typing,layers,secrets,validation,deployment}/`: five
+  per-aspect reviewers, each built to the reviewer-agent spec — REJECT by
+  default, anonymous artifact, isolated sub-agent, phases enumerate → scenarios
+  → score → verdict → meta-critique, each with its own `references/checklist`.
 - Version targeting: both skills declare the dsco version they target
   (`x-dsco-target: v1.4.0-rc.1`) and check the user's `go.mod` before
   version-gated advice, offering `go get github.com/byte4ever/dsco@v1.4.0-rc.1`
