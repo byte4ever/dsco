@@ -11,8 +11,8 @@ description: >-
   self-reviews through review-dsco with a bounded correction loop (up to 3
   cycles, then escalates). To REVIEW existing dsco code directly, use the
   review-dsco skill.
-x-dsco-target: v1.4.0-rc.1
-x-bundle-version: 1.4.0-rc.1
+x-dsco-target: v1.4.0
+x-bundle-version: 1.4.0
 ---
 
 # dsco
@@ -74,7 +74,7 @@ Convergence discipline:
 
 This skill ships in the `dsco-claude` bundle, versioned in lockstep with the
 library: bundle **vX.Y.Z** targets dsco **vX.Y.Z**. **This copy targets dsco
-`v1.4.0-rc.1`.** The rules below assume that version's public API.
+`v1.4.0`.** The rules below assume that version's public API.
 
 Before writing version-gated code, and always before reaching for `inventory`:
 
@@ -85,7 +85,7 @@ Before writing version-gated code, and always before reaching for `inventory`:
    code that will not compile against it. Say the feature needs a newer dsco and
    offer the upgrade:
    ```bash
-   go get github.com/byte4ever/dsco@v1.4.0-rc.1
+   go get github.com/byte4ever/dsco@v1.4.0
    go mod tidy
    ```
    Then wait for acceptance, or fall back to advice valid for their version.
@@ -95,7 +95,7 @@ Before writing version-gated code, and always before reaching for `inventory`:
 | Feature / API | Minimum dsco |
 |---|---|
 | Core: `Fill`, `WithEnvLayer`, `WithCmdlineLayer`, `WithStructLayer`, `WithStrictEnvLayer`, `WithStringValueProvider`, `dsco.R` | v1.0.0-beta |
-| `inventory.Compute`, `*Report`, `Report.WriteText` / `WriteJSON` / `WriteYAML` | **v1.4.0-rc.1** |
+| `inventory.Compute`, `*Report`, `Report.WriteText` / `WriteJSON` / `WriteYAML` | **v1.4.0** |
 
 ## Load-bearing rules
 
@@ -123,7 +123,7 @@ Apply without prompting. Silent when violated.
    statically** (no I/O). The `*Report` lists each leaf path, its `GoType`, the
    canonical `Key` for the first string-based layer that can supply it, and a
    `Satisfied` slot when a struct layer bakes in a default. Requires dsco
-   ≥ v1.4.0-rc.1 — check `go.mod` and offer the upgrade first.
+   ≥ v1.4.0 — check `go.mod` and offer the upgrade first.
 10. **Export config layers as `*Layers` functions.** The `Fill` call-site and
     the inventory binary call the same function. Variants (`Layers`,
     `DevLayers`, `ProductionLayers`, `TestLayers`) are a project decision; the
@@ -188,7 +188,7 @@ each value originated.
 manifest", "Helm values", "Dockerfile env", "deploy this", "preflight CI", or
 builds a service for someone else (human or agent) to operate.
 
-**Version gate.** Built on `inventory`, which needs **dsco ≥ v1.4.0-rc.1**.
+**Version gate.** Built on `inventory`, which needs **dsco ≥ v1.4.0**.
 Check `go.mod` first; offer the upgrade before producing inventory code.
 
 Recommend `inventory.Compute` in three flavours: text (`WriteText`, human

@@ -3,7 +3,7 @@
 All notable changes to the `dsco-claude` bundle. Versions track the dsco
 library they target (bundle `vX.Y.Z` → dsco `vX.Y.Z`).
 
-## v1.4.0-rc.1
+## v1.4.0
 
 Initial extraction of the dsco Claude tooling into a dedicated `dsco-claude/`
 directory in the dsco repo, kept separate from the library code and installed
@@ -24,10 +24,10 @@ on its own.
   default, anonymous artifact, isolated sub-agent, phases enumerate → scenarios
   → score → verdict → meta-critique, each with its own `references/checklist`.
 - Version targeting: both skills declare the dsco version they target
-  (`x-dsco-target: v1.4.0-rc.1`) and check the user's `go.mod` before
-  version-gated advice, offering `go get github.com/byte4ever/dsco@v1.4.0-rc.1`
-  instead of assuming an API (e.g. `inventory`, min `v1.4.0-rc.1`) exists.
-- Feature-minimums table gating `inventory.Compute` and friends at `v1.4.0-rc.1`.
+  (`x-dsco-target: v1.4.0`) and check the user's `go.mod` before
+  version-gated advice, offering `go get github.com/byte4ever/dsco@v1.4.0`
+  instead of assuming an API (e.g. `inventory`, min `v1.4.0`) exists.
+- Feature-minimums table gating `inventory.Compute` and friends at `v1.4.0`.
 - Cross-platform install/update scripts: `install.sh` (Linux, macOS, WSL, Git
   Bash) and `install.ps1` (Windows PowerShell), with `install` / `update` /
   `uninstall` / `status`, user-global or `--project` scope, symlink by default

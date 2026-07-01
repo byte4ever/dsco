@@ -6,8 +6,8 @@ description: >-
   express unset, and yaml-tag presence/correctness. Reviews whether dsco's model
   scanner will accept the struct and whether every field is reachable from a
   layer. Usually run by the review-dsco orchestrator. Default verdict: REJECT.
-x-dsco-target: v1.4.0-rc.1
-x-bundle-version: 1.4.0-rc.1
+x-dsco-target: v1.4.0
+x-bundle-version: 1.4.0
 ---
 
 # review-dsco-typing

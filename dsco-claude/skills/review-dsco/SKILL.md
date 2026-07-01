@@ -8,8 +8,8 @@ description: >-
   single global verdict (worst-verdict-wins). Use to comprehensively review a
   config struct, a Fill() call-site, a *Layers function, or an inventory driver
   — especially the output of the dsco authoring skill. Default verdict: REJECT.
-x-dsco-target: v1.4.0-rc.1
-x-bundle-version: 1.4.0-rc.1
+x-dsco-target: v1.4.0
+x-bundle-version: 1.4.0
 ---
 
 # review-dsco

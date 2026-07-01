@@ -9,7 +9,7 @@ library code** and installed on its own. Because it ships with the repo, its
 version always matches the dsco tag it was released with (bundle `vX.Y.Z` ==
 dsco `vX.Y.Z`).
 
-- **This release targets dsco `v1.4.0-rc.1`** (see [`VERSION`](VERSION)).
+- **This release targets dsco `v1.4.0`** (see [`VERSION`](VERSION)).
 
 ## Skills
 
@@ -74,7 +74,7 @@ one rule:
 Concretely, the skills will propose:
 
 ```bash
-go get github.com/byte4ever/dsco@v1.4.0-rc.1
+go get github.com/byte4ever/dsco@v1.4.0
 go mod tidy
 ```
 
@@ -86,7 +86,7 @@ not have.
 | Feature / API | Minimum dsco |
 |---|---|
 | Core (`Fill`, `WithEnvLayer`, `WithCmdlineLayer`, `WithStructLayer`, `WithStrictEnvLayer`, `WithStringValueProvider`, `dsco.R`) | `v1.0.0-beta` |
-| `inventory.Compute`, `*Report`, `WriteText` / `WriteJSON` / `WriteYAML` | `v1.4.0-rc.1` |
+| `inventory.Compute`, `*Report`, `WriteText` / `WriteJSON` / `WriteYAML` | `v1.4.0` |
 
 Skills added later must carry an `x-dsco-target` field in their frontmatter
 and the same version-gate behavior. See
@@ -117,8 +117,8 @@ symlinks the skills into `~/.claude/skills`. Re-run it to update.
 Pin a version or pass install options (note the `-s --`):
 
 ```bash
-curl -fsSL <bootstrap.sh url> | sh -s -- --ref v1.4.0-rc.1 --copy
-# env form: curl -fsSL <bootstrap.sh url> | DSCO_CLAUDE_REF=v1.4.0-rc.1 sh
+curl -fsSL <bootstrap.sh url> | sh -s -- --ref v1.4.0 --copy
+# env form: curl -fsSL <bootstrap.sh url> | DSCO_CLAUDE_REF=v1.4.0 sh
 ```
 
 The default ref is `master`; pin a release tag once one ships the bundle. Add
@@ -159,7 +159,7 @@ To pin a specific tool version, check out the matching dsco tag before running
 the installer:
 
 ```bash
-git checkout v1.4.0-rc.1
+git checkout v1.4.0
 ```
 
 ## Keeping in sync with dsco

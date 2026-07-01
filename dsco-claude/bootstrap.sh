@@ -8,7 +8,7 @@
 #   wget -qO-  https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.sh | sh
 #
 # Pin a version / pass install options (note the `-s --`):
-#   curl -fsSL <url>/bootstrap.sh | sh -s -- --ref v1.4.0-rc.1 --copy
+#   curl -fsSL <url>/bootstrap.sh | sh -s -- --ref v1.4.0 --copy
 #
 # Env vars (alternative to flags):
 #   DSCO_CLAUDE_REF   git ref to fetch (branch / tag / sha; default: master)
