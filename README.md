@@ -784,13 +784,16 @@ tooling on top of `inventory.Compute`. It reads the dsco version in your
 `go.mod` before giving version-gated advice and offers an upgrade when a
 feature needs a newer release than you have pinned.
 
-Install by symlinking the agent so the repo copy stays the single source of
-truth (run from your dsco checkout):
+Install it with the bundled cross-platform script (run from your dsco
+checkout). It symlinks the agent into Claude Code, or copies it where symlinks
+aren't available:
 
 ```bash
-mkdir -p ~/.claude/agents
-ln -sf "$(pwd)/dsco-claude/agents/dsco-expert.md" ~/.claude/agents/dsco-expert.md
+dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
+# Windows (PowerShell):  dsco-claude\install.ps1
 ```
+
+Re-run `dsco-claude/install.sh update` after checking out a new dsco version.
 
 Then ask it things like:
 

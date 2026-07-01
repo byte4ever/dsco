@@ -29,6 +29,8 @@ dsco-claude/
   agents/
     dsco-expert.md      # the dsco-expert sub-agent (targets dsco v1.4.0-rc.1)
   skills/               # dsco-specific skills (none yet, ready to hold them)
+  install.sh            # installer/updater (Linux, macOS, WSL, Git Bash)
+  install.ps1           # installer/updater (Windows PowerShell)
   VERSION               # bundle version == targeted dsco version
   CHANGELOG.md
   README.md
@@ -66,24 +68,35 @@ and the same version-gate behavior. See
 
 ## Install
 
-Point Claude Code at the artifacts. The recommended install symlinks the
-agent so the repo copy stays the single source of truth. Run from your dsco
-checkout:
+Run the bundled installer. It symlinks the agent (and any skills) into Claude
+Code so the repo copy stays the single source of truth, and falls back to
+copying on filesystems without symlinks. Run it from your dsco checkout.
+
+Linux, macOS, WSL, Git Bash:
 
 ```bash
-# user-global
-mkdir -p ~/.claude/agents
-ln -sf "$(pwd)/dsco-claude/agents/dsco-expert.md" ~/.claude/agents/dsco-expert.md
+dsco-claude/install.sh              # install into ~/.claude
+dsco-claude/install.sh update       # refresh after checking out a new version
+dsco-claude/install.sh status       # show what is installed
+dsco-claude/install.sh --project .  # install into ./.claude of another project
+dsco-claude/install.sh uninstall
 ```
 
-or, project-local in another project (takes precedence over user-global):
+Windows (PowerShell):
 
-```bash
-mkdir -p .claude/agents
-ln -sf /abs/path/to/dsco/dsco-claude/agents/dsco-expert.md .claude/agents/dsco-expert.md
+```powershell
+dsco-claude\install.ps1             # install into ~\.claude
+dsco-claude\install.ps1 update
+dsco-claude\install.ps1 status
+dsco-claude\install.ps1 -Project . # install into .\.claude
+dsco-claude\install.ps1 uninstall
 ```
 
-To pin a specific tool version, check out the matching dsco tag:
+Add `--copy` (`-Copy` on PowerShell) to copy the files instead of symlinking.
+A project-local install takes precedence over the user-global one.
+
+To pin a specific tool version, check out the matching dsco tag before running
+the installer:
 
 ```bash
 git checkout v1.4.0-rc.1

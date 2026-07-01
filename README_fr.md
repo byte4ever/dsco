@@ -794,13 +794,17 @@ de dsco dans votre `go.mod` avant de donner un conseil dépendant de la version
 et propose une mise à jour quand une fonctionnalité nécessite une version plus
 récente que celle que vous avez épinglée.
 
-Installez-le en créant un symlink vers l'agent, pour que la copie du dépôt
-reste la source unique de vérité (depuis votre clone dsco) :
+Installez-le avec le script cross-platform fourni (depuis votre clone dsco).
+Il crée un symlink de l'agent dans Claude Code, ou le copie là où les symlinks
+ne sont pas disponibles :
 
 ```bash
-mkdir -p ~/.claude/agents
-ln -sf "$(pwd)/dsco-claude/agents/dsco-expert.md" ~/.claude/agents/dsco-expert.md
+dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
+# Windows (PowerShell) :  dsco-claude\install.ps1
 ```
+
+Relancez `dsco-claude/install.sh update` après avoir basculé sur une nouvelle
+version de dsco.
 
 Vous pouvez ensuite lui demander par exemple :
 

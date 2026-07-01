@@ -21,3 +21,7 @@ on its own.
 - Feature-minimums table gating `inventory.Compute` and friends at
   `v1.4.0-rc.1`.
 - `skills/` scaffold for future dsco-specific skills.
+- Cross-platform install/update scripts: `install.sh` (Linux, macOS, WSL, Git
+  Bash) and `install.ps1` (Windows PowerShell), with `install` / `update` /
+  `uninstall` / `status`, user-global or `--project` scope, symlink by default
+  and a copy fallback for filesystems without symlinks.
