@@ -53,6 +53,8 @@ dsco-claude/
     review-dsco-secrets/      #   "
     review-dsco-validation/   #   "
     review-dsco-deployment/   #   "
+  bootstrap.sh          # one-line curl/wget install (POSIX)
+  bootstrap.ps1         # one-line install (Windows PowerShell)
   install.sh            # installer/updater (Linux, macOS, WSL, Git Bash)
   install.ps1           # installer/updater (Windows PowerShell)
   VERSION               # bundle version == targeted dsco version
@@ -90,11 +92,45 @@ Skills added later must carry an `x-dsco-target` field in their frontmatter
 and the same version-gate behavior. See
 [`skills/README.md`](skills/README.md).
 
-## Install
+## Quick install (curl / wget)
 
-Run the bundled installer. It symlinks the skills (`dsco`, `review-dsco`) into
-Claude Code so the repo copy stays the single source of truth, and falls back
-to copying on filesystems without symlinks. Run it from your dsco checkout.
+No checkout needed. The bootstrap downloads the bundle and installs the skills
+in one line.
+
+Linux, macOS, WSL, Git Bash:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.sh | sh
+# or with wget:
+wget -qO- https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.ps1 | iex
+```
+
+It places the bundle in `~/.dsco-claude` (override with `DSCO_CLAUDE_HOME`) and
+symlinks the skills into `~/.claude/skills`. Re-run it to update.
+
+Pin a version or pass install options (note the `-s --`):
+
+```bash
+curl -fsSL <bootstrap.sh url> | sh -s -- --ref v1.4.0-rc.1 --copy
+# env form: curl -fsSL <bootstrap.sh url> | DSCO_CLAUDE_REF=v1.4.0-rc.1 sh
+```
+
+The default ref is `master`; pin a release tag once one ships the bundle. Add
+`--copy` (`-Copy`) for filesystems without symlinks, or `--project .` to install
+into the current project's `.claude`.
+
+## Install from a checkout
+
+If you already have the dsco repo, run the bundled installer directly. It
+symlinks the skills (`dsco`, `review-dsco`, ...) into Claude Code so the repo
+copy stays the single source of truth, and falls back to copying on filesystems
+without symlinks. Run it from your dsco checkout.
 
 Linux, macOS, WSL, Git Bash:
 

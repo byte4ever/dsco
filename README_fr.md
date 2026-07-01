@@ -799,17 +799,18 @@ conseil dépendant de la version et proposent une mise à jour quand une
 fonctionnalité (ex. `inventory`) nécessite une version plus récente que celle
 que vous avez épinglée.
 
-Installez-les avec le script cross-platform fourni (depuis votre clone dsco).
-Il crée un symlink des skills dans Claude Code, ou les copie là où les symlinks
-ne sont pas disponibles :
+Installez en une ligne, sans checkout (télécharge le bundle et crée les
+symlinks des skills dans Claude Code) :
 
 ```bash
-dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
-# Windows (PowerShell) :  dsco-claude\install.ps1
+curl -fsSL https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.sh | sh
 ```
 
-Relancez `dsco-claude/install.sh update` après avoir basculé sur une nouvelle
-version de dsco.
+Sous Windows PowerShell : `irm https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.ps1 | iex`.
+
+Depuis un clone dsco, lancez plutôt `dsco-claude/install.sh` (ou `install.ps1`
+sous Windows), et `dsco-claude/install.sh update` après avoir tiré une nouvelle
+version.
 
 Vous pouvez ensuite demander à Claude, par exemple :
 

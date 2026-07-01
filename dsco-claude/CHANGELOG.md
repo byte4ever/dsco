@@ -32,6 +32,11 @@ on its own.
   Bash) and `install.ps1` (Windows PowerShell), with `install` / `update` /
   `uninstall` / `status`, user-global or `--project` scope, symlink by default
   and a copy fallback for filesystems without symlinks.
+- One-line curl/wget bootstrap: `bootstrap.sh` (POSIX) and `bootstrap.ps1`
+  (PowerShell) download the bundle from GitHub (no checkout), place it in
+  `~/.dsco-claude` (override with `DSCO_CLAUDE_HOME`), and run the installer.
+  `--ref` / `DSCO_CLAUDE_REF` pin a branch/tag/sha; extra flags pass through to
+  the installer.
 - "Keeping in sync with dsco" convention: each new library feature ships a
   matching update to both skills in the same change.
 - Self-review loop in the `dsco` skill: every artifact it produces is run

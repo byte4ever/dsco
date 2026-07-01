@@ -788,16 +788,17 @@ Both read the dsco version in your `go.mod` before giving version-gated advice
 and offer an upgrade when a feature (e.g. `inventory`) needs a newer release
 than you have pinned.
 
-Install with the bundled cross-platform script (run from your dsco checkout).
-It symlinks the skills into Claude Code, or copies them where symlinks aren't
-available:
+Install in one line, no checkout needed (it downloads the bundle and symlinks
+the skills into Claude Code):
 
 ```bash
-dsco-claude/install.sh                 # Linux, macOS, WSL, Git Bash
-# Windows (PowerShell):  dsco-claude\install.ps1
+curl -fsSL https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.sh | sh
 ```
 
-Re-run `dsco-claude/install.sh update` after checking out a new dsco version.
+On Windows PowerShell: `irm https://raw.githubusercontent.com/byte4ever/dsco/master/dsco-claude/bootstrap.ps1 | iex`.
+
+From a dsco checkout instead, run `dsco-claude/install.sh` (or `install.ps1` on
+Windows), and `dsco-claude/install.sh update` after pulling a new version.
 
 Then ask Claude things like:
 
